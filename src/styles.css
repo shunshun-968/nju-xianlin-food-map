@@ -1080,7 +1080,7 @@ button:hover {
 }
 .plan-label.land {
   fill: #6a7b55;
-  letter-spacing: 3px;
+  letter-spacing: .5px;
   stroke: #dae0c6;
 }
 .plan-label.water {
@@ -1090,7 +1090,7 @@ button:hover {
 .plan-label.road {
   fill: #8b8d80;
   stroke: #eeeee5;
-  letter-spacing: 2px;
+  letter-spacing: .5px;
 }
 .plan-venue {
   cursor: pointer;

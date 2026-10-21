@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { catalog } from '../src/data/catalog';
 import { venueAnchors } from '../src/data/campus';
 import layout from '../src/data/campus-layout.json';
+import drawing from '../src/data/campus-drawing.json';
+import { campusLabels, campusFrame } from '../src/data/campus';
+import { overlaps, placeMapLabels, type LabelRequest } from '../src/lib/map-labels';
 
 test('straightened building polygons do not cross their own walls', () => {
   const cross = (a: number[], b: number[], c: number[]) =>
     (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-  for (const feature of layout.features.filter((f) => f.kind >= 5 && f.kind <= 8)) {
+  for (const feature of drawing.buildings) {
     for (const ring of feature.path.split('Z')) {
       const points = [...ring.matchAll(/(-?[\d.]+),(-?[\d.]+)/g)].map((m) => [
         Number(m[1]),
@@ -26,6 +29,59 @@ test('straightened building polygons do not cross their own walls', () => {
           );
         }
     }
+  }
+});
+
+test('map labels never overlap, and road names stay attached to their road anchors', () => {
+  for (const [width, height] of [
+    [390, 600],
+    [800, 700],
+    [1280, 800],
+  ]) {
+    for (const zoom of [1, 1.7, 3, 5, 8])
+      for (const [panX, panY] of [
+        [0, 0],
+        [-100, -250],
+        [150, -700],
+      ]) {
+        const scale =
+          Math.min((width - 32) / campusFrame.width, (height - 55) / campusFrame.height) * zoom;
+        const x = width / 2 - (campusFrame.x + campusFrame.width / 2) * scale + panX;
+        const y = height / 2 - (campusFrame.y + campusFrame.height / 2) * scale + panY;
+        const requests: LabelRequest[] = Object.entries(venueAnchors).map(([id, a]) => ({
+          id,
+          lines: [a.source.replace(/\.(jpg|png)$/, '')],
+          x: x + a.point[0] * scale,
+          y: y + a.point[1] * scale,
+          priority: 0,
+          badge: true,
+          fontSize: 10.5,
+          preferred: a.labelOffset,
+        }));
+        requests.push(
+          ...[...campusLabels.filter((l) => l.kind !== 'road'), ...drawing.roadLabels]
+            .filter((l) => l.tier === 0 || (l.tier === 1 && zoom >= 1.65) || zoom >= 3)
+            .map((l) => ({
+              id: l.name,
+              lines: [l.name],
+              x: x + l.x * scale,
+              y: y + l.y * scale,
+              priority: l.kind === 'road' ? 1 : 2 + l.tier,
+              kind: l.kind,
+              fontSize: 11,
+              rotation: l.rotation,
+            })),
+        );
+        const placed = placeMapLabels(requests, { width, height });
+        for (const [i, label] of placed.entries()) {
+          for (const other of placed.slice(i + 1))
+            assert(!overlaps(label.box, other.box), `${label.id} overlaps ${other.id}`);
+          if (label.kind === 'road') {
+            assert.equal(label.x, label.anchorX);
+            assert.equal(label.y, label.anchorY);
+          }
+        }
+      }
   }
 });
 

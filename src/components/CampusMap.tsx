@@ -2,13 +2,14 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import type { Catalog } from '../domain';
 import type { SceneHandle } from './MapScene';
 import layout from '../data/campus-layout.json';
+import drawing from '../data/campus-drawing.json';
 import { campusFrame, campusLabels, venueAnchors } from '../data/campus';
+import { placeMapLabels, type LabelRequest, type PlacedLabel } from '../lib/map-labels';
 
 type Transform = { x: number; y: number; scale: number; zoom: number };
 type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
-const replaced = new Set(Object.values(venueAnchors).map((anchor) => anchor.replaces));
-const features = layout.features.filter((feature) => !replaced.has(feature.id));
-const woodland = features
+const features = drawing.land;
+const woodland = drawing.land
   .filter((f) => f.kind === 1)
   .map((f) => f.path)
   .join(' ');
@@ -23,6 +24,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   const size = useRef({ width: 1, height: 1 }),
     transformRef = useRef<Transform>({ x: 0, y: 0, scale: 1, zoom: 1 });
   const [transform, setTransform] = useState(transformRef.current);
+  const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef({
     x: 0,
@@ -70,6 +72,19 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     const observer = new ResizeObserver(() => {
       const rect = element.getBoundingClientRect();
       size.current = { width: rect.width, height: rect.height };
+      reserved.current = [
+        ...element.parentElement!.querySelectorAll(
+          '.breadcrumbs, .map-status, .compass, .map-tools, .legend, .style-toggle, .interaction-hint, .plan-caption',
+        ),
+      ]
+        .map((node) => node.getBoundingClientRect())
+        .filter((r) => r.width && r.height)
+        .map((r) => ({
+          left: r.left - rect.left - 4,
+          top: r.top - rect.top - 4,
+          right: r.right - rect.left + 4,
+          bottom: r.bottom - rect.top + 4,
+        }));
       update(fitted());
     });
     observer.observe(element);
@@ -89,6 +104,41 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
   const inv = 1 / transform.scale;
+  const requests: LabelRequest[] = data.venues.flatMap((venue) => {
+    const anchor = venueAnchors[venue.id];
+    return anchor
+      ? [
+          {
+            id: venue.id,
+            lines: venue.id === 'v-hut' ? ['四五六食堂东侧', '美食小屋／小餐车'] : [venue.name],
+            x: transform.x + anchor.point[0] * transform.scale,
+            y: transform.y + anchor.point[1] * transform.scale,
+            priority: 0,
+            badge: true,
+            fontSize: 10.5,
+            preferred: anchor.labelOffset,
+          },
+        ]
+      : [];
+  });
+  for (const label of [...campusLabels.filter((l) => l.kind !== 'road'), ...drawing.roadLabels]) {
+    if ((label.tier === 1 && transform.zoom < 1.65) || (label.tier === 2 && transform.zoom < 3))
+      continue;
+    requests.push({
+      id: label.name,
+      lines: [label.name],
+      x: transform.x + label.x * transform.scale,
+      y: transform.y + label.y * transform.scale,
+      priority: label.kind === 'road' ? 1 : 2 + label.tier,
+      fontSize: label.tier === 0 ? 11 : 10,
+      rotation: label.rotation,
+      kind: label.kind || 'building',
+    });
+  }
+  const labels = placeMapLabels(requests, size.current, reserved.current);
+  const venueLabels = new Map(
+    labels.filter((label) => label.badge).map((label) => [label.id, label]),
+  );
   return (
     <div ref={host} className="campus-plan">
       <svg
@@ -232,33 +282,26 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
               />
             ))}
           <path d={woodland} fill="url(#contours)" fillRule="evenodd" />
-          {features
-            .filter((f) => f.kind === 3)
-            .map((f) => (
-              <g key={f.id}>
-                <path
-                  d={f.path}
-                  fill="#b8d2ce"
-                  stroke="#a8c4c0"
-                  strokeWidth="1.2"
-                  fillRule="evenodd"
-                />
-                <path d={f.path} fill="url(#lawn-lines)" />
-              </g>
-            ))}
-          {features
-            .filter((f) => f.kind === 4)
-            .map((f) => (
+          {drawing.water.map((f) => (
+            <g key={f.name}>
               <path
-                key={f.id}
                 d={f.path}
-                fill="#e7e5df"
-                stroke="#c9c9bf"
+                fill="#b8d2ce"
+                stroke="#a8c4c0"
                 strokeWidth="1.2"
-                strokeLinejoin="round"
                 fillRule="evenodd"
               />
+              <path d={f.path} fill="url(#lawn-lines)" />
+            </g>
+          ))}
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawing.roads.map((f) => (
+              <path key={f.name} d={f.path} stroke="#c9c9bf" strokeWidth={f.width + 2} />
             ))}
+            {drawing.roads.map((f) => (
+              <path key={f.name} d={f.path} stroke="#e7e5df" strokeWidth={f.width} />
+            ))}
+          </g>
           {features
             .filter((f) => f.kind === 9)
             .map((f) => (
@@ -285,50 +328,55 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             />
           ))}
           <g className="ordinary-buildings">
-            {features
-              .filter((f) => f.kind >= 5 && f.kind <= 8)
-              .map((f) => (
-                <g key={f.id}>
-                  <path
-                    d={f.path}
-                    transform="translate(2 3)"
-                    fill="#7f8477"
-                    opacity=".17"
-                    fillRule="evenodd"
-                  />
-                  <path
-                    d={f.path}
-                    fill="#fffefb"
-                    stroke="#b8bcaf"
-                    strokeWidth="1"
-                    strokeLinejoin="round"
-                    fillRule="evenodd"
-                  />
-                </g>
-              ))}
+            {drawing.buildings.map((f) => (
+              <g key={f.id}>
+                <path
+                  d={f.path}
+                  transform="translate(2 3)"
+                  fill="#7f8477"
+                  opacity=".17"
+                  fillRule="evenodd"
+                />
+                <path
+                  d={f.path}
+                  fill="#fffefb"
+                  stroke="#b8bcaf"
+                  strokeWidth="1"
+                  strokeLinejoin="round"
+                  fillRule="evenodd"
+                />
+              </g>
+            ))}
           </g>
           {showLabels && (
             <g className="plan-labels" pointerEvents="none">
-              {campusLabels
-                .filter(
-                  (l) =>
-                    l.tier === 0 ||
-                    (l.tier === 1 && transform.zoom >= 1.35) ||
-                    transform.zoom >= 2.5,
-                )
+              {labels
+                .filter((l) => !l.badge)
                 .map((l) => (
-                  <text
-                    key={l.name}
-                    x={l.x}
-                    y={l.y}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    transform={l.rotation ? `rotate(${l.rotation} ${l.x} ${l.y})` : undefined}
-                    className={`plan-label ${l.kind || 'building'}`}
-                    fontSize={Math.max(l.tier === 2 ? 10 : 13, (l.tier === 0 ? 10.5 : 9.5) * inv)}
+                  <g
+                    key={l.id}
+                    transform={`translate(${(l.x - transform.x) * inv} ${(l.y - transform.y) * inv}) scale(${inv})`}
                   >
-                    {l.name}
-                  </text>
+                    {l.kind !== 'road' && (l.x !== l.anchorX || l.y !== l.anchorY) && (
+                      <path
+                        d={`M0 0L${l.anchorX - l.x} ${l.anchorY - l.y}`}
+                        stroke="#a0a68f"
+                        strokeWidth=".7"
+                        fill="none"
+                      />
+                    )}
+                    <text
+                      x={0}
+                      y={0}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      transform={l.rotation ? `rotate(${l.rotation})` : undefined}
+                      className={`plan-label ${l.kind || 'building'}`}
+                      fontSize={l.fontSize}
+                    >
+                      {l.lines[0]}
+                    </text>
+                  </g>
                 ))}
             </g>
           )}
@@ -338,12 +386,12 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             const [x, y] = venue.campusPosition,
               [w, h] = venue.footprint,
               raised = 5;
-            const labelLines =
-              venue.id === 'v-hut' ? ['四五六食堂东侧', '美食小屋／小餐车'] : [venue.name];
-            const labelWidth = Math.max(...labelLines.map((t) => t.length)) * 10.5 + 18,
-              labelHeight = labelLines.length * 14 + 10;
-            const dx = anchor.labelOffset[0] * inv,
-              dy = anchor.labelOffset[1] * inv;
+            const placedLabel = venueLabels.get(venue.id);
+            const labelLines = placedLabel?.lines || [];
+            const labelWidth = placedLabel?.width || 0,
+              labelHeight = placedLabel?.height || 0;
+            const dx = placedLabel ? (placedLabel.x - transform.x) * inv - x : 0,
+              dy = placedLabel ? (placedLabel.y - transform.y) * inv - y : 0;
             return (
               <g
                 key={venue.id}
@@ -407,7 +455,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
                     fill="transparent"
                   />
                 </g>
-                {showLabels && (
+                {showLabels && placedLabel && (
                   <g className="venue-map-label" transform={`translate(${x} ${y})`}>
                     <path
                       d={`M0 ${-raised}L${dx} ${dy}`}

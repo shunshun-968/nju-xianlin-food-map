@@ -5,6 +5,7 @@ import layout from '../data/campus-layout.json';
 import drawing from '../data/campus-drawing.json';
 import { campusFrame, campusLabels, venueAnchors } from '../data/campus';
 import { placeMapLabels, type LabelRequest, type PlacedLabel } from '../lib/map-labels';
+import { mapScaleBar } from '../lib/map-scale';
 
 type Transform = { x: number; y: number; scale: number; zoom: number };
 type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
@@ -39,12 +40,19 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   }
   function fitted() {
     const { width, height } = size.current;
+    const hostRect = host.current?.getBoundingClientRect();
+    const drawer = host.current
+      ?.closest('.workspace')
+      ?.querySelector('.sidebar-dock:not(.is-collapsed)')
+      ?.getBoundingClientRect();
+    const leftInset =
+      drawer && hostRect && width > 700 ? Math.max(0, drawer.right - hostRect.left + 34) : 0;
     const scale = Math.max(
       0.01,
-      Math.min((width - 32) / campusFrame.width, (height - 55) / campusFrame.height),
+      Math.min((width - leftInset - 32) / campusFrame.width, (height - 90) / campusFrame.height),
     );
     return {
-      x: width / 2 - (campusFrame.x + campusFrame.width / 2) * scale,
+      x: leftInset + (width - leftInset) / 2 - (campusFrame.x + campusFrame.width / 2) * scale,
       y: height / 2 - (campusFrame.y + campusFrame.height / 2) * scale,
       scale,
       zoom: 1,
@@ -69,13 +77,14 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   useEffect(() => {
     const element = host.current!,
       surface = svg.current!;
-    const observer = new ResizeObserver(() => {
+    const measureOverlays = () => {
       const rect = element.getBoundingClientRect();
-      size.current = { width: rect.width, height: rect.height };
       reserved.current = [
-        ...element.parentElement!.querySelectorAll(
-          '.breadcrumbs, .map-status, .compass, .map-tools, .legend, .style-toggle, .interaction-hint, .plan-caption',
-        ),
+        ...element
+          .closest('.app')!
+          .querySelectorAll(
+            '.breadcrumbs, .compass, .map-tools, .map-scale, .style-toggle, .sidebar-dock, .sidebar-handle, .header, .header-reveal',
+          ),
       ]
         .map((node) => node.getBoundingClientRect())
         .filter((r) => r.width && r.height)
@@ -85,9 +94,23 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
           right: r.right - rect.left + 4,
           bottom: r.bottom - rect.top + 4,
         }));
+    };
+    const observer = new ResizeObserver(() => {
+      const rect = element.getBoundingClientRect();
+      size.current = { width: rect.width, height: rect.height };
+      measureOverlays();
       update(fitted());
     });
     observer.observe(element);
+    let overlayFrame = 0;
+    const refreshOverlays = () => {
+      cancelAnimationFrame(overlayFrame);
+      overlayFrame = requestAnimationFrame(() => {
+        measureOverlays();
+        update({ ...transformRef.current });
+      });
+    };
+    window.addEventListener('foodmap:overlays', refreshOverlays);
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
       const rect = surface.getBoundingClientRect();
@@ -96,6 +119,8 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     surface.addEventListener('wheel', wheel, { passive: false });
     return () => {
       observer.disconnect();
+      cancelAnimationFrame(overlayFrame);
+      window.removeEventListener('foodmap:overlays', refreshOverlays);
       surface.removeEventListener('wheel', wheel);
     };
   }, []);
@@ -104,6 +129,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
   const inv = 1 / transform.scale;
+  const scaleBar = mapScaleBar(transform.scale);
   const requests: LabelRequest[] = data.venues.flatMap((venue) => {
     const anchor = venueAnchors[venue.id];
     return anchor
@@ -498,9 +524,23 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
           })}
         </g>
       </svg>
-      <div className="plan-caption">
-        <span>仙林校园 · 总平面</span>
-        <small>按参考图相对位置绘制</small>
+      <div className="map-scale" title="按 OSM 建筑中心校准；水平直线距离，示意图存在局部误差。">
+        <div className="scale-reading" style={{ width: scaleBar.pixels }}>
+          <span>0</span>
+          <span>{scaleBar.label}</span>
+        </div>
+        <svg width={scaleBar.pixels} height="8" role="img" aria-label={`比例尺 ${scaleBar.label}`}>
+          <rect
+            x=".5"
+            y="1"
+            width={Math.max(1, scaleBar.pixels - 1)}
+            height="5"
+            fill="#f9f4fb"
+            stroke="#78518e"
+            strokeWidth="1"
+          />
+          <rect x=".5" y="1" width={scaleBar.pixels / 2} height="5" fill="#78518e" />
+        </svg>
       </div>
     </div>
   );

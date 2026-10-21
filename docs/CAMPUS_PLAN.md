@@ -39,3 +39,13 @@
 若曾手动部署旧种子数据库，应先备份，再按稳定 ID 更新七个 venue 的名称、campus_x/campus_z、footprint 和 coordinate_system，不要清空真实业务数据库。当前尚未接入线上数据库。
 
 按当前要求无需地图 Key、在线瓦片或地理配准。只有未来明确增加 GPS 导航时才另行设计地理坐标转换。
+
+## OSM 比例尺校准（2026-10-21，本地界面修订）
+
+比例尺按用户要求显示 `100 m`、`200 m` 等整洁刻度，不加“约”，随 SVG 缩放自动更新。它表达屏幕水平方向的直线距离，不表示步行路径长度。校园几何及业务坐标仍为 V2 相对图纸坐标。
+
+数据读取自 [OpenStreetMap 官方地图 API](https://api.openstreetmap.org/api/0.6/map?bbox=118.95,32.11,118.97,32.13)。选取四五六食堂、民族食堂八九食堂、第十食堂、天文学院、左涤江天文台共五个建筑外接框中心作为对应点。源要素链接、WGS84 坐标、图纸位置及结果保存在 `src/data/map-calibration.json`，计算过程为 `scripts/calibrate-scale.py`，前端无需联网查询 OSM。
+
+采用 WGS84 局部东西/南北米制坐标进行最小二乘仿射拟合，分别处理原图横纵比例：水平 1.515359 米/图纸单位，垂直 1.568751 米/图纸单位。五个控制点拟合残差 RMS 为 2.97 米，最大 4.81 米。**这些残差仅描述控制点拟合，不能视作整张示意图的精度保证**；手工转绘、OSM 建筑范围及参考图局部变形仍会产生误差。比例尺 tooltip 保留这一说明。
+
+复算：下载上述 XML 后运行 `python scripts/calibrate-scale.py <path-to-osm.xml>`。`src/lib/map-scale.ts` 将水平米制单位转换成当前屏幕像素，并选用 1/2/5 系列刻度。“关于食光”中保留 [© OpenStreetMap contributors](https://www.openstreetmap.org/copyright) 来源链接；数据遵循 ODbL。

@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MapScene, type SceneHandle } from './components/MapScene';
 import { CampusMap } from './components/CampusMap';
+import { UiIcon } from './components/UiIcon';
+import { CompassRose } from './components/CompassRose';
+import { FloatingSidebar } from './components/FloatingSidebar';
 import { catalogRepository } from './services/catalog';
-import { mediaUrl, themes, type Catalog, type MapTheme, type View } from './domain';
+import { mediaUrl, type Catalog, type MapTheme, type View } from './domain';
 
 export default function App() {
   const [data, setData] = useState<Catalog | null>(null),
@@ -16,20 +19,64 @@ export default function App() {
     [showInfo, setShowInfo] = useState(false);
   const scene = useRef<SceneHandle>(null);
   const search = useRef<HTMLInputElement>(null);
+  const aboutDialog = useRef<HTMLElement>(null);
+  const header = useRef<HTMLElement>(null);
+  const [headerOpen, setHeaderOpen] = useState(true);
+  useEffect(() => {
+    window.dispatchEvent(new Event('foodmap:overlays'));
+  }, [headerOpen]);
+  const hideHeader = () => {
+    if (showInfo) return;
+    if (
+      document.activeElement instanceof HTMLElement &&
+      header.current?.contains(document.activeElement)
+    )
+      document.activeElement.blur();
+    setHeaderOpen(false);
+  };
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setShowInfo(false);
-        setStallId(null);
+        if (showInfo) setShowInfo(false);
+        else setStallId(null);
       }
-      if (event.key === '/' && !(event.target instanceof HTMLInputElement) && search.current) {
+      if (
+        !showInfo &&
+        event.key === '/' &&
+        !(event.target instanceof HTMLInputElement) &&
+        search.current
+      ) {
         event.preventDefault();
         search.current.focus();
       }
     };
     window.addEventListener('keydown', keydown);
     return () => window.removeEventListener('keydown', keydown);
-  }, []);
+  }, [showInfo]);
+  useEffect(() => {
+    if (!showInfo || !aboutDialog.current) return;
+    const previous = document.activeElement;
+    const dialog = aboutDialog.current;
+    const buttons = [...dialog.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];
+    buttons[0]?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const first = buttons[0],
+        last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    dialog.addEventListener('keydown', trapFocus);
+    return () => {
+      dialog.removeEventListener('keydown', trapFocus);
+      if (previous instanceof HTMLElement) previous.focus();
+    };
+  }, [showInfo]);
   useEffect(() => {
     const controller = new AbortController();
     catalogRepository
@@ -62,8 +109,31 @@ export default function App() {
     (v) => (filter === 'all' || v.kind === filter) && v.name.includes(query),
   );
   return (
-    <div className={`app theme-${theme}`}>
-      <header className="header">
+    <div
+      className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}`}
+    >
+      <button
+        className="header-reveal"
+        aria-label="展开顶部导航"
+        aria-controls="floating-header"
+        aria-expanded={headerOpen}
+        onPointerEnter={(e) => {
+          if (e.pointerType === 'mouse') setHeaderOpen(true);
+        }}
+        onFocus={() => setHeaderOpen(true)}
+        onClick={() => setHeaderOpen(true)}
+      >
+        <span aria-hidden="true" />
+      </button>
+      <header
+        ref={header}
+        id="floating-header"
+        className="header"
+        inert={!headerOpen}
+        onPointerEnter={() => setHeaderOpen(true)}
+        onFocusCapture={() => setHeaderOpen(true)}
+        onTransitionEnd={() => window.dispatchEvent(new Event('foodmap:overlays'))}
+      >
         <a
           className="brand"
           href="#"
@@ -72,170 +142,234 @@ export default function App() {
             navigate({ level: 'campus' });
           }}
         >
-          <span className="brand-mark">仙</span>
+          <span className="brand-mark" aria-hidden="true">
+            食<span>✦</span>
+          </span>
           <span>
             <strong>仙林食光</strong>
-            <small>NJU FOOD ATLAS</small>
+            <small>A TASTE OF XIANLIN</small>
           </span>
         </a>
-        <div className="header-center">
-          <span className="location-dot" />
-          南京大学 · 仙林校区 <span className="divider">/</span> 在校园，找到好好吃饭的地方
+        <nav className="header-nav" aria-label="主导航">
+          <button
+            className="nav-active"
+            aria-current="page"
+            onClick={() => navigate({ level: 'campus' })}
+          >
+            <UiIcon name="map" size={18} /> 校园探索
+          </button>
+          <button className="about" onClick={() => setShowInfo(true)}>
+            关于食光 <UiIcon name="arrow-up-right" size={15} />
+          </button>
+        </nav>
+        <div className="header-location">
+          <UiIcon name="pin" size={17} />
+          <span>南大仙林校区</span>
         </div>
-        <button className="plain-button about" onClick={() => setShowInfo(true)}>
-          关于这个计划 <span>↗</span>
-        </button>
-        <span className="phase">PHASE 0 · 探索原型</span>
       </header>
       <main className="workspace">
-        <aside className="sidebar">
-          <div className="sidebar-top">
-            <div className="eyebrow">A LITTLE WALK, A GOOD MEAL.</div>
-            <h1>
-              {view.level === 'campus' ? (
-                <>
-                  每一餐，
-                  <br />
-                  都值得<span>好好发现。</span>
-                </>
-              ) : (
-                venue?.name
+        <FloatingSidebar>
+          <aside className="sidebar">
+            <div className="sidebar-top">
+              {view.level !== 'campus' && (
+                <div className="eyebrow">
+                  <span className="hero-dot" />{' '}
+                  {view.level === 'building'
+                    ? '走进一栋楼，发现一餐饭'
+                    : '慢慢挑，找到想吃的那一口'}
+                </div>
               )}
-            </h1>
-            <p>
-              {view.level === 'campus'
-                ? '沿着熟悉的校园，寻找下一顿心动。'
-                : view.level === 'building'
-                  ? '转一转这栋建筑，选一层开始探索。'
-                  : '走近窗口，看看今天想吃些什么。'}
-            </p>
-          </div>
-          {view.level === 'campus' ? (
-            <>
-              <label className="search">
-                <span>⌕</span>
-                <input
-                  aria-label="搜索食堂或餐车"
-                  ref={search}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="搜索食堂、小餐车…"
-                />
-                <kbd>/</kbd>
-              </label>
-              <div className="filters" aria-label="场所分类">
-                {[
-                  ['all', '全部'],
-                  ['canteen', '食堂'],
-                  ['cart', '小屋与餐车'],
-                ].map(([key, name]) => (
-                  <button
-                    key={key}
-                    aria-pressed={filter === key}
-                    className={filter === key ? 'active' : ''}
-                    onClick={() => setFilter(key)}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-              <div className="list-heading">
-                <strong>校园味道</strong>
-                <span>{visible?.length || 0} 个探索地点</span>
-              </div>
-              <div className="venue-list">
-                {visible?.map((v, i) => (
-                  <button
-                    className="venue-card"
-                    key={v.id}
-                    onClick={() => navigate({ level: 'building', venueId: v.id })}
-                  >
-                    <span className={`venue-icon ${v.kind}`}>{v.kind === 'cart' ? '♧' : '▤'}</span>
-                    <span className="venue-copy">
-                      <strong>{v.name}</strong>
-                      <small>
-                        {v.area} <span>·</span> 参考图定位
-                      </small>
-                    </span>
-                    <span className="venue-arrow">↗</span>
-                    <span className="venue-number">{String(i + 1).padStart(2, '0')}</span>
-                  </button>
-                ))}
-                {visible?.length === 0 && (
-                  <p className="empty-state">没有找到这个地点，试试“食堂”或“餐车”。</p>
+              <h1>
+                {view.level === 'campus' ? (
+                  <>
+                    今天
+                    <br />
+                    <span>去哪里吃？</span>
+                  </>
+                ) : (
+                  venue?.name
                 )}
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                className="back-button"
-                onClick={() =>
-                  navigate(
-                    view.level === 'floor'
-                      ? { level: 'building', venueId: view.venueId }
-                      : { level: 'campus' },
-                  )
-                }
-              >
-                ← {view.level === 'floor' ? '返回建筑' : '返回校园地图'}
-              </button>
-              <div className="venue-description">
-                <span className="tiny-tag">空间示意 · 未经测量</span>
-                <p>{venue?.description}</p>
-              </div>
-              <div className="list-heading">
-                <strong>{view.level === 'building' ? '选择楼层' : '本层窗口'}</strong>
-                <span>
-                  {view.level === 'building' ? '点击楼层进入' : `${floor?.name} · 示例布局`}
-                </span>
-              </div>
-              <div className="venue-list">
-                {view.level === 'building'
-                  ? data?.floors
-                      .filter((f) => f.venueId === venue?.id)
-                      .map((f) => (
-                        <button
-                          className="floor-card"
-                          key={f.id}
-                          onClick={() =>
-                            navigate({ level: 'floor', venueId: f.venueId, floorId: f.id })
-                          }
-                        >
-                          <b>{f.name}</b>
-                          <span>
-                            示例餐饮空间<small>查看窗口与布局</small>
-                          </span>
-                          <span>→</span>
-                        </button>
-                      ))
-                  : data?.stalls
-                      .filter((s) => s.floorId === floor?.id)
-                      .map((s, i) => (
-                        <button
-                          key={s.id}
-                          className={`stall-card ${stallId === s.id ? 'selected' : ''}`}
-                          onClick={() => setStallId(s.id)}
-                        >
-                          <span className="stall-number">{String(i + 1).padStart(2, '0')}</span>
-                          <span>
-                            <strong>{s.name}</strong>
-                            <small>{s.category} · 示例窗口</small>
-                          </span>
-                          <span>→</span>
-                        </button>
-                      ))}
-              </div>
-            </>
-          )}
-          <div className="sidebar-bottom">
-            <span className="mini-spark">✳</span>
-            <p>
-              地图正在生长，味道等你来补全。<small>当前为交互演示，尚未接入真实评价。</small>
-            </p>
-          </div>
-        </aside>
-        <section className="map-area" aria-label="交互地图">
+              </h1>
+              {view.level !== 'campus' && (
+                <p>
+                  {view.level === 'building'
+                    ? '转一转这栋建筑，选一层开始探索。'
+                    : '走近窗口，看看今天想吃些什么。'}
+                </p>
+              )}
+              {view.level === 'campus' && (
+                <svg className="hero-art" viewBox="0 0 130 140" fill="none" aria-hidden="true">
+                  <ellipse cx="66" cy="118" rx="48" ry="7" fill="currentColor" opacity=".08" />
+                  <path
+                    d="M24 74h84c-3 27-18 41-42 41S27 101 24 74Z"
+                    fill="currentColor"
+                    opacity=".13"
+                  />
+                  <path
+                    d="M24 74h84c-3 27-18 41-42 41S27 101 24 74ZM31 86h70M55 115h22M49 120h34"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="m79 74 20-53m-10 53 22-49M47 58c-12-13 10-14 0-27M63 57c-10-11 9-14 1-24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="m28 24 3 8 8 3-8 3-3 8-3-8-8-3 8-3ZM112 49l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"
+                    fill="currentColor"
+                    opacity=".8"
+                  />
+                </svg>
+              )}
+            </div>
+            {view.level === 'campus' ? (
+              <>
+                <label className="search">
+                  <UiIcon name="search" size={18} />
+                  <input
+                    aria-label="搜索食堂或餐车"
+                    ref={search}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="搜索食堂、小餐车…"
+                  />
+                  {query ? (
+                    <button
+                      className="search-clear"
+                      aria-label="清空搜索"
+                      onClick={() => {
+                        setQuery('');
+                        search.current?.focus();
+                      }}
+                    >
+                      <UiIcon name="close" size={16} />
+                    </button>
+                  ) : null}
+                </label>
+                <div className="filters" aria-label="场所分类">
+                  {[
+                    ['all', '全部'],
+                    ['canteen', '食堂'],
+                    ['cart', '小屋与餐车'],
+                  ].map(([key, name]) => (
+                    <button
+                      key={key}
+                      aria-pressed={filter === key}
+                      className={filter === key ? 'active' : ''}
+                      onClick={() => setFilter(key)}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+                <div className="venue-list">
+                  {visible?.map((v, i) => (
+                    <button
+                      className="venue-card"
+                      key={v.id}
+                      onClick={() => navigate({ level: 'building', venueId: v.id })}
+                    >
+                      <span className={`venue-icon ${v.kind}`}>
+                        <UiIcon name={v.kind === 'cart' ? 'cart' : 'building'} size={23} />
+                      </span>
+                      <span className="venue-copy">
+                        <strong>{v.name}</strong>
+                      </span>
+                      <span className="venue-arrow">
+                        <UiIcon name="chevron-right" size={17} />
+                      </span>
+                      <span className="venue-number">{String(i + 1).padStart(2, '0')}</span>
+                    </button>
+                  ))}
+                  {visible?.length === 0 && (
+                    <p className="empty-state">没有找到这个地点，试试“食堂”或“餐车”。</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  className="back-button"
+                  onClick={() =>
+                    navigate(
+                      view.level === 'floor'
+                        ? { level: 'building', venueId: view.venueId }
+                        : { level: 'campus' },
+                    )
+                  }
+                >
+                  <UiIcon name="arrow-left" size={17} />{' '}
+                  {view.level === 'floor' ? '返回建筑' : '返回校园地图'}
+                </button>
+                <div className="venue-description">
+                  <span className="tiny-tag">空间示意 · 未经测量</span>
+                  <p>{venue?.description}</p>
+                </div>
+                <div className="list-heading">
+                  <strong>{view.level === 'building' ? '选择楼层' : '本层窗口'}</strong>
+                  <span>
+                    {view.level === 'building' ? '点击楼层进入' : `${floor?.name} · 示例布局`}
+                  </span>
+                </div>
+                <div className="venue-list">
+                  {view.level === 'building'
+                    ? data?.floors
+                        .filter((f) => f.venueId === venue?.id)
+                        .map((f) => (
+                          <button
+                            className="floor-card"
+                            key={f.id}
+                            onClick={() =>
+                              navigate({ level: 'floor', venueId: f.venueId, floorId: f.id })
+                            }
+                          >
+                            <b>{f.name}</b>
+                            <span>
+                              示例餐饮空间<small>查看窗口与布局</small>
+                            </span>
+                            <UiIcon name="arrow-right" size={19} />
+                          </button>
+                        ))
+                    : data?.stalls
+                        .filter((s) => s.floorId === floor?.id)
+                        .map((s, i) => (
+                          <button
+                            key={s.id}
+                            className={`stall-card ${stallId === s.id ? 'selected' : ''}`}
+                            onClick={() => setStallId(s.id)}
+                          >
+                            <span className="stall-number">{String(i + 1).padStart(2, '0')}</span>
+                            <span>
+                              <strong>{s.name}</strong>
+                              <small>{s.category} · 示例窗口</small>
+                            </span>
+                            <UiIcon name="arrow-right" size={19} />
+                          </button>
+                        ))}
+                </div>
+              </>
+            )}
+            <div className="sidebar-bottom">
+              <span className="mini-spark">
+                <UiIcon name="sparkles" size={22} />
+              </span>
+              <p>
+                一份慢慢完善的校园食记<small>照片、菜单与真实评价，正在准备中。</small>
+              </p>
+            </div>
+          </aside>
+        </FloatingSidebar>
+        <section
+          className="map-area"
+          aria-label="交互地图"
+          onPointerEnter={(e) => {
+            if (e.pointerType === 'mouse') hideHeader();
+          }}
+          onPointerDown={hideHeader}
+        >
           {data ? (
             view.level === 'campus' ? (
               <CampusMap ref={scene} data={data} onPick={pick} showLabels={showMapLabels} />
@@ -255,10 +389,12 @@ export default function App() {
             </div>
           )}
           <nav className="breadcrumbs" aria-label="当前层级">
-            <button onClick={() => navigate({ level: 'campus' })}>⌂ 校园地图</button>
+            <button onClick={() => navigate({ level: 'campus' })}>
+              <UiIcon name="map" size={16} /> 校园地图
+            </button>
             {venue && (
               <>
-                <span>／</span>
+                <UiIcon name="chevron-right" size={13} />
                 <button onClick={() => navigate({ level: 'building', venueId: venue.id })}>
                   {venue.shortName}
                 </button>
@@ -266,31 +402,18 @@ export default function App() {
             )}
             {floor && (
               <>
-                <span>／</span>
+                <UiIcon name="chevron-right" size={13} />
                 <strong>{floor.name}</strong>
               </>
             )}
           </nav>
-          <div className="map-status">
-            <span />{' '}
-            {view.level === 'campus'
-              ? 'CAMPUS EXPLORER'
-              : view.level === 'building'
-                ? 'BUILDING EXPLORER'
-                : 'FLOOR EXPLORER'}
-            <small>
-              {view.level === 'campus' ? '相对位置 · 校园平面图' : '楼层与窗口 · 示例布局'}
-            </small>
-          </div>
-          <div className="compass" aria-label="示意北向">
-            N<span>↑</span>
-          </div>
+          {view.level === 'campus' && <CompassRose />}
           <div className="map-tools">
             <button title="放大" aria-label="放大" onClick={() => scene.current?.zoom(1.25)}>
-              +
+              <UiIcon name="plus" />
             </button>
             <button title="缩小" aria-label="缩小" onClick={() => scene.current?.zoom(0.8)}>
-              −
+              <UiIcon name="minus" />
             </button>
             {view.level !== 'campus' && (
               <button
@@ -298,7 +421,7 @@ export default function App() {
                 aria-label="旋转视角"
                 onClick={() => scene.current?.rotate()}
               >
-                ↻
+                <UiIcon name="rotate" />
               </button>
             )}
             <button
@@ -306,36 +429,30 @@ export default function App() {
               aria-label="回到初始视角"
               onClick={() => scene.current?.reset()}
             >
-              ⌖
+              <UiIcon name="reset" />
             </button>
           </div>
           <div className="map-bottom">
-            <div className="legend">
-              <span className="legend-square" style={{ background: themes[theme].accent }} />
-              可探索地点 <span className="legend-line" />
-              校园道路
-            </div>
             {view.level === 'campus' && (
               <button
                 className="style-toggle"
                 aria-pressed={showMapLabels}
                 onClick={() => setShowMapLabels(!showMapLabels)}
               >
-                Aa <span>{showMapLabels ? '隐藏名称' : '显示名称'}</span>
+                <UiIcon name={showMapLabels ? 'eye' : 'eye-off'} size={17} />{' '}
+                <span>{showMapLabels ? '隐藏名称' : '显示名称'}</span>
               </button>
             )}
           </div>
-          <div className="interaction-hint">
-            {view.level === 'campus'
-              ? '拖动浏览 · 滚轮缩放 · 点击高亮建筑'
-              : '拖动平移 · 右键旋转 · 滚轮缩放 · 双指旋转'}
-          </div>
+          {view.level !== 'campus' && (
+            <div className="interaction-hint">拖动平移 · 右键旋转 · 滚轮缩放 · 双指旋转</div>
+          )}
           {stall && (
             <aside className="detail-panel" aria-label="窗口详情">
               <div className="detail-top">
                 <span className="tiny-tag">示例窗口</span>
                 <button aria-label="关闭窗口详情" onClick={() => setStallId(null)}>
-                  ×
+                  <UiIcon name="close" size={19} />
                 </button>
               </div>
               <div className="photo-placeholder">
@@ -346,7 +463,9 @@ export default function App() {
                   />
                 ) : (
                   <>
-                    <span>▧</span>
+                    <span>
+                      <UiIcon name="image" size={35} />
+                    </span>
                     <p>把真实的味道，留在这里</p>
                     <small>窗口实拍照片待采集</small>
                   </>
@@ -357,7 +476,7 @@ export default function App() {
                 {venue?.name} · {floor?.name}
               </p>
               <div className="detail-rating">
-                ☆ <strong>暂无评分</strong>
+                <UiIcon name="star" size={19} /> <strong>暂无评分</strong>
                 <span>尚未开放评价</span>
               </div>
               <h3>
@@ -376,22 +495,17 @@ export default function App() {
                 <strong>第一条真实评价，留给你。</strong>
                 <p>评论、评分和照片上传将在账号与审核功能完成后开放。</p>
               </div>
-              <div className="read-only">◉ 当前为只读原型</div>
+              <div className="read-only">
+                <UiIcon name="info" size={13} /> 当前为探索演示，暂未开放评价
+              </div>
             </aside>
           )}
         </section>
       </main>
-      <footer className="footer">
-        <span>
-          南京大学仙林校区美食地图 <i>·</i> 与校园的日常相遇
-        </span>
-        <span>
-          位置按参考图标注 · 楼层、窗口和菜单仍为示例 <i>·</i> v0.1
-        </span>
-      </footer>
       {showInfo && (
         <div className="modal-backdrop" onClick={() => setShowInfo(false)}>
           <section
+            ref={aboutDialog}
             role="dialog"
             aria-modal="true"
             aria-labelledby="about-title"
@@ -403,7 +517,7 @@ export default function App() {
               onClick={() => setShowInfo(false)}
               aria-label="关闭说明"
             >
-              ×
+              <UiIcon name="close" size={22} />
             </button>
             <span className="eyebrow">FROM CAMPUS, FOR CAMPUS</span>
             <h2 id="about-title">
@@ -419,9 +533,26 @@ export default function App() {
               校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
               标记定位。地图只使用相对位置；楼层、窗口和菜单仍为示例。
             </p>
+            <section className="zoom-guide" aria-labelledby="zoom-guide-title">
+              <h3 id="zoom-guide-title">缩放规则</h3>
+              <ul>
+                <li>鼠标滚轮：向上放大、向下缩小，校园地图以鼠标所在位置为缩放中心。</li>
+                <li>触屏操作：在校园地图上双指张开放大、合拢缩小，单指拖动浏览。</li>
+                <li>右侧 ＋／－：以画面中心放大或缩小。校园地图的缩放范围为初始视角的 0.85—8 倍。</li>
+                <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
+              </ul>
+              <p>进入食堂建筑或楼层后，也可通过滚轮或加减按钮缩放，右键拖动旋转视角。</p>
+            </section>
             <p>下一步：现场采集 → 校准空间 → 接入照片与菜单 → 开放真实评价。</p>
+            <p className="source-credits">
+              比例尺校准数据：{' '}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+                © OpenStreetMap contributors
+              </a>{' '}
+              （ODbL）。
+            </p>
             <button className="primary-button" onClick={() => setShowInfo(false)}>
-              开始探索 →
+              开始探索 <UiIcon name="arrow-right" size={18} />
             </button>
           </section>
         </div>

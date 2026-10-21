@@ -1,0 +1,59 @@
+{
+  "source": "© OpenStreetMap contributors",
+  "retrieved": "2026-10-21",
+  "coordinateSystem": "CAMPUS_PLAN_V2",
+  "method": "WGS84 local tangent metric; least-squares affine fit to building bounding-box centers",
+  "controls": [
+    {
+      "name": "四五六食堂",
+      "plan": [469, 1464],
+      "longitude": 118.950046,
+      "latitude": 32.113436899999996,
+      "source": "https://www.openstreetmap.org/way/99814434",
+      "east": -353.05092099784747,
+      "north": -753.7507710412519
+    },
+    {
+      "name": "民族食堂 八九食堂",
+      "plan": [484, 1081],
+      "longitude": 118.9503877,
+      "latitude": 32.11888795,
+      "source": "https://www.openstreetmap.org/way/99814405",
+      "east": -320.8048202795974,
+      "north": -149.2897471886926
+    },
+    {
+      "name": "第十食堂",
+      "plan": [964, 1212],
+      "longitude": 118.95805485,
+      "latitude": 32.1171501,
+      "source": "https://www.openstreetmap.org/way/188130723",
+      "east": 402.74124681801624,
+      "north": -341.9980493139545
+    },
+    {
+      "name": "天文与空间科学学院",
+      "plan": [764.25, 470.5],
+      "longitude": 118.9548513,
+      "latitude": 32.12757275,
+      "source": "https://www.openstreetmap.org/way/448907847",
+      "east": 100.4234359957492,
+      "north": 813.7583077637435
+    },
+    {
+      "name": "左涤江天文台",
+      "plan": [811, 716.5],
+      "longitude": 118.95559589999999,
+      "latitude": 32.12412355,
+      "source": "https://www.openstreetmap.org/way/188142630",
+      "east": 170.691058456974,
+      "north": 431.28025977857965
+    }
+  ],
+  "eastCoefficients": [1.515063692389452, -0.004036291869761455, -1054.205150549934],
+  "northCoefficients": [0.029913303851099915, -1.5687459447495575, 1530.2830430932465],
+  "horizontalMetersPerUnit": 1.5153589666293754,
+  "verticalMetersPerUnit": 1.5687511373128116,
+  "rmsResidualMeters": 2.9697306287500913,
+  "maxResidualMeters": 4.807849610980508
+}

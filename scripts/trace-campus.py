@@ -91,6 +91,18 @@ def architectural_outline(points):
             fitted_ring.append(original);continue
         x,y=(c*e-b*f)/determinant,(a*f-c*d)/determinant
         fitted_ring.append((x,y) if math.hypot(x-original[0],y-original[1])<=4 else original)
+    def intersects(ring):
+        def cross(a,b,c):return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])
+        edges=list(zip(ring,ring[1:]+ring[:1]))
+        for i,(a,b) in enumerate(edges):
+            for j,(c,d) in enumerate(edges):
+                if j<=i+1 or (i==0 and j==len(edges)-1):continue
+                if cross(a,b,c)*cross(a,b,d)<-1e-6 and cross(c,d,a)*cross(c,d,b)<-1e-6:return True
+        return False
+    # A narrow courtyard can fold over when neighboring wall axes are snapped.
+    # Keep the simplified straight segments instead in that case.
+    if intersects(fitted_ring):fitted_ring=ring
+    if intersects(fitted_ring):fitted_ring=simplify(points,1.6)[:-1]
     # Keep offsets subpixel accurate; the SVG renderer handles antialiasing.
     return [(round(x,2),round(y,2)) for x,y in fitted_ring]+[tuple(round(v,2) for v in fitted_ring[0])]
 

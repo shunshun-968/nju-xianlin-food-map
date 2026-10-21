@@ -44,14 +44,14 @@ export type View =
 export type MapTheme = 'garden' | 'paper' | 'night';
 export const themes = {
   garden: {
-    name: '清新校园',
-    subtitle: '柔和绿地 · 南大紫',
-    ground: '#e7eee3',
-    park: '#c8d9b9',
-    water: '#b4d9da',
-    road: '#faf9f3',
-    building: '#d4d2c8',
-    accent: '#8052a0',
+    name: '校园总平面',
+    subtitle: '白色建筑 · 浅彩地点',
+    ground: '#f0f0e7',
+    park: '#cfd7b7',
+    water: '#b8d2ce',
+    road: '#e7e5df',
+    building: '#fffefb',
+    accent: '#d8bd82',
     text: '#465746',
   },
   paper: {

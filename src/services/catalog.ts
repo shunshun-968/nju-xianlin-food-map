@@ -13,6 +13,9 @@ export const catalogRepository: CatalogRepository = {
     const data = (await response.json()) as Catalog;
     const errors = validateCatalog(data);
     if (errors.length) throw new Error('数据校验失败：' + errors.join('；'));
+    if (data.coordinateSystem !== catalog.coordinateSystem) {
+      throw new Error('校园定位数据与底图版本不一致，请先更新目录数据。');
+    }
     return data;
   },
 };

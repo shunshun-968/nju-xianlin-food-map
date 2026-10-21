@@ -1,91 +1,53 @@
 import type { Catalog, Venue } from '../domain';
-// 所有位置为校园局部示意坐标，不是测量值或导航坐标。名称来自用户提供的采集目录。
-const venues: Venue[] = [
-  {
-    id: 'v-456',
-    name: '四五六食堂',
-    shortName: '四五六',
-    area: '学生生活区',
-    kind: 'canteen',
-    campusPosition: [-29, 11],
-    footprint: [11, 8],
-    floors: 3,
-    description: '从日常的一碗面，到下课后的一顿热饭。未来在这里查看各层窗口与菜品。',
-    verified: false,
-  },
+import { venueAnchors } from './campus';
+// Names follow the reference image filenames; positions are drawing units, not GPS.
+const definitions: {
+  id: string;
+  name: string;
+  area: string;
+  kind: 'canteen' | 'cart';
+  floors: number;
+}[] = [
+  { id: 'v-456', name: '四五六食堂', area: '西南生活区 · 宏育路西侧', kind: 'canteen', floors: 3 },
   {
     id: 'v-891',
-    name: '民族食堂 · 八九食堂',
-    shortName: '八九食堂',
-    area: '北部生活区',
+    name: '民族食堂 八九食堂',
+    area: '中西部 · 远东大道东侧',
     kind: 'canteen',
-    campusPosition: [-31, -48],
-    footprint: [12, 7],
     floors: 3,
-    description: '多种风味的相遇。名称分组来自采集计划，具体建筑与楼层关系待现场核实。',
-    verified: false,
   },
-  {
-    id: 'v-10',
-    name: '十食堂',
-    shortName: '十食堂',
-    area: '校园生活区',
-    kind: 'canteen',
-    campusPosition: [-27, 40],
-    footprint: [9, 7],
-    floors: 2,
-    description: '校园里的日常好味道。空间和菜单等待同学们一起补全。',
-    verified: false,
-  },
+  { id: 'v-10', name: '第十食堂', area: '东部生活区 · 静园南侧', kind: 'canteen', floors: 2 },
   {
     id: 'v-1112',
-    name: '十一 · 十二食堂',
-    shortName: '十一十二',
-    area: '南部生活区',
+    name: '十一十二食堂',
+    area: '西北生活区 · 科源广场北侧',
     kind: 'canteen',
-    campusPosition: [-16, 58],
-    footprint: [11, 7],
     floors: 2,
-    description: '今天想吃什么？后续将接入实拍照片、窗口位置与营业信息。',
-    verified: false,
   },
   {
     id: 'v-hut',
-    name: '美食小屋 · 小餐车',
-    shortName: '美食小屋',
-    area: '四五六食堂东侧',
+    name: '四五六食堂东侧美食小屋／小餐车',
+    area: '四五六食堂东侧 · 蓝色 × 标注处',
     kind: 'cart',
-    campusPosition: [-13, 12],
-    footprint: [5, 4],
     floors: 1,
-    description: '一份顺路带走的小食。示例点位，尚未进行现场定位。',
-    verified: false,
   },
-  {
-    id: 'v-south',
-    name: '南门小餐车',
-    shortName: '南门餐车',
-    area: '南门附近',
-    kind: 'cart',
-    campusPosition: [5, 76],
-    footprint: [5, 4],
-    floors: 1,
-    description: '路过南门，把美味也带上。餐车位置和营业时间待采集。',
-    verified: false,
-  },
+  { id: 'v-south', name: '南门餐车', area: '南大门西侧 · 蓝色 × 标注处', kind: 'cart', floors: 1 },
   {
     id: 'v-yifu',
     name: '逸夫楼快餐售卖点',
-    shortName: '逸夫楼',
-    area: '教学区',
+    area: '邵逸夫楼北侧 · 蓝色 × 标注处',
     kind: 'cart',
-    campusPosition: [23, 38],
-    footprint: [5, 4],
     floors: 1,
-    description: '课堂之间的一餐。快餐售卖点的具体位置待核实。',
-    verified: false,
   },
 ];
+const venues: Venue[] = definitions.map((venue) => ({
+  ...venue,
+  shortName: venue.name,
+  campusPosition: venueAnchors[venue.id].point,
+  footprint: venueAnchors[venue.id].footprint,
+  description: `位置按“${venueAnchors[venue.id].source}”标注。楼层与窗口目前为演示布局，后续接入实测数据。`,
+  verified: false,
+}));
 const names = ['面食小站', '家常小炒', '热汤米线', '轻食时刻', '香香盖饭', '现做饼铺'];
 const positions = [
   [-10, -7, 0],
@@ -109,7 +71,7 @@ const floors = venues.flatMap((v) =>
 );
 export const catalog: Catalog = {
   version: 1,
-  coordinateSystem: 'CAMPUS_SCHEMATIC_V1',
+  coordinateSystem: 'CAMPUS_PLAN_V2',
   venues,
   floors,
   stalls: floors.flatMap((f) =>

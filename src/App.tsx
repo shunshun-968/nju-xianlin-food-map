@@ -1,44 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MapScene, type SceneHandle } from './components/MapScene';
+import { CampusMap } from './components/CampusMap';
 import { catalogRepository } from './services/catalog';
 import { mediaUrl, themes, type Catalog, type MapTheme, type View } from './domain';
 
-function ThemePreview({ theme }: { theme: MapTheme }) {
-  const t = themes[theme];
-  return (
-    <svg viewBox="0 0 160 78" aria-hidden="true">
-      <rect width="160" height="78" fill={t.ground} />
-      <path d="M87 -5L155 0 153 44 111 50 84 29Z" fill={t.park} />
-      <path d="M111 -5Q86 20 98 39T89 85" fill="none" stroke={t.water} strokeWidth="5" />
-      <path d="M24 -4L48 84M-5 27L165 67M-5 54L152 15" stroke={t.road} strokeWidth="5" />
-      <g fill={t.building}>
-        <rect x="10" y="8" width="15" height="10" />
-        <rect x="41" y="9" width="20" height="11" />
-        <rect x="60" y="38" width="19" height="12" />
-        <rect x="53" y="59" width="26" height="12" />
-        <rect x="118" y="55" width="22" height="13" />
-      </g>
-      <path d="M39 34L60 29 72 36 51 42Z" fill={t.accent} />
-      <path d="M39 34L51 42 51 50 39 42ZM51 42L72 36 72 44 51 50Z" fill={t.accent} opacity=".7" />
-    </svg>
-  );
-}
 export default function App() {
   const [data, setData] = useState<Catalog | null>(null),
     [error, setError] = useState('');
   const [view, setView] = useState<View>({ level: 'campus' }),
-    [theme, setTheme] = useState<MapTheme>('garden');
+    [theme] = useState<MapTheme>('garden');
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState('all'),
     [stallId, setStallId] = useState<string | null>(null);
-  const [showThemes, setShowThemes] = useState(false),
+  const [showMapLabels, setShowMapLabels] = useState(true),
     [showInfo, setShowInfo] = useState(false);
   const scene = useRef<SceneHandle>(null);
   const search = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setShowThemes(false);
         setShowInfo(false);
         setStallId(null);
       }
@@ -174,7 +154,7 @@ export default function App() {
                     <span className="venue-copy">
                       <strong>{v.name}</strong>
                       <small>
-                        {v.area} <span>·</span> 待实地核实
+                        {v.area} <span>·</span> 参考图定位
                       </small>
                     </span>
                     <span className="venue-arrow">↗</span>
@@ -257,14 +237,18 @@ export default function App() {
         </aside>
         <section className="map-area" aria-label="交互地图">
           {data ? (
-            <MapScene
-              ref={scene}
-              data={data}
-              view={view}
-              theme={theme}
-              selectedStall={stallId}
-              onPick={pick}
-            />
+            view.level === 'campus' ? (
+              <CampusMap ref={scene} data={data} onPick={pick} showLabels={showMapLabels} />
+            ) : (
+              <MapScene
+                ref={scene}
+                data={data}
+                view={view}
+                theme={theme}
+                selectedStall={stallId}
+                onPick={pick}
+              />
+            )
           ) : (
             <div className="loading" role="status">
               {error || '正在展开校园地图…'}
@@ -294,7 +278,9 @@ export default function App() {
               : view.level === 'building'
                 ? 'BUILDING EXPLORER'
                 : 'FLOOR EXPLORER'}
-            <small>示意空间 · 非导航地图</small>
+            <small>
+              {view.level === 'campus' ? '相对位置 · 校园平面图' : '楼层与窗口 · 示例布局'}
+            </small>
           </div>
           <div className="compass" aria-label="示意北向">
             N<span>↑</span>
@@ -329,40 +315,16 @@ export default function App() {
               可探索地点 <span className="legend-line" />
               校园道路
             </div>
-            <button
-              className={`style-toggle ${showThemes ? 'active' : ''}`}
-              onClick={() => setShowThemes(!showThemes)}
-              aria-expanded={showThemes}
-            >
-              ▧ <span>底图风格</span>
-              <span>{showThemes ? '⌄' : '⌃'}</span>
-            </button>
+            {view.level === 'campus' && (
+              <button
+                className="style-toggle"
+                aria-pressed={showMapLabels}
+                onClick={() => setShowMapLabels(!showMapLabels)}
+              >
+                Aa <span>{showMapLabels ? '隐藏名称' : '显示名称'}</span>
+              </button>
+            )}
           </div>
-          {showThemes && (
-            <div className="theme-panel">
-              <div className="list-heading">
-                <strong>选一种校园的样子</strong>
-                <span>3 款示意底图</span>
-              </div>
-              <div className="theme-options">
-                {(Object.keys(themes) as MapTheme[]).map((key) => (
-                  <button
-                    key={key}
-                    className={theme === key ? 'chosen' : ''}
-                    aria-pressed={theme === key}
-                    onClick={() => setTheme(key)}
-                  >
-                    <ThemePreview theme={key} />
-                    <strong>
-                      {themes[key].name} {theme === key ? '✓' : ''}
-                    </strong>
-                    <small>{themes[key].subtitle}</small>
-                  </button>
-                ))}
-              </div>
-              <p>当前风格预览不使用在线瓦片，真实地理底图后续接入。</p>
-            </div>
-          )}
           <div className="interaction-hint">
             {view.level === 'campus'
               ? '拖动浏览 · 滚轮缩放 · 点击高亮建筑'
@@ -424,7 +386,7 @@ export default function App() {
           南京大学仙林校区美食地图 <i>·</i> 与校园的日常相遇
         </span>
         <span>
-          建筑位置 / 楼层 / 菜单均为示例，待现场核实 <i>·</i> v0.1
+          位置按参考图标注 · 楼层、窗口和菜单仍为示例 <i>·</i> v0.1
         </span>
       </footer>
       {showInfo && (
@@ -454,7 +416,8 @@ export default function App() {
               0，正在打磨从校园、食堂建筑到楼层窗口的探索体验。
             </p>
             <p>
-              现在的地点名称来自采集计划；建筑位置、楼层布局和菜单为示例，不用于导航、营业判断或消费参考。我们不会展示虚构的用户评分。
+              校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
+              标记定位。地图只使用相对位置；楼层、窗口和菜单仍为示例。
             </p>
             <p>下一步：现场采集 → 校准空间 → 接入照片与菜单 → 开放真实评价。</p>
             <button className="primary-button" onClick={() => setShowInfo(false)}>

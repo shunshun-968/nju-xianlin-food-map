@@ -1048,3 +1048,113 @@ button:hover {
     transition: none !important;
   }
 }
+
+/* Campus plan: flat vector ground with restrained raised food-place placeholders. */
+.campus-plan {
+  position: absolute;
+  inset: 0;
+  background: #f0f0e7;
+  overflow: hidden;
+}
+.campus-plan > svg {
+  display: block;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.campus-plan > svg:active {
+  cursor: grabbing;
+}
+.campus-plan > svg:focus-visible {
+  outline: 2px solid #b9c3a6;
+  outline-offset: -3px;
+}
+.plan-label {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  fill: #686e5d;
+  stroke: #f5f5eb;
+  stroke-width: 2px;
+  stroke-opacity: 0.8;
+  paint-order: stroke;
+  font-weight: 400;
+}
+.plan-label.land {
+  fill: #6a7b55;
+  letter-spacing: .5px;
+  stroke: #dae0c6;
+}
+.plan-label.water {
+  fill: #5e827e;
+  stroke: #d6e4dc;
+}
+.plan-label.road {
+  fill: #8b8d80;
+  stroke: #eeeee5;
+  letter-spacing: .5px;
+}
+.plan-venue {
+  cursor: pointer;
+  outline: none;
+}
+.plan-venue:hover .venue-roof,
+.plan-venue:focus-visible .venue-roof {
+  stroke: #737e5b;
+  stroke-width: 2.5;
+}
+.plan-venue:hover .venue-map-label rect,
+.plan-venue:focus-visible .venue-map-label rect {
+  stroke: #899875;
+  stroke-width: 1.5;
+  fill: #fffef8;
+}
+.plan-caption {
+  pointer-events: none;
+  position: absolute;
+  left: 27px;
+  top: 80px;
+  color: #8a927d;
+}
+.plan-caption > span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.plan-caption small {
+  display: block;
+  margin-top: 7px;
+  font-size: 9px;
+  color: #a3aa97;
+}
+.venue-copy strong {
+  line-height: 1.6;
+}
+.venue-icon {
+  background: #f5f1df;
+  color: #a38f62;
+  border-color: #e6dfc6;
+}
+.venue-icon.cart {
+  background: #f2e9df;
+  color: #ac8c72;
+  border-color: #eadccb;
+}
+.map-area {
+  background: #f0f0e7;
+}
+.legend-square {
+  background: #e6d5aa;
+}
+@media (max-width: 700px) {
+  .plan-caption {
+    left: 14px;
+    top: 60px;
+  }
+  .plan-caption > span {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .plan-caption small {
+    font-size: 7px;
+    margin-top: 4px;
+  }
+}

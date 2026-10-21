@@ -53,7 +53,7 @@ const server = createServer(async (req, res) => {
     res.end(
       JSON.stringify({
         version: 1,
-        coordinateSystem: 'CAMPUS_SCHEMATIC_V1',
+        coordinateSystem: venues[0]?.coordinate_system || 'CAMPUS_PLAN_V2',
         readOnly: state.read_only,
         venues: venues.map((v) => ({
           id: v.id,

@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "format": "prettier --write src server scripts tests docs *.json *.ts *.md *.yml .github",
     "test": "tsx --test tests/*.test.ts",
     "test:db": "node --test tests/database.integration.mjs",
     "db:seed": "node --env-file-if-exists=.env --import tsx scripts/seed.ts",
@@ -22,6 +25,20 @@
     "files:verify": "node --env-file-if-exists=.env scripts/media-verify.mjs",
     "data:validate": "tsx scripts/validate-data.ts"
   },
-  "dependencies": { "react": "^19.2.0", "react-dom": "^19.2.0", "three": "^0.180.0", "pg": "^8.16.3" },
-  "devDependencies": { "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "@types/three": "^0.180.0", "@vitejs/plugin-react": "^5.0.4", "vite": "^7.1.9", "typescript": "~5.9.3", "tsx": "^4.20.6" }
+  "dependencies": {
+    "pg": "^8.16.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.180.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "prettier": "3.9.10",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.9"
+  }
 }

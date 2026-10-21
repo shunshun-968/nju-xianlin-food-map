@@ -22,10 +22,11 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: ci-only
       PGDATABASE: foodmap
+      FOODMAP_TEST_DATABASE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm test && npm run data:validate && npm run build
       - run: npm run db:migrate && npm run db:migrate && npm run db:seed && npm run test:db
@@ -38,3 +39,13 @@ jobs:
           DATABASE_URL=postgres://postgres:ci-only@localhost:5432/foodmap_restore PGDATABASE=foodmap_restore npm run db:verify -- backups/ci
       - name: Validate Compose
         run: POSTGRES_PASSWORD=ci-only API_DATABASE_PASSWORD=ci-api docker compose config --quiet
+      - name: Build and exercise self-hosted stack
+        env:
+          POSTGRES_PASSWORD: ci-compose-only
+          API_DATABASE_PASSWORD: ci-api-only
+        run: |
+          docker compose up --build -d
+          docker compose --profile demo run --rm seed
+          curl --fail --retry 20 --retry-connrefused --retry-delay 2 http://localhost:8080/backend/health | jq -e '.status == "ok"'
+          curl --fail http://localhost:8080/backend/api/catalog | jq -e '.venues | length == 7'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/backend/api/catalog)" = "405"

@@ -519,6 +519,7 @@ export default function App() {
             >
               <UiIcon name="close" size={22} />
             </button>
+            <div className="about-scroll">
             <span className="eyebrow">FROM CAMPUS, FOR CAMPUS</span>
             <h2 id="about-title">
               让好好吃饭，
@@ -554,6 +555,7 @@ export default function App() {
             <button className="primary-button" onClick={() => setShowInfo(false)}>
               开始探索 <UiIcon name="arrow-right" size={18} />
             </button>
+            </div>
           </section>
         </div>
       )}

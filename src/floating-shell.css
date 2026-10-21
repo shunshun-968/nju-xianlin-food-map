@@ -261,3 +261,99 @@
     right: -17px;
   }
 }
+
+/* Constrain the dialog itself; only its inner content scrolls. */
+.floating-shell .modal-backdrop {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  overflow: hidden;
+}
+.floating-shell .about-modal {
+  width: min(500px, calc(100vw - 32px));
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.about-scroll {
+  width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - 48px);
+  padding: 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.floating-shell .about-modal .modal-close {
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+}
+
+@media (max-width: 700px) {
+  /* A 28px pull tab remains visible when the sheet is collapsed. */
+  .floating-shell .sidebar-dock {
+    top: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: 10px;
+    right: 10px;
+    width: auto;
+    height: 54vh;
+    height: min(54dvh, 430px);
+    max-height: calc(100dvh - 100px);
+  }
+  .floating-shell .sidebar-dock .sidebar {
+    padding: 32px 12px 12px;
+    border-radius: 20px;
+    background: #fffefd;
+  }
+  .floating-shell .sidebar-dock .sidebar-top { margin-bottom: 9px; }
+  .floating-shell .sidebar-dock .sidebar-top h1 { font-size: 17px; line-height: 1.4; }
+  .floating-shell .sidebar-dock .filters { margin: 8px 0 10px; }
+  .floating-shell .sidebar-dock .venue-list { overscroll-behavior: contain; touch-action: pan-y; }
+  .floating-shell .sidebar-dock .sidebar-handle {
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    height: 28px;
+    border: 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: none;
+    background: transparent;
+    cursor: ns-resize;
+  }
+  .floating-shell .sidebar-dock .sidebar-handle .ui-icon { display: none; }
+  .floating-shell .sidebar-dock .sidebar-handle::before {
+    content: '';
+    width: 36px;
+    height: 4px;
+    border-radius: 3px;
+    background: #b59ac7;
+  }
+  .floating-shell .map-bottom { bottom: 48px; }
+  .floating-shell .map-scale { bottom: 48px; }
+  .floating-shell .modal-backdrop {
+    align-items: end;
+    justify-items: center;
+    padding: 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .floating-shell .about-modal {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 20px;
+  }
+  .floating-shell .about-scroll {
+    max-height: 56vh;
+    max-height: 56dvh;
+    padding: 38px 20px 22px;
+  }
+  .floating-shell .about-modal h2 { font-size: 22px; line-height: 1.6; margin: 16px 0; }
+  .floating-shell .about-modal p, .floating-shell .zoom-guide ul { font-size: 11px; line-height: 1.85; }
+  .floating-shell .about-modal .eyebrow { font-size: 8px; letter-spacing: 1.3px; }
+}

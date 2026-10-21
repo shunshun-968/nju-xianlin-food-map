@@ -1,0 +1,1982 @@
+{
+  "version": 1,
+  "coordinateSystem": "CAMPUS_SCHEMATIC_V1",
+  "venues": [
+    {
+      "id": "v-456",
+      "name": "四五六食堂",
+      "shortName": "四五六",
+      "area": "学生生活区",
+      "kind": "canteen",
+      "campusPosition": [
+        -29,
+        11
+      ],
+      "footprint": [
+        11,
+        8
+      ],
+      "floors": 3,
+      "description": "从日常的一碗面，到下课后的一顿热饭。未来在这里查看各层窗口与菜品。",
+      "verified": false
+    },
+    {
+      "id": "v-891",
+      "name": "民族食堂 · 八九食堂",
+      "shortName": "八九食堂",
+      "area": "北部生活区",
+      "kind": "canteen",
+      "campusPosition": [
+        -31,
+        -48
+      ],
+      "footprint": [
+        12,
+        7
+      ],
+      "floors": 3,
+      "description": "多种风味的相遇。名称分组来自采集计划，具体建筑与楼层关系待现场核实。",
+      "verified": false
+    },
+    {
+      "id": "v-10",
+      "name": "十食堂",
+      "shortName": "十食堂",
+      "area": "校园生活区",
+      "kind": "canteen",
+      "campusPosition": [
+        -27,
+        40
+      ],
+      "footprint": [
+        9,
+        7
+      ],
+      "floors": 2,
+      "description": "校园里的日常好味道。空间和菜单等待同学们一起补全。",
+      "verified": false
+    },
+    {
+      "id": "v-1112",
+      "name": "十一 · 十二食堂",
+      "shortName": "十一十二",
+      "area": "南部生活区",
+      "kind": "canteen",
+      "campusPosition": [
+        -16,
+        58
+      ],
+      "footprint": [
+        11,
+        7
+      ],
+      "floors": 2,
+      "description": "今天想吃什么？后续将接入实拍照片、窗口位置与营业信息。",
+      "verified": false
+    },
+    {
+      "id": "v-hut",
+      "name": "美食小屋 · 小餐车",
+      "shortName": "美食小屋",
+      "area": "四五六食堂东侧",
+      "kind": "cart",
+      "campusPosition": [
+        -13,
+        12
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "floors": 1,
+      "description": "一份顺路带走的小食。示例点位，尚未进行现场定位。",
+      "verified": false
+    },
+    {
+      "id": "v-south",
+      "name": "南门小餐车",
+      "shortName": "南门餐车",
+      "area": "南门附近",
+      "kind": "cart",
+      "campusPosition": [
+        5,
+        76
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "floors": 1,
+      "description": "路过南门，把美味也带上。餐车位置和营业时间待采集。",
+      "verified": false
+    },
+    {
+      "id": "v-yifu",
+      "name": "逸夫楼快餐售卖点",
+      "shortName": "逸夫楼",
+      "area": "教学区",
+      "kind": "cart",
+      "campusPosition": [
+        23,
+        38
+      ],
+      "footprint": [
+        5,
+        4
+      ],
+      "floors": 1,
+      "description": "课堂之间的一餐。快餐售卖点的具体位置待核实。",
+      "verified": false
+    }
+  ],
+  "floors": [
+    {
+      "id": "v-456-f1",
+      "venueId": "v-456",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-456-f2",
+      "venueId": "v-456",
+      "level": 2,
+      "name": "2F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 4,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-456-f3",
+      "venueId": "v-456",
+      "level": 3,
+      "name": "3F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 8,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-891-f1",
+      "venueId": "v-891",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-891-f2",
+      "venueId": "v-891",
+      "level": 2,
+      "name": "2F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 4,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-891-f3",
+      "venueId": "v-891",
+      "level": 3,
+      "name": "3F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 8,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-10-f1",
+      "venueId": "v-10",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-10-f2",
+      "venueId": "v-10",
+      "level": 2,
+      "name": "2F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 4,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-1112-f1",
+      "venueId": "v-1112",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-1112-f2",
+      "venueId": "v-1112",
+      "level": 2,
+      "name": "2F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 4,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-hut-f1",
+      "venueId": "v-hut",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-south-f1",
+      "venueId": "v-south",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    },
+    {
+      "id": "v-yifu-f1",
+      "venueId": "v-yifu",
+      "level": 1,
+      "name": "1F",
+      "width": 32,
+      "depth": 22,
+      "elevation": 0,
+      "layoutVersion": 1
+    }
+  ],
+  "stalls": [
+    {
+      "id": "v-456-f1-s1",
+      "floorId": "v-456-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f1-s2",
+      "floorId": "v-456-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f1-s3",
+      "floorId": "v-456-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f1-s4",
+      "floorId": "v-456-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f1-s5",
+      "floorId": "v-456-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f1-s6",
+      "floorId": "v-456-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s1",
+      "floorId": "v-456-f2",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s2",
+      "floorId": "v-456-f2",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s3",
+      "floorId": "v-456-f2",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s4",
+      "floorId": "v-456-f2",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s5",
+      "floorId": "v-456-f2",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f2-s6",
+      "floorId": "v-456-f2",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s1",
+      "floorId": "v-456-f3",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s2",
+      "floorId": "v-456-f3",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s3",
+      "floorId": "v-456-f3",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s4",
+      "floorId": "v-456-f3",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s5",
+      "floorId": "v-456-f3",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-456-f3-s6",
+      "floorId": "v-456-f3",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s1",
+      "floorId": "v-891-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s2",
+      "floorId": "v-891-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s3",
+      "floorId": "v-891-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s4",
+      "floorId": "v-891-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s5",
+      "floorId": "v-891-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f1-s6",
+      "floorId": "v-891-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s1",
+      "floorId": "v-891-f2",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s2",
+      "floorId": "v-891-f2",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s3",
+      "floorId": "v-891-f2",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s4",
+      "floorId": "v-891-f2",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s5",
+      "floorId": "v-891-f2",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f2-s6",
+      "floorId": "v-891-f2",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s1",
+      "floorId": "v-891-f3",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s2",
+      "floorId": "v-891-f3",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s3",
+      "floorId": "v-891-f3",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s4",
+      "floorId": "v-891-f3",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s5",
+      "floorId": "v-891-f3",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-891-f3-s6",
+      "floorId": "v-891-f3",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s1",
+      "floorId": "v-10-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s2",
+      "floorId": "v-10-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s3",
+      "floorId": "v-10-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s4",
+      "floorId": "v-10-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s5",
+      "floorId": "v-10-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f1-s6",
+      "floorId": "v-10-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s1",
+      "floorId": "v-10-f2",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s2",
+      "floorId": "v-10-f2",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s3",
+      "floorId": "v-10-f2",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s4",
+      "floorId": "v-10-f2",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s5",
+      "floorId": "v-10-f2",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-10-f2-s6",
+      "floorId": "v-10-f2",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s1",
+      "floorId": "v-1112-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s2",
+      "floorId": "v-1112-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s3",
+      "floorId": "v-1112-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s4",
+      "floorId": "v-1112-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s5",
+      "floorId": "v-1112-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f1-s6",
+      "floorId": "v-1112-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s1",
+      "floorId": "v-1112-f2",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s2",
+      "floorId": "v-1112-f2",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s3",
+      "floorId": "v-1112-f2",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s4",
+      "floorId": "v-1112-f2",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s5",
+      "floorId": "v-1112-f2",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-1112-f2-s6",
+      "floorId": "v-1112-f2",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s1",
+      "floorId": "v-hut-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s2",
+      "floorId": "v-hut-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s3",
+      "floorId": "v-hut-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s4",
+      "floorId": "v-hut-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s5",
+      "floorId": "v-hut-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-hut-f1-s6",
+      "floorId": "v-hut-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s1",
+      "floorId": "v-south-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s2",
+      "floorId": "v-south-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s3",
+      "floorId": "v-south-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s4",
+      "floorId": "v-south-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s5",
+      "floorId": "v-south-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-south-f1-s6",
+      "floorId": "v-south-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s1",
+      "floorId": "v-yifu-f1",
+      "name": "面食小站",
+      "category": "面食",
+      "position": {
+        "x": -10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "番茄鸡蛋面",
+          "price": 12,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s2",
+      "floorId": "v-yifu-f1",
+      "name": "家常小炒",
+      "category": "家常菜",
+      "position": {
+        "x": 0,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "时蔬小炒",
+          "price": 15,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s3",
+      "floorId": "v-yifu-f1",
+      "name": "热汤米线",
+      "category": "米线",
+      "position": {
+        "x": 10,
+        "z": -7,
+        "rotationY": 0,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "鲜汤米线",
+          "price": 13,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s4",
+      "floorId": "v-yifu-f1",
+      "name": "轻食时刻",
+      "category": "轻食",
+      "position": {
+        "x": -10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "缤纷蔬菜碗",
+          "price": 16,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s5",
+      "floorId": "v-yifu-f1",
+      "name": "香香盖饭",
+      "category": "盖饭",
+      "position": {
+        "x": 0,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "香菇鸡肉饭",
+          "price": 14,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    },
+    {
+      "id": "v-yifu-f1-s6",
+      "floorId": "v-yifu-f1",
+      "name": "现做饼铺",
+      "category": "小吃",
+      "position": {
+        "x": 10,
+        "z": 7,
+        "rotationY": 3.141592653589793,
+        "width": 6,
+        "depth": 4
+      },
+      "photoKey": null,
+      "dishes": [
+        {
+          "name": "葱香薄饼",
+          "price": 8,
+          "description": "演示菜品与参考价格，不代表实际在售商品。",
+          "photoKey": null
+        }
+      ]
+    }
+  ]
+}

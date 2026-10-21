@@ -1,0 +1,2 @@
+id,venue_id,level,name,width,depth,elevation,layout_version,coordinate_system
+demo-floor,demo-venue,1,1F,32,22,0,1,LOCAL_METERS

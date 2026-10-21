@@ -1,0 +1,27 @@
+{
+  "name": "nju-xianlin-food-map",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "tsx --test tests/*.test.ts",
+    "test:db": "node --test tests/database.integration.mjs",
+    "db:seed": "node --env-file-if-exists=.env --import tsx scripts/seed.ts",
+    "data:export": "tsx scripts/export-catalog.ts",
+    "api": "node --env-file-if-exists=.env server/index.mjs",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.mjs",
+    "db:backup": "node --env-file-if-exists=.env scripts/database.mjs backup",
+    "db:restore": "node --env-file-if-exists=.env scripts/database.mjs restore",
+    "db:verify": "node --env-file-if-exists=.env scripts/database.mjs verify",
+    "db:maintenance": "node --env-file-if-exists=.env scripts/maintenance.mjs",
+    "files:sync": "node scripts/storage.mjs",
+    "files:verify": "node --env-file-if-exists=.env scripts/media-verify.mjs",
+    "data:validate": "tsx scripts/validate-data.ts"
+  },
+  "dependencies": { "react": "^19.2.0", "react-dom": "^19.2.0", "three": "^0.180.0", "pg": "^8.16.3" },
+  "devDependencies": { "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "@types/three": "^0.180.0", "@vitejs/plugin-react": "^5.0.4", "vite": "^7.1.9", "typescript": "~5.9.3", "tsx": "^4.20.6" }
+}

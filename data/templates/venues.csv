@@ -1,0 +1,2 @@
+id,name,area,kind,longitude,latitude,coordinate_system,verified,verified_at,source
+replace-with-stable-id,待填写,待填写,canteen,,,WGS84,false,,现场采集

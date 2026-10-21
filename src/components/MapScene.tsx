@@ -6,7 +6,7 @@ import { themes, type Catalog, type MapTheme, type View } from '../domain';
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
   data: Catalog;
-  view: View;
+  view: Exclude<View, { level: 'campus' }>;
   theme: MapTheme;
   onPick: (kind: string, id: string) => void;
   selectedStall: string | null;
@@ -82,19 +82,6 @@ function label(
   sprite.renderOrder = 10;
   parent.add(sprite);
   return sprite;
-}
-function region(parent: THREE.Object3D, points: number[][], color: string, y = 0.02) {
-  const shape = new THREE.Shape();
-  points.forEach(([x, z], i) => (i ? shape.lineTo(x, -z) : shape.moveTo(x, -z)));
-  shape.closePath();
-  const mesh = new THREE.Mesh(
-    new THREE.ShapeGeometry(shape),
-    new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide }),
-  );
-  mesh.rotation.x = -Math.PI / 2;
-  mesh.position.y = y;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
 }
 function path(parent: THREE.Object3D, points: number[][], color: string, width: number, y = 0.12) {
   for (let i = 1; i < points.length; i++) {
@@ -182,7 +169,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.domElement.setAttribute('aria-label', '校园三维示意地图；可使用左侧列表选择场所');
+    renderer.domElement.setAttribute(
+      'aria-label',
+      '食堂三维示意场景；可使用左侧列表选择楼层和窗口',
+    );
     element.append(renderer.domElement);
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-80, 80, 80, -80, 0.1, 1200);
@@ -290,199 +280,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     dispose(content);
     scene.background = new THREE.Color(t.ground);
     camera.zoom = 1;
-    if (view.level === 'campus') {
-      e.range = 94;
-      e.goal.set(0, 180, 85);
-      e.focus.set(0, 0, 0);
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(600, 600),
-        new THREE.MeshBasicMaterial({ color: t.ground, toneMapped: false }),
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.1;
-      content.add(ground);
-      region(
-        content,
-        [
-          [-5, -85],
-          [37, -82],
-          [51, -50],
-          [46, 10],
-          [27, 17],
-          [14, 0],
-          [10, -29],
-          [-4, -37],
-          [-16, -32],
-          [-19, -48],
-        ],
-        t.park,
-      );
-      region(
-        content,
-        [
-          [-7, -10],
-          [15, -17],
-          [29, 4],
-          [19, 24],
-          [3, 28],
-          [-10, 15],
-        ],
-        t.park,
-      );
-      region(
-        content,
-        [
-          [2, -83],
-          [9, -94],
-          [30, -91],
-          [36, -82],
-          [27, -74],
-          [13, -75],
-        ],
-        t.water,
-        0.08,
-      );
-      path(
-        content,
-        [
-          [-13, -65],
-          [-16, -32],
-          [-17, -3],
-          [-9, 24],
-          [3, 51],
-          [18, 72],
-        ],
-        t.water,
-        3,
-      );
-      path(
-        content,
-        [
-          [-49, -75],
-          [-47, -25],
-          [-43, 23],
-          [-30, 65],
-          [-23, 85],
-          [46, 81],
-          [52, 30],
-          [54, -25],
-          [44, -86],
-          [-17, -91],
-          [-49, -75],
-        ],
-        t.road,
-        3.5,
-      );
-      path(
-        content,
-        [
-          [-16, -83],
-          [-17, -43],
-          [-17, -18],
-          [-12, 10],
-          [1, 36],
-          [16, 60],
-          [19, 81],
-        ],
-        t.road,
-        2.2,
-      );
-      for (const z of [-64, -36, -11, 24, 49, 68])
-        path(
-          content,
-          [
-            [-47, z],
-            [-16, z + 2],
-            [9, z - 5],
-            [48, z - 4],
-          ],
-          t.road,
-          2,
-        );
-      path(
-        content,
-        [
-          [-14, -30],
-          [-3, -46],
-          [22, -49],
-          [48, -47],
-        ],
-        t.road,
-        2.5,
-      );
-      const blocks = [
-        [-37, -70],
-        [-27, -70],
-        [-36, -61],
-        [-26, -60],
-        [-37, -37],
-        [-28, -35],
-        [-36, -25],
-        [-26, -24],
-        [-34, 0],
-        [-26, -1],
-        [-33, 25],
-        [-28, 55],
-        [-24, 70],
-        [-12, 72],
-        [27, 68],
-        [36, 68],
-        [29, 57],
-        [40, 54],
-        [27, 25],
-        [37, 22],
-        [28, 13],
-        [14, 44],
-        [36, 43],
-        [24, -36],
-        [33, -36],
-        [-7, -22],
-        [1, -22],
-      ];
-      blocks.forEach(([x, z], i) => {
-        const w = 6 + (i % 3);
-        box(content, x, 0, z, w, 1.5 + (i % 3) * 0.5, 4, t.building);
-        box(content, x, 0.1, z + 3, w, 0.5, 1.4, t.building);
-      });
-      // 示意运动场和教学区，形状只用于表达空间层次。
-      box(content, -34, 0.01, -12, 13, 0.15, 15, theme === 'night' ? '#4b4657' : '#d5b7aa');
-      box(content, -34, 0.17, -12, 8, 0.1, 10, t.park);
-      box(content, 9, 0.01, 61, 12, 0.15, 15, theme === 'night' ? '#4b4657' : '#d5b7aa');
-      box(content, 9, 0.17, 61, 7, 0.1, 10, t.park);
-      for (let i = 0; i < 72; i++) {
-        const x = 12 + Math.sin(i * 2.399) * Math.sqrt(i) * 3.8,
-          z = -48 + Math.cos(i * 2.399) * Math.sqrt(i) * 4;
-        const tree = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(1.6 + (i % 3) * 0.25, 0),
-          new THREE.MeshStandardMaterial({
-            color: i % 2 ? t.park : theme === 'night' ? '#3b504a' : '#b6cfa7',
-          }),
-        );
-        tree.position.set(x, 1.5, z);
-        tree.castShadow = true;
-        content.add(tree);
-      }
-      label(content, '仙 林 校 区', 18, 2, -63, t.text, 5);
-      label(content, '山 林 与 湖', 28, 2, -21, t.text, 3);
-      label(content, '教学区', 34, 2, 52, t.text, 3);
-      label(content, '仙 林 大 道', 4, 1, 91, t.text, 4);
-      data.venues.forEach((v) => {
-        const [x, z] = v.campusPosition,
-          [w, d] = v.footprint;
-        const h = v.kind === 'cart' ? 2.5 : 5;
-        box(content, x, 0, z, w, h, d, t.accent, { kind: 'venue', id: v.id });
-        box(content, x, h, z, w + 0.6, 0.5, d + 0.6, theme === 'night' ? '#dbc4ef' : '#f7eef8', {
-          kind: 'venue',
-          id: v.id,
-        });
-        for (let j = 0; j < 3; j++)
-          box(content, x - w / 3 + (j * w) / 3, 1.7, z + d / 2 + 0.03, 1.2, 1.6, 0.1, '#f9e4a8');
-        label(content, v.shortName, x, h + 3.7, z, t.accent, 3.2, true).userData = {
-          kind: 'venue',
-          id: v.id,
-        };
-      });
-    } else if (view.level === 'building') {
+    if (view.level === 'building') {
       const v = data.venues.find((v) => v.id === view.venueId)!;
       e.range = 28;
       e.goal.set(43, 35, 49);
@@ -568,7 +366,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     camera.top = e.range;
     camera.bottom = -e.range;
     camera.updateProjectionMatrix();
-    controls.enableRotate = view.level !== 'campus';
+    controls.enableRotate = true;
     e.animating = true;
   }, [data, view, theme]);
   useEffect(() => {

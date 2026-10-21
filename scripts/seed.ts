@@ -8,7 +8,7 @@ try {
   await c.query('BEGIN');
   for (const v of catalog.venues)
     await c.query(
-      'INSERT INTO app.venues(id,name,short_name,area,kind,description,campus_x,campus_z,footprint_width,footprint_depth,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true)',
+      'INSERT INTO app.venues(id,name,short_name,area,kind,description,campus_x,campus_z,footprint_width,footprint_depth,coordinate_system,published) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true)',
       [
         v.id,
         v.name,
@@ -18,6 +18,7 @@ try {
         v.description,
         ...v.campusPosition,
         ...v.footprint,
+        catalog.coordinateSystem,
       ],
     );
   for (const f of catalog.floors)

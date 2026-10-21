@@ -1,131 +1,131 @@
 {
   "version": 1,
-  "coordinateSystem": "CAMPUS_SCHEMATIC_V1",
+  "coordinateSystem": "CAMPUS_PLAN_V2",
   "venues": [
     {
       "id": "v-456",
       "name": "四五六食堂",
-      "shortName": "四五六",
-      "area": "学生生活区",
+      "area": "西南生活区 · 宏育路西侧",
       "kind": "canteen",
+      "floors": 3,
+      "shortName": "四五六食堂",
       "campusPosition": [
-        -29,
-        11
+        469,
+        1464
       ],
       "footprint": [
-        11,
-        8
+        47,
+        43
       ],
-      "floors": 3,
-      "description": "从日常的一碗面，到下课后的一顿热饭。未来在这里查看各层窗口与菜品。",
+      "description": "位置按“四五六食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-891",
-      "name": "民族食堂 · 八九食堂",
-      "shortName": "八九食堂",
-      "area": "北部生活区",
+      "name": "民族食堂 八九食堂",
+      "area": "中西部 · 远东大道东侧",
       "kind": "canteen",
+      "floors": 3,
+      "shortName": "民族食堂 八九食堂",
       "campusPosition": [
-        -31,
-        -48
+        484,
+        1081
       ],
       "footprint": [
-        12,
-        7
+        35,
+        46
       ],
-      "floors": 3,
-      "description": "多种风味的相遇。名称分组来自采集计划，具体建筑与楼层关系待现场核实。",
+      "description": "位置按“民族食堂 八九食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-10",
-      "name": "十食堂",
-      "shortName": "十食堂",
-      "area": "校园生活区",
+      "name": "第十食堂",
+      "area": "东部生活区 · 静园南侧",
       "kind": "canteen",
+      "floors": 2,
+      "shortName": "第十食堂",
       "campusPosition": [
-        -27,
-        40
+        964,
+        1212
       ],
       "footprint": [
-        9,
-        7
+        51,
+        31
       ],
-      "floors": 2,
-      "description": "校园里的日常好味道。空间和菜单等待同学们一起补全。",
+      "description": "位置按“第十食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-1112",
-      "name": "十一 · 十二食堂",
-      "shortName": "十一十二",
-      "area": "南部生活区",
+      "name": "十一十二食堂",
+      "area": "西北生活区 · 科源广场北侧",
       "kind": "canteen",
+      "floors": 2,
+      "shortName": "十一十二食堂",
       "campusPosition": [
-        -16,
-        58
+        282,
+        650
       ],
       "footprint": [
-        11,
-        7
+        44,
+        34
       ],
-      "floors": 2,
-      "description": "今天想吃什么？后续将接入实拍照片、窗口位置与营业信息。",
+      "description": "位置按“十一十二食堂.png”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-hut",
-      "name": "美食小屋 · 小餐车",
-      "shortName": "美食小屋",
-      "area": "四五六食堂东侧",
+      "name": "四五六食堂东侧美食小屋／小餐车",
+      "area": "四五六食堂东侧 · 蓝色 × 标注处",
       "kind": "cart",
+      "floors": 1,
+      "shortName": "四五六食堂东侧美食小屋／小餐车",
       "campusPosition": [
-        -13,
-        12
+        509,
+        1465
       ],
       "footprint": [
-        5,
-        4
+        13,
+        9
       ],
-      "floors": 1,
-      "description": "一份顺路带走的小食。示例点位，尚未进行现场定位。",
+      "description": "位置按“四五六食堂东侧美食小屋／小餐车.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-south",
-      "name": "南门小餐车",
-      "shortName": "南门餐车",
-      "area": "南门附近",
+      "name": "南门餐车",
+      "area": "南大门西侧 · 蓝色 × 标注处",
       "kind": "cart",
+      "floors": 1,
+      "shortName": "南门餐车",
       "campusPosition": [
-        5,
-        76
+        806,
+        1595
       ],
       "footprint": [
-        5,
-        4
+        14,
+        9
       ],
-      "floors": 1,
-      "description": "路过南门，把美味也带上。餐车位置和营业时间待采集。",
+      "description": "位置按“南门餐车.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     },
     {
       "id": "v-yifu",
       "name": "逸夫楼快餐售卖点",
-      "shortName": "逸夫楼",
-      "area": "教学区",
+      "area": "邵逸夫楼北侧 · 蓝色 × 标注处",
       "kind": "cart",
+      "floors": 1,
+      "shortName": "逸夫楼快餐售卖点",
       "campusPosition": [
-        23,
-        38
+        780,
+        1506
       ],
       "footprint": [
-        5,
-        4
+        15,
+        9
       ],
-      "floors": 1,
-      "description": "课堂之间的一餐。快餐售卖点的具体位置待核实。",
+      "description": "位置按“逸夫楼快餐售卖点.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
       "verified": false
     }
   ],

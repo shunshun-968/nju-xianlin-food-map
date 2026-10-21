@@ -36,9 +36,10 @@ export function FloatingSidebar({ children }: { children: ReactNode }) {
   return (
     <div ref={dock}
       className={`sidebar-dock ${dragging ? 'is-dragging' : ''} ${collapsed ? 'is-collapsed' : ''}`}
-      style={{ transform: mobile
-        ? `translateY(calc((100% - 28px) * ${progress}))`
-        : `translateX(calc((-100% - 12px) * ${progress}))` }}
+      style={mobile ? {
+        transform: 'none',
+        height: `calc(28px + (min(54dvh, 430px, calc(100dvh - 100px)) - 28px) * ${1 - progress})`,
+      } : { transform: `translateX(calc((-100% - 12px) * ${progress}))` }}
       onTransitionEnd={() => window.dispatchEvent(new Event('foodmap:overlays'))}
     >
       <div id="place-drawer" className="sidebar-content" inert={collapsed}>{children}</div>
@@ -50,7 +51,9 @@ export function FloatingSidebar({ children }: { children: ReactNode }) {
           e.currentTarget.setPointerCapture(e.pointerId);
           gesture.current = {
             id: e.pointerId, origin: mobile ? e.clientY : e.clientX, start: progress,
-            travel: Math.max(1, mobile ? (dock.current?.offsetHeight || 360) - 28 : (dock.current?.offsetWidth || 338) + 12),
+            travel: Math.max(1, mobile
+              ? Math.min((dock.current?.closest('.workspace')?.clientHeight || window.innerHeight) * .54, 430, (dock.current?.closest('.workspace')?.clientHeight || window.innerHeight) - 100) - 28
+              : (dock.current?.offsetWidth || 338) + 12),
             mobile, moved: false,
           };
           setDragging(true);
@@ -67,10 +70,10 @@ export function FloatingSidebar({ children }: { children: ReactNode }) {
           if (!g || g.id !== e.pointerId) return;
           const delta = ((g.mobile ? e.clientY : e.clientX) - g.origin) * (g.mobile ? 1 : -1);
           const next = Math.max(0, Math.min(1, g.start + delta / g.travel));
-          settle(!g.moved ? (g.start > .5 ? 0 : 1) : delta > 40 ? 1 : delta < -40 ? 0 : next >= .5 ? 1 : 0);
+          settle(!g.moved ? (g.start > .5 ? 0 : 1) : g.mobile ? next : delta > 40 ? 1 : delta < -40 ? 0 : next >= .5 ? 1 : 0);
         }}
-        onPointerCancel={() => settle(progress >= .5 ? 1 : 0)}
-        onLostPointerCapture={() => { if (gesture.current) settle(progress >= .5 ? 1 : 0); }}
+        onPointerCancel={() => settle(mobile ? progress : progress >= .5 ? 1 : 0)}
+        onLostPointerCapture={() => { if (gesture.current) settle(mobile ? progress : progress >= .5 ? 1 : 0); }}
         onClick={(e) => { if (e.detail === 0) settle(collapsed ? 0 : 1); }}
         onKeyDown={(e) => {
           const closeKey = mobile ? 'ArrowDown' : 'ArrowLeft';

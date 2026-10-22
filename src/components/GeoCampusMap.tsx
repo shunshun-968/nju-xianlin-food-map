@@ -577,6 +577,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         aria-label="南京大学仙林校区地图，北向上；可拖动缩放，点击彩色食堂和餐车进入"
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;
+          host.current!.dataset.mapInput = 'keyboard';
           if (event.key === '+' || event.key === '=') {
             event.preventDefault();
             zoomAt(1.25);
@@ -605,6 +606,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         }}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+          host.current!.dataset.mapInput = 'pointer';
           const [x, y] = point(event);
           pointers.current.set(event.pointerId, [x, y]);
           if (pointers.current.size === 1)
@@ -619,6 +621,9 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
             };
           else gesture.current.multiple = true;
           event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onBlur={(event) => {
+          if (event.target === event.currentTarget) delete host.current!.dataset.mapInput;
         }}
         onPointerMove={(event) => {
           const previous = pointers.current.get(event.pointerId);

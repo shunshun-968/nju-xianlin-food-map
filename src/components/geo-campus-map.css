@@ -5,6 +5,15 @@
   /* Overscanned geometry stays available while the viewport is composited. */
   overflow: visible;
 }
+/* The composited SVG moves; its keyboard focus ring belongs to the fixed viewport. */
+.view-campus .campus-plan.geo-campus-map > svg,
+.view-campus .campus-plan.geo-campus-map > svg:focus-visible {
+  outline: none;
+}
+.campus-plan.geo-campus-map:not([data-map-input='pointer']):has(> svg:focus-visible) {
+  outline: 2px solid #9276a4;
+  outline-offset: -3px;
+}
 .geo-map-status {
   position: absolute;
   top: 45%;

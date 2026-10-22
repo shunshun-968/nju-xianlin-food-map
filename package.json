@@ -30,6 +30,8 @@
     "osm:build-campus": "node scripts/osm/build-campus.mjs",
     "osm:fetch-dem": "python scripts/osm/fetch-dem.py",
     "osm:build-contours": "python scripts/osm/build-contours.py",
+    "osm:build-relief": "python scripts/osm/build-green-relief.py",
+    "osm:validate-relief": "python scripts/osm/validate-green-relief.py",
     "osm:validate-contours": "python scripts/osm/validate-contours.py",
     "osm:validate-campus": "python scripts/osm/validate-campus.py"
   },

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "image": "campus-green-relief.png",
+  "bounds": [
+    456,
+    160,
+    1552,
+    2388
+  ],
+  "pixelSizeMetres": 4,
+  "width": 274,
+  "height": 557,
+  "greenOsmIds": [
+    "way/118942393",
+    "way/118942396",
+    "way/448907845",
+    "way/448907870",
+    "way/881594553"
+  ],
+  "elevationRangeMetres": [
+    8.51,
+    79.9
+  ],
+  "rampRangeMetres": [
+    5,
+    85
+  ],
+  "ramp": [
+    "#b4c69c",
+    "#c6d3aa",
+    "#dbe0b7"
+  ],
+  "lightAzimuthDegrees": 315,
+  "lightAltitudeDegrees": 45,
+  "verticalExaggeration": 1.4,
+  "shadeStrength": 0.45,
+  "edgeFadeMetres": 12,
+  "sourceGaussianSigmaPixels": 0.8,
+  "displayGaussianSigmaMetres": 8,
+  "sourceSha256": "6c417259787b3b69b5062aca9c98264206e85e315f50be1159858a7c89d0bf8e",
+  "sourceUrl": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/12/3401/1661.png",
+  "source": "Mapzen / Tilezen; USGS SRTM / GMTED",
+  "imageSha256": "addc12f50982c45c01589b673f18f68bacb2f6819a5e52c5af5d9673ee97ca9e",
+  "inputHashes": {
+    "campus-render.json": "fa2cd252a5aa21e67d45d15e68de46b935d2b5347ef22d365ed40f708a73d8aa",
+    "campus-map.geojson": "9475aac855c1a37efdee30f142ef43d86a65ed835a7c44671b29ed74fffd43f6",
+    "campus-retention.geojson": "861bb1126421106d337d022eed3a887b8cbd00873a1b3b93f65cbda629a92dcc"
+  }
+}

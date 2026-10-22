@@ -15,6 +15,7 @@ import {
 } from '../lib/campus-basemap';
 import type { PlacedLabel } from '../lib/map-labels';
 import { CampusSports, RadioTelescope } from './CampusSports';
+import { CampusGreenRelief } from './CampusGreenRelief';
 import './geo-campus-map.css';
 
 type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
@@ -371,6 +372,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                   />
                 ))}
               </g>
+              <CampusGreenRelief />
               <CampusSports features={groups.land} />
               <g
                 fill="none"
@@ -647,6 +649,15 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       <div className="geo-attribution">
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
           © OpenStreetMap contributors · ODbL
+        </a>
+        {' | '}
+        <a
+          href="https://registry.opendata.aws/terrain-tiles/"
+          target="_blank"
+          rel="noreferrer"
+          title="绿地地形：Mapzen / Tilezen；USGS SRTM / GMTED"
+        >
+          地形 USGS / Mapzen
         </a>
       </div>
     </div>

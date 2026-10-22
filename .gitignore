@@ -10,3 +10,6 @@ storage-data/
 *.log
 .DS_Store
 Thumbs.db
+.playwright-cli/
+output/playwright/
+.cache/

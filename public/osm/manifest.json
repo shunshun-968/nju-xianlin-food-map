@@ -1,0 +1,97 @@
+{
+  "title": "南京大学仙林校区 OSM 底图可用性预览",
+  "crs": "OGC:CRS84 (WGS84 longitude, latitude)",
+  "bbox": [
+    118.9442,
+    32.1099,
+    118.9621,
+    32.1297
+  ],
+  "boundary": {
+    "id": "way/89910837",
+    "name": "南京大学(仙林校区)",
+    "bbox": [
+      118.9457301,
+      32.1113781,
+      118.9605563,
+      32.1281062
+    ],
+    "address": "仙林大道 163 号",
+    "version": 25
+  },
+  "method": "osm-api-bbox-fallback",
+  "sources": [
+    {
+      "file": "boundary-api.openstreetmap.org.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/way/89910837/full.json",
+      "retrievedAt": "2026-10-21T12:09:07.736380+00:00",
+      "sha256": "928a443e65eefbd8b2cb1c99b421d1e42bd847b95bfd3e471dd9cc9415fb824e"
+    },
+    {
+      "file": "campus-bbox.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=118.9442,32.1099,118.9621,32.1297",
+      "retrievedAt": "2026-10-21T12:26:43.584584+00:00",
+      "sha256": "67ea1b025eea11083852e2441943c80a1e43ef71bc1d7503d370367e2b8c15f5"
+    },
+    {
+      "file": "relation-19161478.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/relation/19161478/full.json",
+      "retrievedAt": "2026-10-21T12:28:13.011276+00:00",
+      "sha256": "f923a25acb44e85da40bcede81522bcc38d2ff52aa60654d221ea9c1b592e4ef"
+    }
+  ],
+  "overpassAttempts": [
+    {
+      "endpoint": "https://overpass-api.de/api/interpreter",
+      "result": "GET HTTP 406; subsequent GET and POST timed out"
+    },
+    {
+      "endpoint": "https://overpass.kumi.systems/api/interpreter",
+      "result": "GET timed out"
+    },
+    {
+      "endpoint": "https://overpass.private.coffee/api/interpreter",
+      "result": "GET and POST timed out"
+    },
+    {
+      "endpoint": "https://overpass.osm.ch/api/interpreter",
+      "result": "empty regional response; not used"
+    }
+  ],
+  "license": "ODbL-1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors",
+  "attributionUrl": "https://www.openstreetmap.org/copyright",
+  "counts": {
+    "boundary": 1,
+    "roads": 688,
+    "buildings": 327,
+    "land": 167,
+    "water": 15,
+    "pois": 99,
+    "labels": 468
+  },
+  "uniqueFeatures": 1336,
+  "buildingsWithCourtyards": 35,
+  "rejectedIncompleteFeatures": [],
+  "ignoredRouteRelations": [
+    "relation/1529762",
+    "relation/2105484",
+    "relation/3413088",
+    "relation/12726485",
+    "relation/12726486",
+    "relation/12764650",
+    "relation/12764651",
+    "relation/12978419",
+    "relation/12978420",
+    "relation/12978421",
+    "relation/17882916",
+    "relation/17882917"
+  ],
+  "notes": [
+    "Counts cover the bounding box and intersecting complete ways, not only the campus polygon.",
+    "The bbox includes nearby roads; full geometries may extend beyond it and are not clipped in GeoJSON.",
+    "Layers overlap by tag; their counts must not be summed as a unique-feature count.",
+    "OSM completeness and current names require human review; no food-venue mapping is inferred."
+  ]
+}

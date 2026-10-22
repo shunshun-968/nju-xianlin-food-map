@@ -1,0 +1,6 @@
+{
+  "file": "tile-1.osm.json",
+  "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=118.922000,32.102000,118.955000,32.121500",
+  "retrievedAt": "2026-10-21T15:40:35.015925+00:00",
+  "sha256": "ac79e470c26cc961892acf1bb76b010021711eb43cfe42bc490618e16e4aa799"
+}

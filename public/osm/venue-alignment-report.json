@@ -1,0 +1,493 @@
+{
+  "version": 1,
+  "method": "affine fit of visually matched OSM vertices to screenshot pixels",
+  "warning": "控制点残差只说明截图与 OSM 几何的吻合程度，不是实地点位精度；5 米虚线圈仅作目视检查范围。",
+  "venues": [
+    {
+      "venueId": "v-yifu",
+      "name": "逸夫楼快餐售卖点",
+      "catalogName": "逸夫楼快餐售卖点",
+      "sourceImage": "name=逸夫楼 逸夫楼快餐售卖点.png",
+      "referenceOsmId": "way/187964910",
+      "markedPixel": [
+        566.685315,
+        82.20979
+      ],
+      "controls": [
+        {
+          "pixel": [
+            400,
+            106
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            781,
+            43
+          ],
+          "vertex": 3
+        },
+        {
+          "pixel": [
+            846,
+            438
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            764,
+            451
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            714,
+            135
+          ],
+          "vertex": 6
+        },
+        {
+          "pixel": [
+            413,
+            185
+          ],
+          "vertex": 5
+        }
+      ],
+      "placementNote": "蓝色 × 对应逸夫楼北侧的定位位置；快餐售卖点位于室内。",
+      "sourceSha256": "2ae61ba5120ed10eaed03b663a5d6a950e0ae07831117d70e75387e2947f173f",
+      "sourceImageSize": [
+        939,
+        582
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:00:48.275339+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00",
+      "indoor": true,
+      "locationNote": "位于室内",
+      "featureId": "venue/v-yifu",
+      "coordinates": [
+        118.9546736,
+        32.1130478
+      ],
+      "referenceGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              118.9550276,
+              32.1124921
+            ],
+            [
+              118.9551697,
+              32.1125118
+            ],
+            [
+              118.9551284,
+              32.1127248
+            ],
+            [
+              118.9550544,
+              32.1131066
+            ],
+            [
+              118.9543777,
+              32.1130125
+            ],
+            [
+              118.9544008,
+              32.1128932
+            ],
+            [
+              118.9549355,
+              32.1129676
+            ],
+            [
+              118.9550048,
+              32.1126099
+            ],
+            [
+              118.9550276,
+              32.1124921
+            ]
+          ]
+        ]
+      },
+      "transform": {
+        "pixelCentre": [
+          653.0,
+          226.33333333333334
+        ],
+        "pixelScale": 286.44681491993896,
+        "coefficients": [
+          [
+            47.91086244916106,
+            0.12788077130062653,
+            454.6415640724151
+          ],
+          [
+            0.06068624258442618,
+            47.951989421867125,
+            797.1983017232925
+          ]
+        ],
+        "localOriginLonLat": [
+          118.95,
+          32.12
+        ],
+        "localLongitudeMetresPerDegree": 94175.15835754415,
+        "localLatitudeMetresPerDegree": 111195.08023353292
+      },
+      "controlRmsMetres": 0.09976117464383674,
+      "controlMaxMetres": 0.16768484387256252,
+      "leaveOneOutMaxMetres": 0.33250484464836483,
+      "controlErrorsMetres": [
+        0.024954559274970152,
+        0.03766971421455548,
+        0.1612450119464844,
+        0.16768484387256252,
+        0.0465575071360994,
+        0.03723240775693623
+      ]
+    },
+    {
+      "venueId": "v-hut",
+      "name": "四五六食堂东侧美食小&小餐车",
+      "catalogName": "四五六食堂东侧美食小屋／小餐车",
+      "sourceImage": "name=学生第四、五、六餐厅_四五六食堂东侧美食小&小餐车.png",
+      "referenceOsmId": "way/99814434",
+      "markedPixel": [
+        767.701937,
+        564.587183
+      ],
+      "controls": [
+        {
+          "pixel": [
+            538,
+            217
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            116,
+            394
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            187,
+            569
+          ],
+          "vertex": 2
+        },
+        {
+          "pixel": [
+            310,
+            518
+          ],
+          "vertex": 3
+        },
+        {
+          "pixel": [
+            334,
+            593
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            233,
+            685
+          ],
+          "vertex": 5
+        },
+        {
+          "pixel": [
+            277,
+            797
+          ],
+          "vertex": 6
+        },
+        {
+          "pixel": [
+            580,
+            677
+          ],
+          "vertex": 7
+        },
+        {
+          "pixel": [
+            548,
+            599
+          ],
+          "vertex": 8
+        },
+        {
+          "pixel": [
+            589,
+            584
+          ],
+          "vertex": 9
+        },
+        {
+          "pixel": [
+            642,
+            645
+          ],
+          "vertex": 10
+        },
+        {
+          "pixel": [
+            707,
+            617
+          ],
+          "vertex": 11
+        }
+      ],
+      "placementNote": "蓝色 × 位于四五六餐厅东侧狭长绿地区域，尚未将餐车位置扩展成建筑轮廓。",
+      "sourceSha256": "121730ade660c3772ec0ebd9edd0187c276127615ee026d830881530c27606e7",
+      "sourceImageSize": [
+        987,
+        915
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:03:01.358839+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00",
+      "featureId": "venue/v-hut",
+      "coordinates": [
+        118.9505923,
+        32.1133618
+      ],
+      "referenceGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              118.950239,
+              32.1138138
+            ],
+            [
+              118.9495934,
+              32.1135841
+            ],
+            [
+              118.9497013,
+              32.1133564
+            ],
+            [
+              118.9498915,
+              32.1134213
+            ],
+            [
+              118.9499279,
+              32.1133253
+            ],
+            [
+              118.9497726,
+              32.1132061
+            ],
+            [
+              118.9498418,
+              32.11306
+            ],
+            [
+              118.9503038,
+              32.1132156
+            ],
+            [
+              118.9502562,
+              32.1133163
+            ],
+            [
+              118.9503181,
+              32.1133362
+            ],
+            [
+              118.9504017,
+              32.1132575
+            ],
+            [
+              118.9504986,
+              32.1132946
+            ],
+            [
+              118.950239,
+              32.1138138
+            ]
+          ]
+        ]
+      },
+      "transform": {
+        "pixelCentre": [
+          421.75,
+          574.5833333333334
+        ],
+        "pixelScale": 376.00518982824934,
+        "coefficients": [
+          [
+            54.26526395958352,
+            0.11735943486349092,
+            5.853770884782819
+          ],
+          [
+            0.019948545413445366,
+            54.331821593078345,
+            739.565891638305
+          ]
+        ],
+        "localOriginLonLat": [
+          118.95,
+          32.12
+        ],
+        "localLongitudeMetresPerDegree": 94175.15835754415,
+        "localLatitudeMetresPerDegree": 111195.08023353292
+      },
+      "controlRmsMetres": 0.10204285384626205,
+      "controlMaxMetres": 0.16897944414652089,
+      "leaveOneOutMaxMetres": 0.21400452138609793,
+      "controlErrorsMetres": [
+        0.02950348718671693,
+        0.05396453466977815,
+        0.10349511570347716,
+        0.1540401532904751,
+        0.03209812765077732,
+        0.08890226787791845,
+        0.06875912672476794,
+        0.11556269167785202,
+        0.10441028010531755,
+        0.05941232596793007,
+        0.16897944414652089,
+        0.12934007048699242
+      ]
+    },
+    {
+      "venueId": "v-south",
+      "name": "南门小餐车",
+      "catalogName": "南门餐车",
+      "sourceImage": "南门小餐车（高亮linestring是way1230586795）.png",
+      "referenceOsmId": "way/1230586795",
+      "markedPixel": [
+        367.82439,
+        872.912195
+      ],
+      "controls": [
+        {
+          "pixel": [
+            514,
+            844
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            405,
+            861
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            410,
+            949
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            528,
+            938
+          ],
+          "vertex": 5
+        }
+      ],
+      "placementNote": "使用更新后截图左侧蓝色 ×；高亮 U 形步道仅用于配准，橙色圆圈不是餐车位置。",
+      "sourceSha256": "94d7729cb8106b9ddec1642f9c3c7c652e651f76592d3aa20f86646dc935f50c",
+      "sourceImageSize": [
+        1334,
+        1229
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:16:14.700907+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00",
+      "featureId": "venue/v-south",
+      "coordinates": [
+        118.955167,
+        32.1117357
+      ],
+      "referenceGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            118.9555528,
+            32.1117995
+          ],
+          [
+            118.9552648,
+            32.1117616
+          ],
+          [
+            118.9552684,
+            32.111662
+          ],
+          [
+            118.9552758,
+            32.111599
+          ],
+          [
+            118.9552795,
+            32.1115666
+          ],
+          [
+            118.9555906,
+            32.1115896
+          ]
+        ]
+      },
+      "transform": {
+        "pixelCentre": [
+          464.25,
+          898.0
+        ],
+        "pixelScale": 75.25996611745185,
+        "coefficients": [
+          [
+            18.715895215814704,
+            0.08953443069506697,
+            510.61064547741853
+          ],
+          [
+            0.05298324618716643,
+            18.614821147130673,
+            925.2181242217812
+          ]
+        ],
+        "localOriginLonLat": [
+          118.95,
+          32.12
+        ],
+        "localLongitudeMetresPerDegree": 94175.15835754415,
+        "localLatitudeMetresPerDegree": 111195.08023353292
+      },
+      "controlRmsMetres": 0.045185793126913426,
+      "controlMaxMetres": 0.04850604148644789,
+      "leaveOneOutMaxMetres": 0.1956704820425912,
+      "controlErrorsMetres": [
+        0.04502530384831112,
+        0.04850604148644789,
+        0.04521939702509945,
+        0.04173865938673103
+      ]
+    }
+  ]
+}

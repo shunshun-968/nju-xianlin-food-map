@@ -1,0 +1,254 @@
+.osm-preview {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  color: #283532;
+  background: #f7f7f2;
+  font:
+    14px/1.6 system-ui,
+    sans-serif;
+}
+.osm-preview * {
+  box-sizing: border-box;
+}
+.osm-preview a {
+  color: #71529a;
+}
+.osm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid #dce1d6;
+  background: #fffefa;
+}
+.osm-preview h1 {
+  font-size: 20px;
+  margin: 0;
+}
+.osm-preview h2 {
+  font-size: 14px;
+  margin: 20px 0 8px;
+}
+.osm-preview p {
+  margin: 6px 0 12px;
+}
+.osm-header p {
+  color: #737b70;
+  margin: 2px 0 0;
+  font-size: 12px;
+}
+.osm-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.osm-panel {
+  flex: 0 0 296px;
+  padding: 0 20px 24px;
+  overflow-y: auto;
+  border-right: 1px solid #dce1d6;
+  background: #fffefa;
+}
+.osm-muted {
+  color: #758078;
+  font-size: 12px;
+}
+.osm-layer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 0;
+  cursor: pointer;
+}
+.osm-layer input,
+.osm-clip input {
+  accent-color: #8061ad;
+}
+.osm-layer i {
+  width: 10px;
+  height: 10px;
+  background: #c5cbbd;
+  border-radius: 2px;
+}
+.osm-layer-boundary i {
+  background: #8061ad;
+}
+.osm-layer-roads i {
+  background: #a8a9aa;
+}
+.osm-layer-buildings i {
+  background: #fffdfa;
+  border: 1px solid #9b9c99;
+}
+.osm-layer-land i {
+  background: #b4cba8;
+}
+.osm-layer-water i {
+  background: #74b8d1;
+}
+.osm-layer-pois i {
+  background: #ce8047;
+  border-radius: 50%;
+}
+.osm-layer span {
+  margin-left: auto;
+  color: #758078;
+  font-variant-numeric: tabular-nums;
+}
+.osm-clip {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+}
+.osm-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+}
+.osm-review-panel {
+  border-bottom: 1px solid #dce1d6;
+  padding-bottom: 16px;
+}
+.osm-review-panel ol {
+  margin: 8px 0;
+  padding-left: 23px;
+  color: #0782ad;
+}
+.osm-review-panel li {
+  padding: 4px 0;
+}
+.osm-review-panel button {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+}
+.osm-review-panel a {
+  font-size: 12px;
+}
+.osm-review-status {
+  color: #0782ad;
+  font-weight: 700;
+}
+.osm-selection {
+  overflow-wrap: anywhere;
+}
+.osm-selection > a {
+  display: block;
+  font-size: 12px;
+}
+.osm-selection dl {
+  font-size: 12px;
+}
+.osm-selection dl > div {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+  border-top: 1px solid #edf0e9;
+  padding: 5px 0;
+}
+.osm-selection dt {
+  color: #758078;
+}
+.osm-selection dd {
+  margin: 0;
+}
+.osm-map {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background: #e5e7df;
+}
+.osm-map svg {
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+.osm-map svg:active {
+  cursor: grabbing;
+}
+.osm-map path[data-osm]:hover {
+  stroke: #e66a32;
+}
+.osm-labels {
+  font:
+    11px system-ui,
+    sans-serif;
+  fill: #4d574f;
+  paint-order: stroke;
+  stroke: #fffef8;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.osm-map-tools {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+}
+.osm-preview button {
+  color: #514265;
+  background: #fffefa;
+  border: 1px solid #d5d6cd;
+  border-radius: 7px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+.osm-preview button:hover {
+  background: #f1eaf6;
+}
+.osm-preview :focus-visible {
+  outline: 3px solid #9d83c1;
+  outline-offset: 2px;
+}
+.osm-map-note {
+  position: absolute;
+  left: 16px;
+  bottom: 30px;
+  font-size: 11px;
+  line-height: 2;
+  color: #4c5553;
+  background: #fffefaeb;
+  padding: 4px 9px;
+  border-radius: 5px;
+  pointer-events: none;
+}
+.osm-attribution {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: #fffefae8;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .osm-header {
+    padding: 10px 14px;
+  }
+  .osm-preview h1 {
+    font-size: 16px;
+  }
+  .osm-header > a {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .osm-layout {
+    flex-direction: column-reverse;
+  }
+  .osm-panel {
+    flex: 0 0 30vh;
+    border-right: 0;
+    border-top: 1px solid #dce1d6;
+    padding: 0 16px 20px;
+  }
+  .osm-map {
+    min-height: 200px;
+  }
+}

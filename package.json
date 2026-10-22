@@ -23,7 +23,15 @@
     "db:maintenance": "node --env-file-if-exists=.env scripts/maintenance.mjs",
     "files:sync": "node scripts/storage.mjs",
     "files:verify": "node --env-file-if-exists=.env scripts/media-verify.mjs",
-    "data:validate": "tsx scripts/validate-data.ts"
+    "data:validate": "tsx scripts/validate-data.ts",
+    "osm:fetch": "python scripts/osm/fetch.py",
+    "osm:convert": "node scripts/osm/convert.mjs",
+    "osm:align": "python scripts/osm/align-venues.py",
+    "osm:build-campus": "node scripts/osm/build-campus.mjs",
+    "osm:fetch-dem": "python scripts/osm/fetch-dem.py",
+    "osm:build-contours": "python scripts/osm/build-contours.py",
+    "osm:validate-contours": "python scripts/osm/validate-contours.py",
+    "osm:validate-campus": "python scripts/osm/validate-campus.py"
   },
   "dependencies": {
     "pg": "^8.16.3",
@@ -36,9 +44,13 @@
     "@types/react-dom": "^19.2.0",
     "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "osmtogeojson": "^3.0.0-beta.5",
     "prettier": "3.9.10",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
     "vite": "^7.1.9"
+  },
+  "overrides": {
+    "@xmldom/xmldom": "^0.9.12"
   }
 }

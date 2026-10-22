@@ -1,0 +1,82 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "venue/v-yifu",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.9546736,
+          32.1130478
+        ]
+      },
+      "properties": {
+        "name": "逸夫楼快餐售卖点",
+        "venue_id": "v-yifu",
+        "catalog_name": "逸夫楼快餐售卖点",
+        "reference_osm_id": "way/187964910",
+        "source_image": "name=逸夫楼 逸夫楼快餐售卖点.png",
+        "source_sha256": "2ae61ba5120ed10eaed03b663a5d6a950e0ae07831117d70e75387e2947f173f",
+        "alignment_method": "visual-screenshot-affine",
+        "review_status": "approved",
+        "surveyed": false,
+        "visual_review_radius_m": 5,
+        "placement_note": "蓝色 × 对应逸夫楼北侧的定位位置；快餐售卖点位于室内。",
+        "indoor": true,
+        "location_note": "位于室内",
+        "reviewed_at": "2026-10-21T21:24:25+08:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "venue/v-hut",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.9505923,
+          32.1133618
+        ]
+      },
+      "properties": {
+        "name": "四五六食堂东侧美食小&小餐车",
+        "venue_id": "v-hut",
+        "catalog_name": "四五六食堂东侧美食小屋／小餐车",
+        "reference_osm_id": "way/99814434",
+        "source_image": "name=学生第四、五、六餐厅_四五六食堂东侧美食小&小餐车.png",
+        "source_sha256": "121730ade660c3772ec0ebd9edd0187c276127615ee026d830881530c27606e7",
+        "alignment_method": "visual-screenshot-affine",
+        "review_status": "approved",
+        "surveyed": false,
+        "visual_review_radius_m": 5,
+        "placement_note": "蓝色 × 位于四五六餐厅东侧狭长绿地区域，尚未将餐车位置扩展成建筑轮廓。",
+        "reviewed_at": "2026-10-21T21:24:25+08:00"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "venue/v-south",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          118.955167,
+          32.1117357
+        ]
+      },
+      "properties": {
+        "name": "南门小餐车",
+        "venue_id": "v-south",
+        "catalog_name": "南门餐车",
+        "reference_osm_id": "way/1230586795",
+        "source_image": "南门小餐车（高亮linestring是way1230586795）.png",
+        "source_sha256": "94d7729cb8106b9ddec1642f9c3c7c652e651f76592d3aa20f86646dc935f50c",
+        "alignment_method": "visual-screenshot-affine",
+        "review_status": "approved",
+        "surveyed": false,
+        "visual_review_radius_m": 5,
+        "placement_note": "使用更新后截图左侧蓝色 ×；高亮 U 形步道仅用于配准，橙色圆圈不是餐车位置。",
+        "reviewed_at": "2026-10-21T21:24:25+08:00"
+      }
+    }
+  ]
+}

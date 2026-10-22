@@ -1,0 +1,47 @@
+{
+  "method": "osm-api-bbox-fallback",
+  "bbox": [
+    118.9442,
+    32.1099,
+    118.9621,
+    32.1297
+  ],
+  "overpassAttempts": [
+    {
+      "endpoint": "https://overpass-api.de/api/interpreter",
+      "result": "GET HTTP 406; subsequent GET and POST timed out"
+    },
+    {
+      "endpoint": "https://overpass.kumi.systems/api/interpreter",
+      "result": "GET timed out"
+    },
+    {
+      "endpoint": "https://overpass.private.coffee/api/interpreter",
+      "result": "GET and POST timed out"
+    },
+    {
+      "endpoint": "https://overpass.osm.ch/api/interpreter",
+      "result": "empty regional response; not used"
+    }
+  ],
+  "sources": [
+    {
+      "file": "boundary-api.openstreetmap.org.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/way/89910837/full.json",
+      "retrievedAt": "2026-10-21T12:09:07.736380+00:00",
+      "sha256": "928a443e65eefbd8b2cb1c99b421d1e42bd847b95bfd3e471dd9cc9415fb824e"
+    },
+    {
+      "file": "campus-bbox.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=118.9442,32.1099,118.9621,32.1297",
+      "retrievedAt": "2026-10-21T12:26:43.584584+00:00",
+      "sha256": "67ea1b025eea11083852e2441943c80a1e43ef71bc1d7503d370367e2b8c15f5"
+    },
+    {
+      "file": "relation-19161478.osm.json",
+      "url": "https://api.openstreetmap.org/api/0.6/relation/19161478/full.json",
+      "retrievedAt": "2026-10-21T12:28:13.011276+00:00",
+      "sha256": "f923a25acb44e85da40bcede81522bcc38d2ff52aa60654d221ea9c1b592e4ef"
+    }
+  ]
+}

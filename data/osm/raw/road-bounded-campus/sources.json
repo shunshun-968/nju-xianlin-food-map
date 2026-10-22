@@ -1,0 +1,8 @@
+[
+  {
+    "file": "campus.osm.json",
+    "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=118.9442,32.1093,118.9621,32.1325",
+    "retrievedAt": "2026-10-21T14:04:49.860508+00:00",
+    "sha256": "b8d40b753dca690a9426d5a4677534e851393f37a2c11ebac7896de57a19bb21"
+  }
+]

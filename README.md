@@ -2,9 +2,11 @@
 
 南京大学仙林校区交互式美食地图，Phase 0 初始化原型。
 
-**校园与七个餐饮点位已按提供的平面图和定位图重绘，使用相对图纸坐标。建筑层数、窗口布局和菜单仍为示例。** 名称以定位图文件名为准，餐车和售卖点按蓝色 × 定位。
+**校园底图已接入 OSM 地理数据与三个已审核餐饮点位，采用克制的 2.5D 风格。建筑层数、窗口布局和菜单仍为示例。** 范围、场所映射与标注规则见 [GEO_BASEMAP.md](docs/GEO_BASEMAP.md)。
 
 ## 先运行起来
+
+新增 OSM 底图检查预览：启动后打开 `?basemap=osm`（例如 <http://127.0.0.1:5173/nju-xianlin-food-map/?basemap=osm>）。已归档真实 OSM 数据、按类型输出 GeoJSON，并保留完整 Overpass 查询；操作、来源与限制见 [OSM_BASEMAP.md](docs/OSM_BASEMAP.md)。
 
 要求 Node.js 22.12+（建议 Node 22 LTS）与 Git。Windows PowerShell 中若 `npm` 脚本受策略限制，使用 `npm.cmd`。
 
@@ -28,7 +30,7 @@ npm run dev
 | ------------------------------------- | ----------------------------------------------------- |
 | 校园 / 建筑 / 楼层 / 窗口四层交互     | 已实现，SVG 校园总平面 + Three.js 室内示意模型        |
 | 数据驱动窗口位置                      | 已实现，稳定 ID + 楼层局部 x/z + 朝向，不依赖数组顺序 |
-| 真实地图地理配准、实测布局、glTF 模型 | 待采集与校准；当前不是完整 GIS                        |
+| 真实地图地理配准、实测布局、glTF 模型 | 校园已接入 WGS84；室内实测与 glTF 模型待完善                        |
 | PostgreSQL 迁移、约束、RLS、只读维护  | 已提供；默认禁止客户端写入                            |
 | 读 API 与 Docker Compose              | 已提供，可接 PostgreSQL；不包含认证服务器             |
 | 业务数据备份/恢复/校验，图片同步      | 已提供脚本；认证凭证单独处理                          |
@@ -37,7 +39,7 @@ npm run dev
 
 ## 技术选择
 
-React + TypeScript + Vite 管理界面；SVG 管理校园总平面，Three.js 管理室内场景；Node.js + `pg` 提供小型只读 API；PostgreSQL 存业务数据。现在不引入 Cesium、微服务、Redis 或大型状态管理库。按当前要求只使用相对坐标，无需 MapLibre、在线瓦片或地理配准。
+React + TypeScript + Vite 管理界面；SVG 管理校园地理底图，Three.js 管理室内场景；Node.js + `pg` 提供小型只读 API；PostgreSQL 存业务数据。校园数据保留 WGS84 坐标，离线转换为局部米制路径；前端读取静态文件，无需在线瓦片或地图 Key。室内仍使用楼层相对坐标。
 
 前端通过 `CatalogRepository` 读取数据，不直接绑定 Supabase 表。`app.users.id` 是业务用户 ID，第三方身份保存在单独的映射表；媒体记录保存 `storage_key`，URL 在读取时生成。这两点使数据库和认证、图片平台可以分别迁移。
 

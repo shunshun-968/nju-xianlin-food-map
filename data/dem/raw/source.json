@@ -1,0 +1,33 @@
+{
+  "dataset": "Mapzen / Tilezen Terrain Tiles on AWS",
+  "accessedDateLocal": "2026-10-22",
+  "retrievedAt": "2026-10-21T16:12:25.862145+00:00",
+  "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/12/3401/1661.png",
+  "file": "terrarium-12-3401-1661.png",
+  "zoom": 12,
+  "x": 3401,
+  "y": 1661,
+  "sha256": "6c417259787b3b69b5062aca9c98264206e85e315f50be1159858a7c89d0bf8e",
+  "bytes": 38283,
+  "headers": {
+    "x-amz-id-2": "txB5qJ3eoPqN3F3vQ+7XtYkbywnhc99AGnqiQFwUO7jSdrkcpr6uw7TxGltCb9GRYaXYlRsD/ao=",
+    "x-amz-request-id": "37K54CF5W801RW6Y",
+    "Server": "AmazonS3",
+    "Date": "Wed, 21 Oct 2026 16:12:26 GMT",
+    "Last-Modified": "Mon, 20 Nov 2017 06:17:54 GMT",
+    "ETag": "\"43c43a57ebbd9f87dacd2a72e0371b7a\"",
+    "x-amz-meta-x-imagery-sources": "srtm/N32E118.tif, srtm/N32E119.tif, gmted/30N090E_20101117_gmted_mea075.tif",
+    "x-amz-version-id": "R0Q4nQbHemAmVpD7B4e10v5ZtV5d9YqU",
+    "Accept-Ranges": "bytes",
+    "Content-Type": "image/png",
+    "Content-Length": "38283",
+    "Connection": "close"
+  },
+  "registry": "https://registry.opendata.aws/terrain-tiles/",
+  "formats": "https://github.com/tilezen/joerd/blob/master/docs/formats.md",
+  "sourceDocumentation": "https://github.com/tilezen/joerd/blob/master/docs/data-sources.md",
+  "attributionUrl": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+  "attribution": "Mapzen / Tilezen; SRTM and GMTED2010 terrain data courtesy of the U.S. Geological Survey",
+  "sourceNote": "Global mid/high-zoom land tiles use SRTM; inspect archived source headers for tile-specific provenance.",
+  "encoding": "elevation_m = R * 256 + G + B / 256 - 32768"
+}

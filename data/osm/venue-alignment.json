@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "coordinateSystem": "WGS84 longitude, latitude",
+  "method": "affine fit of visually matched OSM vertices to screenshot pixels",
+  "reviewWarning": "控制点残差只说明截图与 OSM 几何的吻合程度，不是实地点位精度；5 米虚线圈仅作目视检查范围。",
+  "venues": [
+    {
+      "venueId": "v-yifu",
+      "name": "逸夫楼快餐售卖点",
+      "catalogName": "逸夫楼快餐售卖点",
+      "sourceImage": "name=逸夫楼 逸夫楼快餐售卖点.png",
+      "referenceOsmId": "way/187964910",
+      "markedPixel": [
+        566.685315,
+        82.20979
+      ],
+      "controls": [
+        {
+          "pixel": [
+            400,
+            106
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            781,
+            43
+          ],
+          "vertex": 3
+        },
+        {
+          "pixel": [
+            846,
+            438
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            764,
+            451
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            714,
+            135
+          ],
+          "vertex": 6
+        },
+        {
+          "pixel": [
+            413,
+            185
+          ],
+          "vertex": 5
+        }
+      ],
+      "placementNote": "蓝色 × 对应逸夫楼北侧的定位位置；快餐售卖点位于室内。",
+      "sourceSha256": "2ae61ba5120ed10eaed03b663a5d6a950e0ae07831117d70e75387e2947f173f",
+      "sourceImageSize": [
+        939,
+        582
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:00:48.275339+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00",
+      "indoor": true,
+      "locationNote": "位于室内"
+    },
+    {
+      "venueId": "v-hut",
+      "name": "四五六食堂东侧美食小&小餐车",
+      "catalogName": "四五六食堂东侧美食小屋／小餐车",
+      "sourceImage": "name=学生第四、五、六餐厅_四五六食堂东侧美食小&小餐车.png",
+      "referenceOsmId": "way/99814434",
+      "markedPixel": [
+        767.701937,
+        564.587183
+      ],
+      "controls": [
+        {
+          "pixel": [
+            538,
+            217
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            116,
+            394
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            187,
+            569
+          ],
+          "vertex": 2
+        },
+        {
+          "pixel": [
+            310,
+            518
+          ],
+          "vertex": 3
+        },
+        {
+          "pixel": [
+            334,
+            593
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            233,
+            685
+          ],
+          "vertex": 5
+        },
+        {
+          "pixel": [
+            277,
+            797
+          ],
+          "vertex": 6
+        },
+        {
+          "pixel": [
+            580,
+            677
+          ],
+          "vertex": 7
+        },
+        {
+          "pixel": [
+            548,
+            599
+          ],
+          "vertex": 8
+        },
+        {
+          "pixel": [
+            589,
+            584
+          ],
+          "vertex": 9
+        },
+        {
+          "pixel": [
+            642,
+            645
+          ],
+          "vertex": 10
+        },
+        {
+          "pixel": [
+            707,
+            617
+          ],
+          "vertex": 11
+        }
+      ],
+      "placementNote": "蓝色 × 位于四五六餐厅东侧狭长绿地区域，尚未将餐车位置扩展成建筑轮廓。",
+      "sourceSha256": "121730ade660c3772ec0ebd9edd0187c276127615ee026d830881530c27606e7",
+      "sourceImageSize": [
+        987,
+        915
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:03:01.358839+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00"
+    },
+    {
+      "venueId": "v-south",
+      "name": "南门小餐车",
+      "catalogName": "南门餐车",
+      "sourceImage": "南门小餐车（高亮linestring是way1230586795）.png",
+      "referenceOsmId": "way/1230586795",
+      "markedPixel": [
+        367.82439,
+        872.912195
+      ],
+      "controls": [
+        {
+          "pixel": [
+            514,
+            844
+          ],
+          "vertex": 0
+        },
+        {
+          "pixel": [
+            405,
+            861
+          ],
+          "vertex": 1
+        },
+        {
+          "pixel": [
+            410,
+            949
+          ],
+          "vertex": 4
+        },
+        {
+          "pixel": [
+            528,
+            938
+          ],
+          "vertex": 5
+        }
+      ],
+      "placementNote": "使用更新后截图左侧蓝色 ×；高亮 U 形步道仅用于配准，橙色圆圈不是餐车位置。",
+      "sourceSha256": "94d7729cb8106b9ddec1642f9c3c7c652e651f76592d3aa20f86646dc935f50c",
+      "sourceImageSize": [
+        1334,
+        1229
+      ],
+      "sourceFileModifiedAt": "2026-10-21T13:16:14.700907+00:00",
+      "markedPixelMethod": "centroid of blue annotation pixels (R<80, G>120, B>200), checked visually",
+      "visualReviewRadiusMetres": 5,
+      "reviewStatus": "approved",
+      "reviewedAt": "2026-10-21T21:24:25+08:00"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+.campus-plan.geo-campus-map {
+  background: #d9e0d2;
+}
+.geo-map-status {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: #737e68;
+}
+.geo-detail-labels {
+  fill: #737e70;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.geo-detail-labels [data-label-kind='road'] {
+  fill: #7c8077;
+}
+.geo-court-markings > * {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 0.55px;
+}
+.geo-contours {
+  fill: none;
+  stroke: #fff;
+  stroke-opacity: 0.68;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.geo-contours path {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 0.65px;
+}
+.geo-venue,
+.geo-food-label {
+  cursor: pointer;
+  outline: none;
+}
+.geo-venue:hover .geo-venue-roof,
+.geo-venue:focus-visible .geo-venue-roof {
+  stroke: #748766;
+  stroke-width: 1.8;
+}
+.geo-food-label:hover rect,
+.geo-food-label:focus-visible rect {
+  stroke: #80946d;
+  stroke-width: 1.5;
+  fill: #fffef9;
+}
+.geo-attribution {
+  position: absolute;
+  bottom: 3px;
+  right: 7px;
+  font-size: 9px;
+  line-height: 1.2;
+  color: #7b8474;
+  background: #f7f7eece;
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-decoration: none;
+}
+.geo-attribution a {
+  color: inherit;
+  text-decoration: none;
+}
+@media (max-width: 700px) {
+  .geo-attribution {
+    bottom: 32px;
+  }
+}

@@ -1,0 +1,20 @@
+[out:json][timeout:120];
+way(89910837)->.boundary;
+.boundary map_to_area -> .campus;
+(
+  nwr[highway](area.campus);
+  nwr[building](area.campus);
+  nwr["building:part"](area.campus);
+  nwr[landuse](area.campus);
+  nwr[leisure](area.campus);
+  nwr[natural](area.campus);
+  nwr[water](area.campus);
+  nwr[waterway](area.campus);
+  nwr[amenity](area.campus);
+  nwr[shop](area.campus);
+  nwr[name](area.campus);
+  nwr["name:zh"](area.campus);
+  .boundary;
+);
+(._; >>;);
+out meta;

@@ -21,15 +21,20 @@ export default function App() {
   const search = useRef<HTMLInputElement>(null);
   const aboutDialog = useRef<HTMLElement>(null);
   const header = useRef<HTMLElement>(null);
-  const [headerOpen, setHeaderOpen] = useState(
-    () => window.matchMedia('(max-width: 700px)').matches,
-  );
+  const [headerOpen, setHeaderOpen] = useState(true);
+  const initialHeader = useRef(true);
+  const exploreMap = useCallback(() => {
+    if (window.matchMedia('(max-width: 700px)').matches) return;
+    initialHeader.current = false;
+    setHeaderOpen(false);
+  }, []);
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)');
     const changed = () => {
       setMobile(media.matches);
-      setHeaderOpen(media.matches);
+      initialHeader.current = true;
+      setHeaderOpen(true);
     };
     media.addEventListener('change', changed);
     return () => media.removeEventListener('change', changed);
@@ -54,7 +59,7 @@ export default function App() {
     setHeaderOpen(false);
   };
   const leaveDesktopHeader = (event: React.PointerEvent) => {
-    if (mobile) return;
+    if (mobile || initialHeader.current) return;
     const next = event.relatedTarget;
     // The thin top-edge zone bridges the gap to the sliding header.
     if (
@@ -182,6 +187,7 @@ export default function App() {
         onBlurCapture={(event) => {
           if (
             !mobile &&
+            !initialHeader.current &&
             !event.currentTarget.contains(event.relatedTarget) &&
             !event.currentTarget.matches(':hover')
           )
@@ -451,6 +457,7 @@ export default function App() {
                 showLabels={showMapLabels}
                 highlightedVenueId={highlightedVenueId}
                 onHighlightVenue={highlightVenue}
+                onExplore={mobile ? undefined : exploreMap}
                 legacyMobile={mobile}
               />
             ) : (

@@ -35,6 +35,7 @@ type Props = {
   showLabels: boolean;
   highlightedVenueId?: string | null;
   onHighlightVenue?: (id: string | null) => void;
+  onExplore?: () => void;
   // The UI keeps its mobile presentation; both devices use the approved OSM data.
   legacyMobile?: boolean;
 };
@@ -69,7 +70,7 @@ function cuboid(venue: MapVenue) {
 
 /** The outer map only: venue IDs still enter the existing building/floor scenes. */
 const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
-  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue },
+  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue, onExplore },
   ref,
 ) {
   const [priorityBounds, setPriorityBounds] = useState<Bounds | null>(null);
@@ -86,6 +87,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, XY>());
   const overview = useRef(true);
+  const exploreCallback = useRef(onExplore);
+  exploreCallback.current = onExplore;
   const {
     baseMap,
     map,
@@ -428,6 +431,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     const old = transformRef.current,
       zoom = Math.max(0.75, Math.min(24, old.zoom * factor)),
       ratio = zoom / old.zoom;
+    if (ratio !== 1) exploreCallback.current?.();
     update({
       x: x - (x - old.x) * ratio,
       y: y - (y - old.y) * ratio,
@@ -460,6 +464,12 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
             '.breadcrumbs, .compass, .map-tools, .map-scale, .style-toggle, .sidebar-dock, .sidebar-handle, .header, .header-reveal, .geo-attribution, .geo-context-retry',
           ),
       ]
+        // On phones the sheet covers the map; labels stay at their map positions.
+        .filter(
+          (node) =>
+            !window.matchMedia('(max-width: 700px)').matches ||
+            !node.matches('.sidebar-dock, .sidebar-handle'),
+        )
         .map((node) => node.getBoundingClientRect())
         .filter((r) => r.width && r.height)
         .map((r) => ({
@@ -599,6 +609,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
           if (offsets[event.key]) {
             event.preventDefault();
             overview.current = false;
+            exploreCallback.current?.();
             const [x, y] = offsets[event.key],
               old = transformRef.current;
             update({ ...old, x: old.x + x, y: old.y + y });
@@ -633,8 +644,10 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
           if (
             other ||
             Math.hypot(current[0] - gesture.current.x, current[1] - gesture.current.y) > 5
-          )
+          ) {
             overview.current = false;
+            if (!gesture.current.moved) exploreCallback.current?.();
+          }
           if (other) {
             const before = Math.hypot(previous[0] - other[0], previous[1] - other[1]);
             if (before > 0)

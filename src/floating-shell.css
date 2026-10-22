@@ -306,7 +306,13 @@
     max-height: calc(100dvh - 100px);
     overflow: hidden;
     border-radius: 20px;
-    transition: height .24s ease;
+    transition: height .28s cubic-bezier(.22, 1, .36, 1);
+  }
+  .floating-shell .sidebar-height-guide {
+    position: absolute;
+    width: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
   .floating-shell .sidebar-dock.is-dragging { transition: none; }
   .floating-shell .sidebar-dock .sidebar {
@@ -360,4 +366,8 @@
   .floating-shell .about-modal h2 { font-size: 22px; line-height: 1.6; margin: 16px 0; }
   .floating-shell .about-modal p, .floating-shell .zoom-guide ul { font-size: 11px; line-height: 1.85; }
   .floating-shell .about-modal .eyebrow { font-size: 8px; letter-spacing: 1.3px; }
+}
+
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .floating-shell .sidebar-dock { transition: none; }
 }

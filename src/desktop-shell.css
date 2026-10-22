@@ -117,7 +117,12 @@
     bottom: 20px;
     left: 20px;
     width: var(--desktop-sidebar-width);
-    transition: transform 280ms ease;
+    transition:
+      transform 280ms ease,
+      top 240ms ease;
+  }
+  .floating-shell:is(.view-campus, .view-building, .view-floor).header-hidden .sidebar-dock {
+    top: 28px;
   }
   .floating-shell:is(.view-campus, .view-building, .view-floor) .sidebar {
     padding: 20px;
@@ -175,7 +180,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) and (min-width: 701px) {
-  .floating-shell .sidebar-dock {
+  .floating-shell:is(.view-campus, .view-building, .view-floor) .sidebar-dock {
     transition: none;
   }
 }

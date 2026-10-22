@@ -1,6 +1,10 @@
 .view-campus .campus-plan.geo-campus-map {
   background: #e3e8de;
 }
+.geo-campus-map > svg {
+  /* Overscanned geometry stays available while the viewport is composited. */
+  overflow: visible;
+}
 .geo-map-status {
   position: absolute;
   top: 45%;

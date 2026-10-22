@@ -1,4 +1,13 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  memo,
+  useLayoutEffect,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { Catalog } from '../domain';
 import type { SceneHandle } from './MapScene';
 import {
@@ -17,6 +26,7 @@ import { CampusSports, RadioTelescope } from './CampusSports';
 import { ForestTexture } from './ForestTexture';
 import { useCampusData } from '../lib/use-campus-data';
 import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
+import { batchRoads, batchBuildings } from '../lib/map-batches';
 import './geo-campus-map.css';
 
 type Props = {
@@ -58,7 +68,7 @@ function cuboid(venue: MapVenue) {
 }
 
 /** The outer map only: venue IDs still enter the existing building/floor scenes. */
-export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap(
+const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   { data, onPick, showLabels, highlightedVenueId, onHighlightVenue },
   ref,
 ) {
@@ -69,6 +79,8 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   const transformRef = useRef<MapTransform>({ x: 0, y: 0, scale: 1, zoom: initialZoom });
   const updateFrame = useRef<number | null>(null);
   const movingWorld = useRef<SVGGElement | null>(null);
+  const committedPose = useRef(transformRef.current);
+  const [overlayVersion, setOverlayVersion] = useState(0);
   const settleTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [transform, setTransform] = useState(transformRef.current);
   const reserved = useRef<PlacedLabel['box'][]>([]);
@@ -99,11 +111,12 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   });
   // Cache an overscanned window in ground space. Panning within it updates the
   // world transform instead of rebuilding thousands of unchanged SVG paths.
+  const overscan = Math.max(100, 180 / transform.scale);
   const visibilityKey = [
-    Math.floor((-transform.x / transform.scale - 100) / 64),
-    Math.floor((-transform.y / transform.scale - 100) / 64),
-    Math.ceil(((size.current.width - transform.x) / transform.scale + 100) / 64),
-    Math.ceil(((size.current.height - transform.y) / transform.scale + 100) / 64),
+    Math.floor((-transform.x / transform.scale - overscan) / 64),
+    Math.floor((-transform.y / transform.scale - overscan) / 64),
+    Math.ceil(((size.current.width - transform.x) / transform.scale + overscan) / 64),
+    Math.ceil(((size.current.height - transform.y) / transform.scale + overscan) / 64),
   ].join(':');
   const groups = useMemo(() => {
     if (!map) return null;
@@ -124,6 +137,23 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       buildings: visible.filter((f) => f.kind === 'building' && !foodBuildings.has(f.id)),
     };
   }, [map, visibilityKey]);
+  const roadBatches = useMemo(() => (groups ? batchRoads(groups.roads) : []), [groups]);
+  const outerBuildings = useMemo(
+    () => (groups ? batchBuildings(groups.buildings.filter((f) => !f.inCampus)) : []),
+    [groups],
+  );
+  const innerBuildings = useMemo(() => groups?.buildings.filter((f) => f.inCampus) ?? [], [groups]);
+  const campusGroups = useMemo(() => {
+    if (!groups || !map) return null;
+    const [l, t, r, b] = map.bounds;
+    const intersects = (f: MapFeature) =>
+      f.bounds[2] >= l && f.bounds[0] <= r && f.bounds[3] >= t && f.bounds[1] <= b;
+    return {
+      land: groups.land.filter(intersects),
+      water: groups.water.filter(intersects),
+      roads: batchRoads(groups.roads.filter(intersects)),
+    };
+  }, [groups, map]);
   const groundArtwork = useMemo(
     () =>
       map && groups ? (
@@ -155,10 +185,10 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
             data-zone="campus-ground"
             shapeRendering="geometricPrecision"
           >
-            {groups.land.map((f) => (
+            {campusGroups?.land.map((f) => (
               <path key={f.id} d={f.path} fill={landFill(f)} fillRule="evenodd" />
             ))}
-            {groups.water.map((f) => (
+            {campusGroups?.water.map((f) => (
               <path
                 key={f.id}
                 d={f.path}
@@ -171,7 +201,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           </g>
         </>
       ) : null,
-    [map, groups],
+    [map, groups, campusGroups],
   );
   const roadArtwork = useMemo(
     () =>
@@ -185,12 +215,12 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
             pointerEvents="none"
             data-geo-roads
           >
-            {groups.roads
+            {roadBatches
               .filter((f) => !f.footway)
               .map((f) => (
                 <path key={f.id} d={f.path} stroke="#aab5a3" strokeWidth={(f.width || 6) + 1.4} />
               ))}
-            {groups.roads.map((f) => (
+            {roadBatches.map((f) => (
               <path
                 key={f.id}
                 d={f.path}
@@ -200,7 +230,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
               />
             ))}
             <g clipPath="url(#geo-campus)" data-zone="campus-roads">
-              {groups.roads
+              {campusGroups?.roads
                 .filter((f) => !f.footway)
                 .map((f) => (
                   <path
@@ -210,7 +240,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                     strokeWidth={(f.width || 6) + 1.4}
                   />
                 ))}
-              {groups.roads.map((f) => (
+              {campusGroups?.roads.map((f) => (
                 <path
                   key={`inner-${f.id}`}
                   d={f.path}
@@ -240,14 +270,26 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           </g>
         </>
       ) : null,
-    [map, groups],
+    [map, groups, roadBatches, campusGroups],
   );
   const buildingArtwork = useMemo(
     () =>
       map && groups ? (
         <>
           <g pointerEvents="none" data-geo-buildings>
-            {groups.buildings.map((f) => (
+            <g data-outside-building-batches>
+              {outerBuildings.map((f) => (
+                <path
+                  key={`shadow-${f.id}`}
+                  d={f.path}
+                  transform="translate(2.5 3.3)"
+                  fill="#6f7b6e"
+                  fillOpacity=".16"
+                  fillRule="evenodd"
+                />
+              ))}
+            </g>
+            {innerBuildings.map((f) => (
               <path
                 key={`shadow-${f.id}`}
                 d={f.path}
@@ -257,7 +299,21 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                 fillRule="evenodd"
               />
             ))}
-            {groups.buildings.map((f) => (
+            <g data-outside-building-batches>
+              {outerBuildings.map((f) => (
+                <path
+                  key={f.id}
+                  data-building-batch={f.count}
+                  d={f.path}
+                  fill="#fffefa"
+                  stroke="#b9c2b4"
+                  strokeWidth=".65"
+                  fillRule="evenodd"
+                  strokeLinejoin="round"
+                />
+              ))}
+            </g>
+            {innerBuildings.map((f) => (
               <path
                 key={f.id}
                 data-building={f.id}
@@ -276,34 +332,61 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           </g>
         </>
       ) : null,
-    [map, groups],
+    [map, groups, innerBuildings, outerBuildings],
   );
-  function update(next: MapTransform) {
-    transformRef.current = next;
-    // Composite only during motion; return to native SVG when settled so text
-    // and building edges are rerasterized sharply at the final zoom.
-    const world = movingWorld.current;
-    if (world) {
-      world.style.transformOrigin = '0 0';
-      world.style.willChange = 'transform';
-      world.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
-      world.setAttribute('data-map-moving', 'true');
+  function paintMotion() {
+    const next = transformRef.current,
+      snapshot = committedPose.current;
+    const ratio = next.scale / snapshot.scale;
+    // Promote the SVG viewport, not an inner <g>: browsers can composite this
+    // cached surface without repainting every path on each pinch frame.
+    const surface = svg.current;
+    if (surface) {
+      surface.style.transformOrigin = '0 0';
+      surface.style.willChange = 'transform';
+      surface.style.transform = `translate(${next.x - snapshot.x * ratio}px, ${next.y - snapshot.y * ratio}px) scale(${ratio})`;
+    }
+    movingWorld.current?.setAttribute('data-map-moving', 'true');
+  }
+  function settleMotion() {
+    if (pointers.current.size) {
+      settleTimer.current = window.setTimeout(settleMotion, 160);
+      return;
     }
     if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-    settleTimer.current = window.setTimeout(() => {
-      movingWorld.current?.style.removeProperty('transform');
-      movingWorld.current?.style.removeProperty('will-change');
-      movingWorld.current?.removeAttribute('data-map-moving');
-      settleTimer.current = null;
-    }, 140);
-    // Pointer and wheel events can arrive several times per display frame.
-    // Keep the latest pose and reconcile the SVG only once for that frame.
+    settleTimer.current = null;
+    // Reconcile geometry and screen-sized labels only after the gesture pauses.
+    setTransform({ ...transformRef.current });
+  }
+  function update(next: MapTransform) {
+    transformRef.current = next;
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(settleMotion, 160);
     if (updateFrame.current !== null) return;
     updateFrame.current = requestAnimationFrame(() => {
       updateFrame.current = null;
-      setTransform(transformRef.current);
+      paintMotion();
+      const next = transformRef.current;
+      const snapshot = committedPose.current;
+      const ratio = next.scale / snapshot.scale;
+      // Long drags refresh before leaving the overscanned window; small moves
+      // and ordinary pinches never reconcile the scene once per pointer frame.
+      if (
+        Math.abs(next.x - snapshot.x * ratio) > 140 ||
+        Math.abs(next.y - snapshot.y * ratio) > 140 ||
+        ratio < 0.7 ||
+        ratio > 1.45
+      )
+        setTransform({ ...transformRef.current });
     });
   }
+  useLayoutEffect(() => {
+    committedPose.current = transform;
+    svg.current?.style.removeProperty('transform');
+    svg.current?.style.removeProperty('will-change');
+    movingWorld.current?.removeAttribute('data-map-moving');
+    if (settleTimer.current !== null) paintMotion();
+  }, [transform]);
   useEffect(
     () => () => {
       if (updateFrame.current !== null) cancelAnimationFrame(updateFrame.current);
@@ -399,13 +482,14 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     const overlays = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
+        const before = JSON.stringify(reserved.current);
         measure();
-        update({ ...transformRef.current });
+        if (before !== JSON.stringify(reserved.current)) setOverlayVersion((v) => v + 1);
       });
     };
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
-      const rect = surface.getBoundingClientRect();
+      const rect = element.getBoundingClientRect();
       zoomAt(
         wheelZoomFactor(event.deltaY, event.deltaMode),
         event.clientX - rect.left,
@@ -417,7 +501,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     const drawer = () => {
       measure();
       if (overview.current) reset();
-      else update({ ...transformRef.current });
+      else setOverlayVersion((v) => v + 1);
     };
     window.addEventListener('foodmap:drawer', drawer);
     return () => {
@@ -428,9 +512,14 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       window.removeEventListener('foodmap:drawer', drawer);
     };
   }, [baseMap]);
-  const labels = map
-    ? mapLabels(map, transform, size.current, reserved.current, showLabels)
-    : { food: [], details: [] };
+  const placedLabels = useMemo(
+    () =>
+      map
+        ? mapLabels(map, transform, size.current, reserved.current, showLabels)
+        : { food: [], details: [] },
+    [map, transform, showLabels, overlayVersion],
+  );
+  const labels = { ...placedLabels };
   // Labels are in screen coordinates, outside the clipped world group. Keep
   // their full boxes inside the same revealed area when panning before zoom-out.
   if (activeBounds)
@@ -445,7 +534,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   const venueById = new Map(map?.venues.map((v) => [v.id, v]) || []);
   const validVenueIds = new Set(data.venues.map((v) => v.id));
   function point(event: React.PointerEvent): XY {
-    const rect = svg.current!.getBoundingClientRect();
+    const rect = host.current!.getBoundingClientRect();
     return [event.clientX - rect.left, event.clientY - rect.top];
   }
   function pickKey(event: React.KeyboardEvent, id: string) {
@@ -816,3 +905,5 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     </div>
   );
 });
+
+export const GeoCampusMap = memo(GeoCampusMapView);

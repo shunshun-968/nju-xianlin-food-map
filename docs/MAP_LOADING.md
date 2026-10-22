@@ -1,5 +1,7 @@
 # 底图分批加载与预取缓存
 
+拖动、缩放和顶部导航动画的性能定位及后续优化见 [MAP_PERFORMANCE.md](MAP_PERFORMANCE.md)。本文记录网络加载和持久缓存策略。
+
 底图视觉、地理位置、食堂入口和室内模型保持原样。运行时不再请求约 3.01 MB 的完整 `campus-render.json`，改为读取 `public/osm/runtime/index.json` 及内容哈希命名的静态分块。无需增加服务器或地图服务。
 
 ## 加载顺序

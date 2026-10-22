@@ -140,7 +140,7 @@ export function mapLabels(
     reserved,
   );
   const details: DetailLabel[] = [];
-  if (!showDetails) return { food, details };
+  if (!showDetails || t.zoom < landmarkZoomThreshold) return { food, details };
   const occupied = [...reserved, ...food.map((label) => label.box)];
   const venueBuildings = new Set(data.venues.map((v) => v.osmId));
   const envelopeArea = (f: MapFeature) => (f.bounds[2] - f.bounds[0]) * (f.bounds[3] - f.bounds[1]);

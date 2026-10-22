@@ -221,18 +221,6 @@ export default function App() {
           <UiIcon name="pin" size={17} />
           <span>南大仙林校区</span>
         </div>
-        {!mobile && (
-          <button
-            className="header-collapse"
-            aria-label="收起顶部导航"
-            aria-controls="floating-header"
-            aria-expanded={headerOpen}
-            title="收起顶部导航"
-            onClick={hideHeader}
-          >
-            <UiIcon name="chevron-right" size={17} />
-          </button>
-        )}
       </header>
       <main className="workspace">
         <FloatingSidebar campus={view.level === 'campus'}>

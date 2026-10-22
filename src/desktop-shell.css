@@ -67,6 +67,8 @@
   }
   .floating-shell:is(.view-campus, .view-building, .view-floor) .header-location {
     display: flex;
+    margin-left: auto;
+    flex-shrink: 0;
     gap: 6px;
     font-size: 12px;
   }

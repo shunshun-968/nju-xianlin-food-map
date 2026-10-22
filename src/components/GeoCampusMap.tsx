@@ -19,7 +19,15 @@ import { useCampusData } from '../lib/use-campus-data';
 import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
 import './geo-campus-map.css';
 
-type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
+type Props = {
+  data: Catalog;
+  onPick: (kind: string, id: string) => void;
+  showLabels: boolean;
+  highlightedVenueId?: string | null;
+  onHighlightVenue?: (id: string | null) => void;
+  // The UI keeps its mobile presentation; both devices use the approved OSM data.
+  legacyMobile?: boolean;
+};
 function landFill(feature: MapFeature, inside = true) {
   if (feature.sport) return inside ? '#dcd8bb' : '#d5d9c8';
   if (['wood', 'forest'].includes(feature.subtype || '')) return inside ? '#c7d4bd' : '#dce3d6';
@@ -51,7 +59,7 @@ function cuboid(venue: MapVenue) {
 
 /** The outer map only: venue IDs still enter the existing building/floor scenes. */
 export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap(
-  { data, onPick, showLabels },
+  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue },
   ref,
 ) {
   const [priorityBounds, setPriorityBounds] = useState<Bounds | null>(null);
@@ -65,6 +73,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   const [transform, setTransform] = useState(transformRef.current);
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, XY>());
+  const overview = useRef(true);
   const {
     baseMap,
     map,
@@ -332,6 +341,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     };
   }
   function zoomAt(factor: number, x = size.current.width / 2, y = size.current.height / 2) {
+    overview.current = false;
     const old = transformRef.current,
       zoom = Math.max(0.75, Math.min(24, old.zoom * factor)),
       ratio = zoom / old.zoom;
@@ -344,9 +354,16 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   }
   useImperativeHandle(ref, () => ({
     zoom: zoomAt,
-    reset: () => update(fitted()),
+    reset,
     rotate: () => {},
   }));
+  function reset() {
+    overview.current = true;
+    const next = fitted();
+    if (baseMap)
+      setPriorityBounds(unionBounds(baseMap.bounds, viewportBounds(next, size.current, 80)));
+    update(next);
+  }
   useEffect(() => {
     const element = host.current!,
       surface = svg.current!;
@@ -374,7 +391,8 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       const next = fitted();
       if (baseMap)
         setPriorityBounds(unionBounds(baseMap.bounds, viewportBounds(next, size.current, 80)));
-      update(next);
+      if (overview.current || window.matchMedia('(max-width: 700px)').matches) update(next);
+      else update({ ...transformRef.current });
     });
     observer.observe(element);
     let frame = 0;
@@ -396,11 +414,18 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     };
     surface.addEventListener('wheel', wheel, { passive: false });
     window.addEventListener('foodmap:overlays', overlays);
+    const drawer = () => {
+      measure();
+      if (overview.current) reset();
+      else update({ ...transformRef.current });
+    };
+    window.addEventListener('foodmap:drawer', drawer);
     return () => {
       observer.disconnect();
       cancelAnimationFrame(frame);
       surface.removeEventListener('wheel', wheel);
       window.removeEventListener('foodmap:overlays', overlays);
+      window.removeEventListener('foodmap:drawer', drawer);
     };
   }, [baseMap]);
   const labels = map
@@ -437,6 +462,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       data-priority-ready={priorityReady}
       data-periphery-unlocked={unlocked}
       data-periphery-cached={prefetched}
+      data-camera-mode={overview.current ? 'overview' : 'exploring'}
     >
       {!map && (
         <p className="geo-map-status" role={error ? 'alert' : 'status'}>
@@ -472,7 +498,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           }
           if (event.key === 'Home') {
             event.preventDefault();
-            update(fitted());
+            reset();
           }
           const offsets: Record<string, XY> = {
             ArrowLeft: [45, 0],
@@ -482,6 +508,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           };
           if (offsets[event.key]) {
             event.preventDefault();
+            overview.current = false;
             const [x, y] = offsets[event.key],
               old = transformRef.current;
             update({ ...old, x: old.x + x, y: old.y + y });
@@ -509,6 +536,11 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
           if (!previous) return;
           const current = point(event),
             other = [...pointers.current.entries()].find(([id]) => id !== event.pointerId)?.[1];
+          if (
+            other ||
+            Math.hypot(current[0] - gesture.current.x, current[1] - gesture.current.y) > 5
+          )
+            overview.current = false;
           if (other) {
             const before = Math.hypot(previous[0] - other[0], previous[1] - other[1]);
             if (before > 0)
@@ -592,11 +624,19 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                         <g
                           key={venue.id}
                           data-venue={venue.id}
-                          className="geo-venue"
+                          className={`geo-venue${highlightedVenueId === venue.id ? ' is-highlighted' : ''}`}
                           role="button"
                           tabIndex={0}
                           aria-label={`进入${venue.name}${venue.indoor ? '（室内）' : ''}`}
                           onKeyDown={(e) => pickKey(e, venue.id)}
+                          onPointerEnter={(e) => {
+                            if (e.pointerType === 'mouse') onHighlightVenue?.(venue.id);
+                          }}
+                          onPointerLeave={(e) => {
+                            if (e.pointerType === 'mouse') onHighlightVenue?.(null);
+                          }}
+                          onFocus={() => onHighlightVenue?.(venue.id)}
+                          onBlur={() => onHighlightVenue?.(null)}
                         >
                           <title>
                             {venue.name}
@@ -689,11 +729,19 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                   <g
                     key={label.id}
                     data-venue={label.id}
-                    className="geo-food-label"
+                    className={`geo-food-label${highlightedVenueId === venue.id ? ' is-highlighted' : ''}`}
                     role="button"
                     tabIndex={0}
                     aria-label={`进入${venue.name}${venue.indoor ? '（室内）' : ''}`}
                     onKeyDown={(e) => pickKey(e, venue.id)}
+                    onPointerEnter={(e) => {
+                      if (e.pointerType === 'mouse') onHighlightVenue?.(venue.id);
+                    }}
+                    onPointerLeave={(e) => {
+                      if (e.pointerType === 'mouse') onHighlightVenue?.(null);
+                    }}
+                    onFocus={() => onHighlightVenue?.(venue.id)}
+                    onBlur={() => onHighlightVenue?.(null)}
                   >
                     <path
                       d={`M${label.anchorX} ${label.anchorY}L${label.x} ${label.y}`}

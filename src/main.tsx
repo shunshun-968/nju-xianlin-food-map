@@ -4,6 +4,8 @@ import App from './App';
 import './styles.css';
 import './interface.css';
 import './floating-shell.css';
+import './campus.css';
+import './desktop-shell.css';
 const OsmPreview = lazy(() => import('./components/OsmPreview'));
 const osmPreview = new URLSearchParams(window.location.search).get('basemap') === 'osm';
 createRoot(document.getElementById('root')!).render(

@@ -1,4 +1,4 @@
-.campus-plan.geo-campus-map {
+.view-campus .campus-plan.geo-campus-map {
   background: #e3e8de;
 }
 .geo-map-status {
@@ -39,11 +39,13 @@
   outline: none;
 }
 .geo-venue:hover .geo-venue-roof,
+.geo-venue.is-highlighted .geo-venue-roof,
 .geo-venue:focus-visible .geo-venue-roof {
   stroke: #748766;
   stroke-width: 1.8;
 }
 .geo-food-label:hover rect,
+.geo-food-label.is-highlighted rect,
 .geo-food-label:focus-visible rect {
   stroke: #80946d;
   stroke-width: 1.5;

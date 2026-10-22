@@ -64,4 +64,4 @@ npm run build
 
 独立校验脚本检查周边完整覆盖、多种桌面与手机初始视窗、唯一要素 ID、校园内外归属、缓冲方向与距离、核心数据裁切、几何有效性、7 个餐饮位置及已审核点无漂移。标注测试覆盖真实数据的多个视窗、道路文字四角、建筑包络限制、滚轮等级及缩放门槛。
 
-本轮同步至 `88e26cf`，其后未编辑同事的 `App.tsx`、`FloatingSidebar.tsx`、`floating-shell.css`、`interface.css`。合并时继续保留同事最新版本；底图通过 `SceneHandle` 和 `foodmap:overlays` 接口与现有 UI 协作。署名与 ODbL 链接保留在地图边角。
+已合并同事的 UI 提交 `b73e8be`。`App.tsx`、`FloatingSidebar.tsx`、`CompassRose.tsx`、`campus.css`、`desktop-shell.css` 和 `map-labels.ts` 保留该提交的版本；入口同时载入新版 UI 样式和最新 OSM 底图。底图对接列表与地图双向高亮、`SceneHandle`、`foodmap:overlays` 和 `foodmap:drawer`：全景下侧栏收展会重新适配，手动浏览后保留视角。桌面和手机均使用已审核 OSM 数据，食堂室内模型不变。署名与 ODbL 链接保留在地图边角。

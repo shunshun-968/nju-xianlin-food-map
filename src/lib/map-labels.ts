@@ -6,6 +6,7 @@ export type LabelRequest = {
   y: number;
   priority: number;
   fontSize: number;
+  lineHeight?: number;
   rotation?: number;
   badge?: boolean;
   preferred?: readonly [number, number];
@@ -16,6 +17,7 @@ export type PlacedLabel = LabelRequest & {
   anchorY: number;
   width: number;
   height: number;
+  lineHeight: number;
   box: { left: number; top: number; right: number; bottom: number };
 };
 
@@ -43,23 +45,32 @@ export function placeMapLabels(
       ) *
         item.fontSize +
       (item.badge ? 24 : 10);
-    const height = item.lines.length * 14 + (item.badge ? 10 : 6);
+    const lineHeight = item.lineHeight ?? 14;
+    const height = item.lines.length * lineHeight + (item.badge ? 10 : 6);
     const angle = ((item.rotation || 0) * Math.PI) / 180;
     const boundWidth = Math.abs(width * Math.cos(angle)) + Math.abs(height * Math.sin(angle));
     const boundHeight = Math.abs(width * Math.sin(angle)) + Math.abs(height * Math.cos(angle));
     const offsets: readonly (readonly [number, number])[] = item.badge
       ? [
           item.preferred || [0, -24],
-          [0, -32],
-          [0, 32],
+          [0, -height / 2 - 15],
+          [0, height / 2 + 15],
           [-width / 2 - 20, 0],
           [width / 2 + 20, 0],
-          [0, -64],
-          [0, 64],
+          [0, -height - 24],
+          [0, height + 24],
           [-width / 2 - 20, -44],
           [width / 2 + 20, 44],
           [-width / 2 - 20, 44],
           [width / 2 + 20, -44],
+          [-width / 2 - 64, 0],
+          [width / 2 + 64, 0],
+          [-width / 2 - 20, -80],
+          [width / 2 + 20, -80],
+          [-width / 2 - 20, 80],
+          [width / 2 + 20, 80],
+          [0, -height * 2 - 24],
+          [0, height * 2 + 24],
         ]
       : item.kind === 'road'
         ? [[0, 0]]
@@ -90,7 +101,17 @@ export function placeMapLabels(
         reserved.some((other) => overlaps(box, other))
       )
         continue;
-      placed.push({ ...item, anchorX: item.x, anchorY: item.y, x, y, width, height, box });
+      placed.push({
+        ...item,
+        anchorX: item.x,
+        anchorY: item.y,
+        x,
+        y,
+        width,
+        height,
+        lineHeight,
+        box,
+      });
       break;
     }
   }

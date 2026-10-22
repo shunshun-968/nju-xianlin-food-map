@@ -31,6 +31,8 @@
     "osm:fetch-dem": "python scripts/osm/fetch-dem.py",
     "osm:build-contours": "python scripts/osm/build-contours.py",
     "osm:build-relief": "python scripts/osm/build-green-relief.py",
+    "osm:build-forest": "python scripts/osm/build-forest-texture.py",
+    "osm:validate-forest": "python scripts/osm/validate-forest-texture.py",
     "osm:validate-relief": "python scripts/osm/validate-green-relief.py",
     "osm:validate-contours": "python scripts/osm/validate-contours.py",
     "osm:validate-campus": "python scripts/osm/validate-campus.py"

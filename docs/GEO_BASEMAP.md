@@ -1,6 +1,6 @@
 # 正式校园地理底图
 
-当前 `feat/green-relief` 分支试验绿色高程渐变，隐藏等高线。效果、数据与回退说明见 [GREEN_RELIEF_TRIAL.md](GREEN_RELIEF_TRIAL.md)；下文等高线部分保留为原方案的说明。
+当前默认视图为鼠尾草绿平面块色及按缩放渐显的林地纹理，规则与前后对照见 [SAGE_GREEN_STYLE.md](SAGE_GREEN_STYLE.md)。高程渐变和等高线均不显示；[GREEN_RELIEF_TRIAL.md](GREEN_RELIEF_TRIAL.md) 与下文等高线部分保留为历史方案的说明。
 
 默认校园层使用 OSM 与三个已审核餐饮点位，检查入口 `?basemap=osm` 保留。`CampusMap.tsx` 转发到独立的 `GeoCampusMap.tsx`，通过既有场所 ID 进入室内场景。`App.tsx`、`MapScene.tsx`、手机抽屉和 UI 样式均未改动。
 

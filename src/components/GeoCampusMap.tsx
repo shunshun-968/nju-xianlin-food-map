@@ -15,23 +15,20 @@ import {
 } from '../lib/campus-basemap';
 import type { PlacedLabel } from '../lib/map-labels';
 import { CampusSports, RadioTelescope } from './CampusSports';
-import { CampusGreenRelief } from './CampusGreenRelief';
+import { ForestTexture } from './ForestTexture';
 import './geo-campus-map.css';
 
 type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
 function landFill(feature: MapFeature, inside = true) {
   if (feature.sport) return inside ? '#dcd8bb' : '#d5d9c8';
-  if (['wood', 'forest', 'scrub'].includes(feature.subtype || ''))
-    return inside ? '#c9d5a9' : '#c5d0bd';
-  if (
-    ['grass', 'grassland', 'meadow', 'garden', 'park', 'recreation_ground'].includes(
-      feature.subtype || '',
-    )
-  )
-    return inside ? '#dce2b9' : '#d4deca';
+  if (['wood', 'forest'].includes(feature.subtype || '')) return inside ? '#c7d4bd' : '#dce3d6';
+  if (['grass', 'grassland', 'meadow'].includes(feature.subtype || ''))
+    return inside ? '#e6ebd9' : '#e8ece2';
+  if (['scrub', 'garden', 'park', 'recreation_ground'].includes(feature.subtype || ''))
+    return inside ? '#dce5d1' : '#e3e8de';
   if (['residential', 'construction', 'commercial'].includes(feature.subtype || ''))
-    return inside ? '#efdfc1' : '#dbe0d7';
-  return inside ? '#f0e0bd' : '#d7dece';
+    return inside ? '#efdfc1' : '#e3e7de';
+  return inside ? '#dce5d1' : '#e3e8de';
 }
 function cuboid(venue: MapVenue) {
   const angle = (venue.angle * Math.PI) / 180,
@@ -62,6 +59,9 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     svg = useRef<SVGSVGElement>(null);
   const size = useRef({ width: 1, height: 1 });
   const transformRef = useRef<MapTransform>({ x: 0, y: 0, scale: 1, zoom: 1 });
+  const updateFrame = useRef<number | null>(null);
+  const movingWorld = useRef<SVGGElement | null>(null);
+  const settleTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [transform, setTransform] = useState(transformRef.current);
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, XY>());
@@ -72,14 +72,22 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     multiple: false,
     venue: null as string | null,
   });
+  // Cache an overscanned window in ground space. Panning within it updates the
+  // world transform instead of rebuilding thousands of unchanged SVG paths.
+  const visibilityKey = [
+    Math.floor((-transform.x / transform.scale - 100) / 64),
+    Math.floor((-transform.y / transform.scale - 100) / 64),
+    Math.ceil(((size.current.width - transform.x) / transform.scale + 100) / 64),
+    Math.ceil(((size.current.height - transform.y) / transform.scale + 100) / 64),
+  ].join(':');
   const groups = useMemo(() => {
     if (!map) return null;
     const foodBuildings = new Set(map.venues.map((v) => v.osmId));
-    const margin = 100 + 30 / transform.scale;
-    const left = -transform.x / transform.scale - margin,
-      top = -transform.y / transform.scale - margin;
-    const right = (size.current.width - transform.x) / transform.scale + margin,
-      bottom = (size.current.height - transform.y) / transform.scale + margin;
+    const [l, t, r, b] = visibilityKey.split(':').map(Number);
+    const left = l * 64,
+      top = t * 64,
+      right = r * 64,
+      bottom = b * 64;
     const visible = map.features.filter(
       (f) =>
         f.bounds[2] >= left && f.bounds[0] <= right && f.bounds[3] >= top && f.bounds[1] <= bottom,
@@ -90,11 +98,196 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       roads: visible.filter((f) => f.kind === 'road'),
       buildings: visible.filter((f) => f.kind === 'building' && !foodBuildings.has(f.id)),
     };
-  }, [map, transform]);
+  }, [map, visibilityKey]);
+  const groundArtwork = useMemo(
+    () =>
+      map && groups ? (
+        <>
+          <g
+            clipPath="url(#geo-context)"
+            pointerEvents="none"
+            data-zone="outside-ground"
+            shapeRendering="geometricPrecision"
+          >
+            {groups.land.map((f) => (
+              <path key={f.id} d={f.path} fill={landFill(f, false)} fillRule="evenodd" />
+            ))}
+            {groups.water.map((f) => (
+              <path
+                key={f.id}
+                d={f.path}
+                fill={f.area ? '#bdd2ce' : 'none'}
+                stroke="#abc2bc"
+                strokeWidth={f.area ? 0.7 : 2.5}
+                fillRule="evenodd"
+              />
+            ))}
+          </g>
+          <path d={map.campusPath} fill="#f3e5c5" />
+          <g
+            clipPath="url(#geo-campus)"
+            pointerEvents="none"
+            data-zone="campus-ground"
+            shapeRendering="geometricPrecision"
+          >
+            {groups.land.map((f) => (
+              <path key={f.id} d={f.path} fill={landFill(f)} fillRule="evenodd" />
+            ))}
+            {groups.water.map((f) => (
+              <path
+                key={f.id}
+                d={f.path}
+                fill={f.area ? '#b6d9d1' : 'none'}
+                stroke="#9fc8bf"
+                strokeWidth={f.area ? 0.7 : 2.5}
+                fillRule="evenodd"
+              />
+            ))}
+          </g>
+        </>
+      ) : null,
+    [map, groups],
+  );
+  const roadArtwork = useMemo(
+    () =>
+      map && groups ? (
+        <>
+          <CampusSports features={groups.land} />
+          <g
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pointerEvents="none"
+            data-geo-roads
+          >
+            {groups.roads
+              .filter((f) => !f.footway)
+              .map((f) => (
+                <path key={f.id} d={f.path} stroke="#aab5a3" strokeWidth={(f.width || 6) + 1.4} />
+              ))}
+            {groups.roads.map((f) => (
+              <path
+                key={f.id}
+                d={f.path}
+                stroke={f.footway ? '#aebaab' : '#bac5b0'}
+                strokeWidth={f.width}
+                strokeDasharray={f.footway ? '3 2' : undefined}
+              />
+            ))}
+            <g clipPath="url(#geo-campus)" data-zone="campus-roads">
+              {groups.roads
+                .filter((f) => !f.footway)
+                .map((f) => (
+                  <path
+                    key={`inner-edge-${f.id}`}
+                    d={f.path}
+                    stroke="#d5cbb3"
+                    strokeWidth={(f.width || 6) + 1.4}
+                  />
+                ))}
+              {groups.roads.map((f) => (
+                <path
+                  key={`inner-${f.id}`}
+                  d={f.path}
+                  stroke={f.footway ? '#f8f5e9' : '#fff8e9'}
+                  strokeWidth={f.width}
+                />
+              ))}
+            </g>
+            {groups.roads
+              .filter((f) => f.boundaryPath)
+              .map((f) => (
+                <g key={`boundary-${f.id}`} data-boundary-road={f.id}>
+                  <path
+                    d={f.boundaryPath}
+                    stroke="#acb6a5"
+                    strokeWidth={(f.width || 6) + 1.4}
+                    strokeLinecap="butt"
+                  />
+                  <path
+                    d={f.boundaryPath}
+                    stroke="#c4ccbc"
+                    strokeWidth={f.width}
+                    strokeLinecap="butt"
+                  />
+                </g>
+              ))}
+          </g>
+        </>
+      ) : null,
+    [map, groups],
+  );
+  const buildingArtwork = useMemo(
+    () =>
+      map && groups ? (
+        <>
+          <g pointerEvents="none" data-geo-buildings>
+            {groups.buildings.map((f) => (
+              <path
+                key={`shadow-${f.id}`}
+                d={f.path}
+                transform="translate(2.5 3.3)"
+                fill="#6f7b6e"
+                fillOpacity=".16"
+                fillRule="evenodd"
+              />
+            ))}
+            {groups.buildings.map((f) => (
+              <path
+                key={f.id}
+                data-building={f.id}
+                data-in-campus={f.inCampus}
+                d={f.path}
+                fill="#fffefa"
+                stroke="#b9c2b4"
+                strokeWidth=".65"
+                fillRule="evenodd"
+                strokeLinejoin="round"
+              >
+                <title>{f.name || (f.inCampus ? '校园建筑' : '周边建筑')}</title>
+              </path>
+            ))}
+            <RadioTelescope point={map.observatory} />
+          </g>
+        </>
+      ) : null,
+    [map, groups],
+  );
   function update(next: MapTransform) {
     transformRef.current = next;
-    setTransform(next);
+    // Composite only during motion; return to native SVG when settled so text
+    // and building edges are rerasterized sharply at the final zoom.
+    const world = movingWorld.current;
+    if (world) {
+      world.style.transformOrigin = '0 0';
+      world.style.willChange = 'transform';
+      world.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
+      world.setAttribute('data-map-moving', 'true');
+    }
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => {
+      movingWorld.current?.style.removeProperty('transform');
+      movingWorld.current?.style.removeProperty('will-change');
+      movingWorld.current?.removeAttribute('data-map-moving');
+      settleTimer.current = null;
+    }, 140);
+    // Pointer and wheel events can arrive several times per display frame.
+    // Keep the latest pose and reconcile the SVG only once for that frame.
+    if (updateFrame.current !== null) return;
+    updateFrame.current = requestAnimationFrame(() => {
+      updateFrame.current = null;
+      setTransform(transformRef.current);
+    });
   }
+  useEffect(
+    () => () => {
+      if (updateFrame.current !== null) cancelAnimationFrame(updateFrame.current);
+      updateFrame.current = null;
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      settleTimer.current = null;
+    },
+    [],
+  );
   function fitted(): MapTransform {
     if (!map) return transformRef.current;
     const { width, height } = size.current,
@@ -337,138 +530,20 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
               </clipPath>
             </defs>
             <g
+              ref={movingWorld}
               data-geo-world
               data-map-zoom={transform.zoom}
               transform={`translate(${transform.x} ${transform.y}) scale(${transform.scale})`}
             >
-              <g clipPath="url(#geo-context)" pointerEvents="none" data-zone="outside-ground">
-                {groups.land.map((f) => (
-                  <path key={f.id} d={f.path} fill={landFill(f, false)} fillRule="evenodd" />
-                ))}
-                {groups.water.map((f) => (
-                  <path
-                    key={f.id}
-                    d={f.path}
-                    fill={f.area ? '#bdd2ce' : 'none'}
-                    stroke="#abc2bc"
-                    strokeWidth={f.area ? 0.7 : 2.5}
-                    fillRule="evenodd"
-                  />
-                ))}
-              </g>
-              <path d={map.campusPath} fill="#f3e5c5" />
-              <g clipPath="url(#geo-campus)" pointerEvents="none" data-zone="campus-ground">
-                {groups.land.map((f) => (
-                  <path key={f.id} d={f.path} fill={landFill(f)} fillRule="evenodd" />
-                ))}
-                {groups.water.map((f) => (
-                  <path
-                    key={f.id}
-                    d={f.path}
-                    fill={f.area ? '#b6d9d1' : 'none'}
-                    stroke="#9fc8bf"
-                    strokeWidth={f.area ? 0.7 : 2.5}
-                    fillRule="evenodd"
-                  />
-                ))}
-              </g>
-              <CampusGreenRelief />
-              <CampusSports features={groups.land} />
-              <g
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                pointerEvents="none"
-                data-geo-roads
-              >
-                {groups.roads
-                  .filter((f) => !f.footway)
-                  .map((f) => (
-                    <path
-                      key={f.id}
-                      d={f.path}
-                      stroke="#aab5a3"
-                      strokeWidth={(f.width || 6) + 1.4}
-                    />
-                  ))}
-                {groups.roads.map((f) => (
-                  <path
-                    key={f.id}
-                    d={f.path}
-                    stroke={f.footway ? '#aebaab' : '#bac5b0'}
-                    strokeWidth={f.width}
-                    strokeDasharray={f.footway ? '3 2' : undefined}
-                  />
-                ))}
-                <g clipPath="url(#geo-campus)" data-zone="campus-roads">
-                  {groups.roads
-                    .filter((f) => !f.footway)
-                    .map((f) => (
-                      <path
-                        key={`inner-edge-${f.id}`}
-                        d={f.path}
-                        stroke="#d5cbb3"
-                        strokeWidth={(f.width || 6) + 1.4}
-                      />
-                    ))}
-                  {groups.roads.map((f) => (
-                    <path
-                      key={`inner-${f.id}`}
-                      d={f.path}
-                      stroke={f.footway ? '#d8ccb2' : '#fff8e9'}
-                      strokeWidth={f.width}
-                      strokeDasharray={f.footway ? '3 2' : undefined}
-                    />
-                  ))}
-                </g>
-                {groups.roads
-                  .filter((f) => f.boundaryPath)
-                  .map((f) => (
-                    <g key={`boundary-${f.id}`} data-boundary-road={f.id}>
-                      <path
-                        d={f.boundaryPath}
-                        stroke="#acb6a5"
-                        strokeWidth={(f.width || 6) + 1.4}
-                        strokeLinecap="butt"
-                      />
-                      <path
-                        d={f.boundaryPath}
-                        stroke="#c4ccbc"
-                        strokeWidth={f.width}
-                        strokeLinecap="butt"
-                      />
-                    </g>
-                  ))}
-              </g>
+              {groundArtwork}
+              <ForestTexture
+                transform={transform}
+                viewport={size.current}
+                labelBoxes={[...labels.food.map((l) => l.box), ...labels.details.map((l) => l.box)]}
+              />
+              {roadArtwork}
               <g>
-                <g pointerEvents="none" data-geo-buildings>
-                  {groups.buildings.map((f) => (
-                    <path
-                      key={`shadow-${f.id}`}
-                      d={f.path}
-                      transform="translate(2.5 3.3)"
-                      fill="#6f7b6e"
-                      fillOpacity=".16"
-                      fillRule="evenodd"
-                    />
-                  ))}
-                  {groups.buildings.map((f) => (
-                    <path
-                      key={f.id}
-                      data-building={f.id}
-                      data-in-campus={f.inCampus}
-                      d={f.path}
-                      fill="#fffefa"
-                      stroke="#b9c2b4"
-                      strokeWidth=".65"
-                      fillRule="evenodd"
-                      strokeLinejoin="round"
-                    >
-                      <title>{f.name || (f.inCampus ? '校园建筑' : '周边建筑')}</title>
-                    </path>
-                  ))}
-                  <RadioTelescope point={map.observatory} />
-                </g>
+                {buildingArtwork}
                 <g data-geo-food>
                   {map.venues
                     .filter((v) => validVenueIds.has(v.id))
@@ -649,15 +724,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       <div className="geo-attribution">
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
           © OpenStreetMap contributors · ODbL
-        </a>
-        {' | '}
-        <a
-          href="https://registry.opendata.aws/terrain-tiles/"
-          target="_blank"
-          rel="noreferrer"
-          title="绿地地形：Mapzen / Tilezen；USGS SRTM / GMTED"
-        >
-          地形 USGS / Mapzen
         </a>
       </div>
     </div>

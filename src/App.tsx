@@ -218,7 +218,7 @@ export default function App() {
               <h1>
                 {view.level === 'campus' ? (
                   <>
-                    今天{!mobile && '，'}
+                    今天
                     <br />
                     <span>去哪里吃？</span>
                   </>
@@ -235,6 +235,21 @@ export default function App() {
               )}
               {view.level === 'campus' && (
                 <svg className="hero-art" viewBox="0 0 130 140" fill="none" aria-hidden="true">
+                  {!mobile && (
+                    <>
+                      <ellipse cx="66" cy="118" rx="48" ry="7" fill="currentColor" opacity=".08" />
+                      <path
+                        d="M24 74h84c-3 27-18 41-42 41S27 101 24 74Z"
+                        fill="currentColor"
+                        opacity=".13"
+                      />
+                      <path
+                        d="m28 24 3 8 8 3-8 3-3 8-3-8-8-3 8-3ZM112 49l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"
+                        fill="currentColor"
+                        opacity=".8"
+                      />
+                    </>
+                  )}
                   <path
                     d="M24 74h84c-3 27-18 41-42 41S27 101 24 74ZM31 86h70M55 115h22M49 120h34"
                     stroke="currentColor"

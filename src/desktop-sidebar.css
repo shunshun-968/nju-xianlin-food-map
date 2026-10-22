@@ -1,0 +1,157 @@
+/* Restore the pre-atlas campus cards. Keep mobile, other levels and the handle untouched. */
+@media (min-width: 701px) {
+  .floating-shell.view-campus .sidebar-dock {
+    width: 338px;
+  }
+  .floating-shell.view-campus .sidebar {
+    padding: 16px;
+    border: 1px solid #ede7f1;
+    border-radius: 22px;
+    background: #fffefdf7;
+    box-shadow: 0 8px 30px #41235512;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    font-weight: 320;
+  }
+  .floating-shell.view-campus .sidebar-top {
+    min-height: 0;
+    display: block;
+    padding: 20px;
+    margin: 0 0 18px;
+    border: 0;
+    border-radius: 15px;
+    background: #4b2b64;
+    color: #fff7ee;
+  }
+  .floating-shell.view-campus .sidebar-top::after {
+    content: '';
+  }
+  .floating-shell.view-campus .sidebar-top h1 {
+    margin: 15px 0 9px;
+    font-family: inherit;
+    font-size: 32px;
+    line-height: 1.45;
+    /* Previous heading 400 and card labels 600, each reduced by 20%. */
+    font-weight: 320;
+    letter-spacing: 1.2px;
+  }
+  .floating-shell.view-campus .sidebar-top .hero-art {
+    width: 114px;
+    height: 125px;
+    right: -2px;
+    bottom: 20px;
+    color: #e0c3ef;
+    opacity: 0.75;
+    transform: rotate(-9deg);
+  }
+  .floating-shell.view-campus .search {
+    height: 44px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border-color: #ede7f1;
+    background: #fbf9fc;
+    color: #9a87a7;
+  }
+  .floating-shell.view-campus .search input {
+    font-size: 12px;
+    font-weight: 320;
+  }
+  .floating-shell.view-campus .search input::placeholder {
+    color: #a093aa;
+  }
+  .floating-shell.view-campus .filters {
+    margin: 12px 0 20px;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 11px;
+    background: #f3eef7;
+  }
+  .floating-shell.view-campus .filters button {
+    height: auto;
+    padding: 8px 5px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 320;
+    color: #8d7b99;
+  }
+  .floating-shell.view-campus .filters button.active {
+    background: #74469b;
+    color: white;
+    box-shadow: 0 3px 8px #74469b20;
+  }
+  .floating-shell.view-campus .venue-list {
+    padding: 1px 4px 2px 1px;
+    scrollbar-color: #ded0e7 transparent;
+  }
+  .floating-shell.view-campus .venue-card {
+    min-height: 79px;
+    padding: 13px 10px;
+    margin: 0 0 8px;
+    gap: 11px;
+    border: 1px solid #ede7f1;
+    border-radius: 13px;
+    background: white;
+  }
+  .floating-shell.view-campus .venue-card:is(:hover, :focus-visible, .is-highlighted) {
+    border-color: #c6a8dc;
+    background: #fcf9fe;
+    box-shadow: 0 3px 12px #4b2b6407;
+  }
+  .floating-shell.view-campus .venue-icon {
+    width: 39px;
+    height: 43px;
+    border-radius: 11px;
+    background: #eee5f6;
+    color: #7f559c;
+  }
+  .floating-shell.view-campus .venue-icon.cart {
+    background: #f5e9f2;
+    color: #986a99;
+  }
+  .floating-shell.view-campus .venue-icon svg {
+    width: 23px;
+    height: 23px;
+  }
+  .floating-shell.view-campus .venue-copy strong {
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 480;
+    color: #4c3a58;
+  }
+  .floating-shell.view-campus .venue-arrow {
+    color: #a891ba;
+  }
+  .floating-shell.view-campus .venue-arrow svg {
+    width: 17px;
+    height: 17px;
+  }
+  .floating-shell.view-campus .venue-number {
+    color: #cabbd3;
+    font-weight: 320;
+  }
+  .floating-shell.view-campus .sidebar-bottom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 11px;
+    border: 0;
+    border-radius: 11px;
+    background: #f7f3fa;
+  }
+  .floating-shell.view-campus .mini-spark {
+    display: block;
+    color: #9a72b5;
+  }
+  .floating-shell.view-campus .sidebar-bottom p {
+    font-size: 10px;
+    line-height: 1.8;
+    color: #795e8c;
+    font-weight: 320;
+  }
+  .floating-shell.view-campus .sidebar-bottom small {
+    font-size: 9px;
+    margin-top: 0;
+    color: #a18eae;
+    font-weight: 320;
+  }
+}

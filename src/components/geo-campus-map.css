@@ -20,21 +20,6 @@
   vector-effect: non-scaling-stroke;
   stroke-width: 0.55px;
 }
-.geo-contours {
-  fill: none;
-  stroke: #fff8e9;
-  stroke-opacity: 0.53;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.geo-contours path {
-  vector-effect: non-scaling-stroke;
-  stroke-width: 0.6px;
-}
-.geo-contours path[data-major='true'] {
-  stroke-width: 0.72px;
-  stroke-opacity: 0.65;
-}
 .geo-venue,
 .geo-food-label {
   cursor: pointer;

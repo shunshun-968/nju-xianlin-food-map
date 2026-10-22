@@ -8,7 +8,6 @@ import {
   initialZoom,
   wheelZoomFactor,
   type CampusBasemap,
-  type CampusContours,
   type MapFeature,
   type MapTransform,
   type MapVenue,
@@ -58,7 +57,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
 ) {
   const [map, setMap] = useState<CampusBasemap | null>(null),
     [error, setError] = useState('');
-  const [contours, setContours] = useState<CampusContours | null>(null);
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null);
   const size = useRef({ width: 1, height: 1 });
@@ -141,20 +139,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   }));
   useEffect(() => {
     const controller = new AbortController();
-    // An unavailable terrain layer must not prevent the food map from opening.
-    fetch(`${import.meta.env.BASE_URL}osm/campus-contours.json`, { signal: controller.signal })
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((value: CampusContours) => {
-        if (value.version !== 1 || !value.maskPath || !value.lines?.length)
-          throw new Error('等高线数据不完整');
-        setContours(value);
-      })
-      .catch((e: Error) => {
-        if (e.name !== 'AbortError') console.warn('校园等高线加载失败：', e.message);
-      });
     fetch(`${import.meta.env.BASE_URL}osm/campus-render.json`, { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -227,8 +211,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     ? mapLabels(map, transform, size.current, reserved.current, showLabels)
     : { food: [], details: [] };
   const scaleBar = metricScaleBar(transform.scale);
-  // Ground-distance fade with an 8 px ceiling: restrained even at close zoom.
-  const contourFade = Math.min(contours?.endpointFadeMetres ?? 14, 8 / transform.scale);
   const venueById = new Map(map?.venues.map((v) => [v.id, v]) || []);
   const validVenueIds = new Set(data.venues.map((v) => v.id));
   function point(event: React.PointerEvent): XY {
@@ -352,43 +334,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
               <clipPath id="geo-context">
                 <path d={map.contextPath} fillRule="evenodd" clipRule="evenodd" />
               </clipPath>
-              {contours && (
-                <clipPath id="geo-contour-greens">
-                  <path d={contours.maskPath} fillRule="evenodd" clipRule="evenodd" />
-                </clipPath>
-              )}
-              <radialGradient id="geo-contour-end-fade">
-                <stop offset="0" stopColor="#000" />
-                <stop offset="0.25" stopColor="#222" />
-                <stop offset="0.6" stopColor="#aaa" />
-                <stop offset="1" stopColor="#fff" />
-              </radialGradient>
-              {contours?.lines.map((line) => {
-                if (!line.bounds || !line.endpoints?.length) return null;
-                const [left, top, right, bottom] = line.bounds;
-                return line.endpoints.map(([x, y], index) => (
-                  <mask
-                    key={`${line.id}-${index}`}
-                    id={`geo-fade-${line.id}-${index}`}
-                    maskUnits="userSpaceOnUse"
-                    maskContentUnits="userSpaceOnUse"
-                    style={{ maskType: 'luminance' }}
-                    x={left - contourFade}
-                    y={top - contourFade}
-                    width={right - left + 2 * contourFade}
-                    height={bottom - top + 2 * contourFade}
-                  >
-                    <rect
-                      x={left - contourFade}
-                      y={top - contourFade}
-                      width={right - left + 2 * contourFade}
-                      height={bottom - top + 2 * contourFade}
-                      fill="#fff"
-                    />
-                    <circle cx={x} cy={y} r={contourFade} fill="url(#geo-contour-end-fade)" />
-                  </mask>
-                ));
-              })}
             </defs>
             <g
               data-geo-world
@@ -426,31 +371,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                   />
                 ))}
               </g>
-              {contours && (
-                <g
-                  className="geo-contours"
-                  data-geo-contours
-                  data-contour-interval={contours.intervalMetres}
-                  clipPath="url(#geo-contour-greens)"
-                  pointerEvents="none"
-                  aria-hidden="true"
-                >
-                  {contours.lines.map((line) => (
-                    // Separate masks multiply the two fades even when the ends
-                    // sit close together on opposite sides of a narrow path.
-                    <g
-                      key={line.id}
-                      mask={line.endpoints?.length ? `url(#geo-fade-${line.id}-0)` : undefined}
-                    >
-                      <path
-                        d={line.path}
-                        data-major={line.elevation % 20 === 0}
-                        mask={line.endpoints?.length ? `url(#geo-fade-${line.id}-1)` : undefined}
-                      />
-                    </g>
-                  ))}
-                </g>
-              )}
               <CampusSports features={groups.land} />
               <g
                 fill="none"
@@ -728,19 +648,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
           © OpenStreetMap contributors · ODbL
         </a>
-        {contours && (
-          <>
-            {' | '}
-            <a
-              href="https://registry.opendata.aws/terrain-tiles/"
-              target="_blank"
-              rel="noreferrer"
-              title={`地形：Mapzen / Tilezen，USGS SRTM / GMTED；等高距 ${contours.intervalMetres} 米`}
-            >
-              地形 USGS / Mapzen
-            </a>
-          </>
-        )}
       </div>
     </div>
   );

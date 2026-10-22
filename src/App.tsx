@@ -64,11 +64,22 @@ export default function App() {
       return;
     hideHeader();
   };
+  const navigate = useCallback((next: View) => {
+    setView(next);
+    setStallId(null);
+    setHighlightedVenueId(null);
+  }, []);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // One press dismisses only the topmost surface; held keys must not skip levels.
+        if (event.repeat || event.isComposing || event.defaultPrevented) return;
+        event.preventDefault();
         if (showInfo) setShowInfo(false);
-        else setStallId(null);
+        else if (stallId) setStallId(null);
+        else if (view.level === 'floor') navigate({ level: 'building', venueId: view.venueId });
+        else if (view.level === 'building') navigate({ level: 'campus' });
+        return;
       }
       if (
         !showInfo &&
@@ -82,7 +93,7 @@ export default function App() {
     };
     window.addEventListener('keydown', keydown);
     return () => window.removeEventListener('keydown', keydown);
-  }, [showInfo]);
+  }, [showInfo, stallId, view, navigate]);
   useEffect(() => {
     if (!showInfo || !aboutDialog.current) return;
     const previous = document.activeElement;
@@ -116,11 +127,6 @@ export default function App() {
         if (e.name !== 'AbortError') setError(e.message);
       });
     return () => controller.abort();
-  }, []);
-  const navigate = useCallback((next: View) => {
-    setView(next);
-    setStallId(null);
-    setHighlightedVenueId(null);
   }, []);
   const pick = useCallback(
     (kind: string, id: string) => {

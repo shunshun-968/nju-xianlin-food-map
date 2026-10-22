@@ -7,7 +7,6 @@ import {
   textWidth,
   initialZoom,
   wheelZoomFactor,
-  type CampusBasemap,
   type MapFeature,
   type MapTransform,
   type MapVenue,
@@ -16,6 +15,8 @@ import {
 import type { PlacedLabel } from '../lib/map-labels';
 import { CampusSports, RadioTelescope } from './CampusSports';
 import { ForestTexture } from './ForestTexture';
+import { useCampusData } from '../lib/use-campus-data';
+import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
 import './geo-campus-map.css';
 
 type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
@@ -53,18 +54,33 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
   { data, onPick, showLabels },
   ref,
 ) {
-  const [map, setMap] = useState<CampusBasemap | null>(null),
-    [error, setError] = useState('');
+  const [priorityBounds, setPriorityBounds] = useState<Bounds | null>(null);
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null);
   const size = useRef({ width: 1, height: 1 });
-  const transformRef = useRef<MapTransform>({ x: 0, y: 0, scale: 1, zoom: 1 });
+  const transformRef = useRef<MapTransform>({ x: 0, y: 0, scale: 1, zoom: initialZoom });
   const updateFrame = useRef<number | null>(null);
   const movingWorld = useRef<SVGGElement | null>(null);
   const settleTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [transform, setTransform] = useState(transformRef.current);
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, XY>());
+  const {
+    baseMap,
+    map,
+    error,
+    outerError,
+    unlocked,
+    priorityReady,
+    prefetched,
+    activeBounds,
+    retry,
+  } = useCampusData({
+    transform,
+    viewport: size.current,
+    priorityBounds,
+    isInteracting: () => pointers.current.size > 0 || settleTimer.current !== null,
+  });
   const gesture = useRef({
     x: 0,
     y: 0,
@@ -289,7 +305,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     [],
   );
   function fitted(): MapTransform {
-    if (!map) return transformRef.current;
+    if (!baseMap) return transformRef.current;
     const { width, height } = size.current,
       rect = host.current!.getBoundingClientRect();
     const app = host.current!.closest('.app');
@@ -301,7 +317,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       drawer && width <= 700
         ? Math.max(top + 180, Math.min(height - 35, drawer.top - rect.top - 20))
         : height - 45;
-    const [minX, minY, maxX, maxY] = map.bounds;
+    const [minX, minY, maxX, maxY] = baseMap.bounds;
     const scale =
       initialZoom *
       Math.max(
@@ -332,23 +348,6 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     rotate: () => {},
   }));
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${import.meta.env.BASE_URL}osm/campus-render.json`, { signal: controller.signal })
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((value: CampusBasemap) => {
-        if (value.version !== 1 || !value.features?.length || value.venues?.length !== 7)
-          throw new Error('底图数据不完整');
-        setMap(value);
-      })
-      .catch((e: Error) => {
-        if (e.name !== 'AbortError') setError(e.message);
-      });
-    return () => controller.abort();
-  }, []);
-  useEffect(() => {
     const element = host.current!,
       surface = svg.current!;
     function measure() {
@@ -358,7 +357,7 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
         ...element
           .closest('.app')!
           .querySelectorAll(
-            '.breadcrumbs, .compass, .map-tools, .map-scale, .style-toggle, .sidebar-dock, .sidebar-handle, .header, .header-reveal, .geo-attribution',
+            '.breadcrumbs, .compass, .map-tools, .map-scale, .style-toggle, .sidebar-dock, .sidebar-handle, .header, .header-reveal, .geo-attribution, .geo-context-retry',
           ),
       ]
         .map((node) => node.getBoundingClientRect())
@@ -372,7 +371,10 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     }
     const observer = new ResizeObserver(() => {
       measure();
-      update(fitted());
+      const next = fitted();
+      if (baseMap)
+        setPriorityBounds(unionBounds(baseMap.bounds, viewportBounds(next, size.current, 80)));
+      update(next);
     });
     observer.observe(element);
     let frame = 0;
@@ -400,10 +402,20 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
       surface.removeEventListener('wheel', wheel);
       window.removeEventListener('foodmap:overlays', overlays);
     };
-  }, [map]);
+  }, [baseMap]);
   const labels = map
     ? mapLabels(map, transform, size.current, reserved.current, showLabels)
     : { food: [], details: [] };
+  // Labels are in screen coordinates, outside the clipped world group. Keep
+  // their full boxes inside the same revealed area when panning before zoom-out.
+  if (activeBounds)
+    labels.details = labels.details.filter(
+      ({ box }) =>
+        box.left >= activeBounds[0] * transform.scale + transform.x &&
+        box.top >= activeBounds[1] * transform.scale + transform.y &&
+        box.right <= activeBounds[2] * transform.scale + transform.x &&
+        box.bottom <= activeBounds[3] * transform.scale + transform.y,
+    );
   const scaleBar = metricScaleBar(transform.scale);
   const venueById = new Map(map?.venues.map((v) => [v.id, v]) || []);
   const validVenueIds = new Set(data.venues.map((v) => v.id));
@@ -419,11 +431,27 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     }
   }
   return (
-    <div className="campus-plan geo-campus-map" ref={host}>
+    <div
+      className="campus-plan geo-campus-map"
+      ref={host}
+      data-priority-ready={priorityReady}
+      data-periphery-unlocked={unlocked}
+      data-periphery-cached={prefetched}
+    >
       {!map && (
         <p className="geo-map-status" role={error ? 'alert' : 'status'}>
           {error ? `底图加载失败：${error}` : '正在展开校园地图…'}
+          {error && (
+            <button type="button" onClick={retry}>
+              重试
+            </button>
+          )}
         </p>
+      )}
+      {outerError && (
+        <button type="button" className="geo-context-retry" onClick={retry}>
+          部分周边地图加载失败，点击重试
+        </button>
       )}
       <svg
         ref={svg}
@@ -528,12 +556,23 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
               <clipPath id="geo-context">
                 <path d={map.contextPath} fillRule="evenodd" clipRule="evenodd" />
               </clipPath>
+              {activeBounds && (
+                <clipPath id="geo-active-coverage">
+                  <rect
+                    x={activeBounds[0]}
+                    y={activeBounds[1]}
+                    width={activeBounds[2] - activeBounds[0]}
+                    height={activeBounds[3] - activeBounds[1]}
+                  />
+                </clipPath>
+              )}
             </defs>
             <g
               ref={movingWorld}
               data-geo-world
               data-map-zoom={transform.zoom}
               transform={`translate(${transform.x} ${transform.y}) scale(${transform.scale})`}
+              clipPath={activeBounds ? 'url(#geo-active-coverage)' : undefined}
             >
               {groundArtwork}
               <ForestTexture

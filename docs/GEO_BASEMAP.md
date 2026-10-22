@@ -4,6 +4,8 @@
 
 默认校园层使用 OSM 与三个已审核餐饮点位，检查入口 `?basemap=osm` 保留。`CampusMap.tsx` 转发到独立的 `GeoCampusMap.tsx`，通过既有场所 ID 进入室内场景。`App.tsx`、`MapScene.tsx`、手机抽屉和 UI 样式均未改动。
 
+加载按「校园核心 → 初始视野周边 → 空闲时预取外围」执行，缩小后才展开更远区域。缓存策略、重建方式与实测记录见 [MAP_LOADING.md](MAP_LOADING.md)。
+
 ## 数据与对应关系
 
 校园原始数据归档在 `data/osm/raw/road-bounded-campus/`。周边数据归档在 `data/osm/raw/campus-context/`，采集框为 west=118.922、south=32.102、east=118.988、north=32.141。周边采集使用官方 OSM API 的四个分块，并补齐两个 multipolygon 关系；所有来源均附获取日期、请求 URL 和 SHA-256。
@@ -41,7 +43,8 @@
 - `public/osm/campus-map.geojson`：按周边采集框裁切的完整 WGS84 要素。
 - `public/osm/campus-core.geojson`：原校园与南侧 100 米缓冲的核心参考数据。
 - `public/osm/campus-retention.geojson`：四路围合面和南侧缓冲。
-- `public/osm/campus-render.json`：前端读取的米制路径、场所与标注数据，含周边覆盖范围、校园外裁切路径和逐要素校园内外属性。
+- `public/osm/campus-render.json`：完整米制路径、场所与标注数据，作为运行时分块的构建来源，含周边覆盖范围、校园外裁切路径和逐要素校园内外属性。
+- `public/osm/runtime/`：前端实际读取的目录、校园核心、周边分块及按需林地纹理，使用内容哈希文件名。
 - `public/osm/campus-build-report.json`：源文件、数量、面积及边界记录。
 
 当前保留 5,247 个唯一要素、渲染 4,538 个要素；其中校外源要素含 1,574 个建筑和 1,631 条道路。四路围合约 2,613,605 平方米，南侧缓冲约 106,027 平方米。数据统计来自本次快照，OSM 尚未绘制的现实要素仍可能缺失。渲染时按当前视窗筛选路径，避免每次拖动都绘制全部周边。

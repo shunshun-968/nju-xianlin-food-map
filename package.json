@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/osm/build-runtime.mjs && tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "format": "prettier --write src server scripts tests docs *.json *.ts *.md *.yml .github",
     "test": "tsx --test tests/*.test.ts",
@@ -28,6 +28,7 @@
     "osm:convert": "node scripts/osm/convert.mjs",
     "osm:align": "python scripts/osm/align-venues.py",
     "osm:build-campus": "node scripts/osm/build-campus.mjs",
+    "osm:build-runtime": "node scripts/osm/build-runtime.mjs",
     "osm:fetch-dem": "python scripts/osm/fetch-dem.py",
     "osm:build-contours": "python scripts/osm/build-contours.py",
     "osm:build-relief": "python scripts/osm/build-green-relief.py",

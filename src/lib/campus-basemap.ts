@@ -3,6 +3,7 @@ import { overlaps, placeMapLabels, type PlacedLabel } from './map-labels';
 export type XY = [number, number];
 export type MapFrame = { matrix: number[]; width: number; height: number };
 export type MapFeature = {
+  renderOrder?: number;
   id: string;
   kind: 'road' | 'building' | 'water' | 'land';
   name: string;

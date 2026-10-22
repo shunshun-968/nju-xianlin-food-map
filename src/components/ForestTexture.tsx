@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import type { MapTransform } from '../lib/campus-basemap';
 import type { PlacedLabel } from '../lib/map-labels';
+import { basemapLoader } from '../lib/basemap-cache';
 
 type Crown = {
   id: string;
@@ -28,25 +29,25 @@ export const ForestTexture = memo(function ForestTexture({
   labelBoxes: PlacedLabel['box'][];
 }) {
   const [data, setData] = useState<Forest | null>(null);
+  const needed = t.zoom > 1.55;
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${import.meta.env.BASE_URL}osm/campus-forest-texture.json`, {
-      signal: controller.signal,
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((value: Forest) => {
+    if (!needed || data) return;
+    let cancelled = false;
+    basemapLoader
+      .loadForest()
+      .then((loaded) => {
+        const value = loaded as Forest;
         if (value.version !== 1 || !value.maskPath || !value.crowns?.length)
           throw new Error('林地纹理数据不完整');
-        setData(value);
+        if (!cancelled) setData(value);
       })
       .catch((error: Error) => {
         if (error.name !== 'AbortError') console.warn('林地纹理加载失败：', error.message);
       });
-    return () => controller.abort();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [needed, data]);
   const opacity = [smoothstep(1.55, 2.8, t.zoom) * 0.34, smoothstep(3.1, 5.5, t.zoom) * 0.28];
   const crownNodes = useMemo(
     () =>

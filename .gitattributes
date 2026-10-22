@@ -3,3 +3,5 @@
 *.sql text eol=lf
 *.yml text eol=lf
 Dockerfile text eol=lf
+# Content-hashed map assets must keep identical bytes on Windows and Linux.
+public/osm/runtime/*.json text eol=lf

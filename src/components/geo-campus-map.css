@@ -9,6 +9,19 @@
   font-size: 13px;
   color: #737e68;
 }
+.geo-context-retry {
+  position: absolute;
+  left: 50%;
+  bottom: 35px;
+  transform: translateX(-50%);
+  border: 1px solid #cbd4c1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fffdf4;
+  color: #64725b;
+  font-size: 12px;
+  cursor: pointer;
+}
 .geo-detail-labels {
   fill: #737e70;
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;

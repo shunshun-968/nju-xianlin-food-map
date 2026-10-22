@@ -21,11 +21,16 @@ export default function App() {
   const search = useRef<HTMLInputElement>(null);
   const aboutDialog = useRef<HTMLElement>(null);
   const header = useRef<HTMLElement>(null);
-  const [headerOpen, setHeaderOpen] = useState(true);
+  const [headerOpen, setHeaderOpen] = useState(
+    () => window.matchMedia('(max-width: 700px)').matches,
+  );
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)');
-    const changed = () => setMobile(media.matches);
+    const changed = () => {
+      setMobile(media.matches);
+      setHeaderOpen(media.matches);
+    };
     media.addEventListener('change', changed);
     return () => media.removeEventListener('change', changed);
   }, []);
@@ -47,6 +52,17 @@ export default function App() {
     )
       document.activeElement.blur();
     setHeaderOpen(false);
+  };
+  const leaveDesktopHeader = (event: React.PointerEvent) => {
+    if (mobile) return;
+    const next = event.relatedTarget;
+    // The thin top-edge zone bridges the gap to the sliding header.
+    if (
+      next instanceof Element &&
+      next.closest('.header, .header-reveal, .desktop-header-hoverzone')
+    )
+      return;
+    hideHeader();
   };
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
@@ -105,8 +121,6 @@ export default function App() {
     setView(next);
     setStallId(null);
     setHighlightedVenueId(null);
-    if (next.level === 'campus' && !window.matchMedia('(max-width: 700px)').matches)
-      setHeaderOpen(true);
   }, []);
   const pick = useCallback(
     (kind: string, id: string) => {
@@ -129,25 +143,27 @@ export default function App() {
     <div
       className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}`}
     >
+      {!mobile && (
+        <div
+          className="desktop-header-hoverzone"
+          aria-hidden="true"
+          onPointerEnter={() => setHeaderOpen(true)}
+          onPointerLeave={leaveDesktopHeader}
+        />
+      )}
       <button
         className="header-reveal"
         aria-label="展开顶部导航"
         aria-controls="floating-header"
         aria-expanded={headerOpen}
         onPointerEnter={(e) => {
-          if (mobile && e.pointerType === 'mouse') setHeaderOpen(true);
+          if (e.pointerType === 'mouse') setHeaderOpen(true);
         }}
+        onPointerLeave={leaveDesktopHeader}
         onFocus={() => setHeaderOpen(true)}
         onClick={() => setHeaderOpen(true)}
       >
-        {!mobile ? (
-          <>
-            <UiIcon name="chevron-right" size={15} />
-            <span>展开导航</span>
-          </>
-        ) : (
-          <span aria-hidden="true" />
-        )}
+        <span aria-hidden="true" />
       </button>
       <header
         ref={header}
@@ -155,7 +171,16 @@ export default function App() {
         className="header"
         inert={!headerOpen}
         onPointerEnter={() => setHeaderOpen(true)}
+        onPointerLeave={leaveDesktopHeader}
         onFocusCapture={() => setHeaderOpen(true)}
+        onBlurCapture={(event) => {
+          if (
+            !mobile &&
+            !event.currentTarget.contains(event.relatedTarget) &&
+            !event.currentTarget.matches(':hover')
+          )
+            setHeaderOpen(false);
+        }}
         onTransitionEnd={() => window.dispatchEvent(new Event('foodmap:overlays'))}
       >
         <a

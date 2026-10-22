@@ -179,3 +179,61 @@
     transition: none;
   }
 }
+
+/* Desktop hover navigation; mobile keeps its existing manual controls. */
+@media (min-width: 701px) {
+  .floating-shell .desktop-header-hoverzone {
+    position: absolute;
+    z-index: 29;
+    top: 0;
+    left: 12px;
+    right: 12px;
+    height: 16px;
+  }
+  .floating-shell.header-open .desktop-header-hoverzone {
+    height: 76px;
+  }
+  .floating-shell:is(.view-campus, .view-building, .view-floor) .header-reveal {
+    top: 0;
+    width: 112px;
+    height: 12px;
+    padding: 0;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+    background: #f5eef8e8;
+  }
+  .floating-shell:is(.view-campus, .view-building, .view-floor) .header-reveal span {
+    width: 36px;
+    height: 3px;
+    border-radius: 3px;
+    background: #a98abb;
+  }
+  .floating-shell:is(.view-campus, .view-building, .view-floor) .sidebar-handle {
+    width: 14px;
+    height: 104px;
+    right: -13px;
+    border-radius: 0 7px 7px 0;
+  }
+  .floating-shell:is(.view-campus, .view-building, .view-floor) .sidebar-handle .ui-icon {
+    width: 12px;
+  }
+  .floating-shell.view-campus .compass-rose {
+    top: 82px;
+    transition: top 0.24s ease;
+  }
+  .floating-shell.view-campus .breadcrumbs {
+    top: 84px;
+    transition: top 0.24s ease;
+  }
+  .floating-shell.view-campus.header-hidden .compass-rose {
+    top: 18px;
+  }
+  .floating-shell.view-campus.header-hidden .breadcrumbs {
+    top: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) and (min-width: 701px) {
+  .floating-shell.view-campus :is(.compass-rose, .breadcrumbs) {
+    transition: none;
+  }
+}

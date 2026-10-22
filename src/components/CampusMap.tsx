@@ -8,16 +8,23 @@ import { placeMapLabels, type LabelRequest, type PlacedLabel } from '../lib/map-
 import { mapScaleBar } from '../lib/map-scale';
 
 type Transform = { x: number; y: number; scale: number; zoom: number };
-type Props = { data: Catalog; onPick: (kind: string, id: string) => void; showLabels: boolean };
+type Props = {
+  data: Catalog;
+  onPick: (kind: string, id: string) => void;
+  showLabels: boolean;
+  highlightedVenueId?: string | null;
+  onHighlightVenue?: (id: string | null) => void;
+  legacyMobile?: boolean;
+};
 const features = drawing.land;
-const woodland = drawing.land
-  .filter((f) => f.kind === 1)
-  .map((f) => f.path)
+const woodland = features
+  .filter((feature) => feature.kind === 1)
+  .map((feature) => feature.path)
   .join(' ');
 
 /** A flat, local-coordinate plan. Only food venues have an illustrative raised top. */
 export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
-  { data, onPick, showLabels },
+  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue, legacyMobile = false },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null),
@@ -25,6 +32,9 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   const size = useRef({ width: 1, height: 1 }),
     transformRef = useRef<Transform>({ x: 0, y: 0, scale: 1, zoom: 1 });
   const [transform, setTransform] = useState(transformRef.current);
+  // This is intent, not a zoom value: returning manually to 1× remains exploration.
+  const overview = useRef(true);
+  const fitAnimation = useRef(0);
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef({
@@ -41,24 +51,83 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   function fitted() {
     const { width, height } = size.current;
     const hostRect = host.current?.getBoundingClientRect();
-    const drawer = host.current
-      ?.closest('.workspace')
-      ?.querySelector('.sidebar-dock:not(.is-collapsed)')
-      ?.getBoundingClientRect();
-    const leftInset =
-      drawer && hostRect && width > 700 ? Math.max(0, drawer.right - hostRect.left + 34) : 0;
+    const app = host.current?.closest('.app');
+    const mobile = window.matchMedia('(max-width: 700px)').matches;
+    if (mobile) {
+      const scale = Math.max(
+        0.01,
+        Math.min((width - 32) / campusFrame.width, (height - 90) / campusFrame.height),
+      );
+      return {
+        x: width / 2 - (campusFrame.x + campusFrame.width / 2) * scale,
+        y: height / 2 - (campusFrame.y + campusFrame.height / 2) * scale,
+        scale,
+        zoom: 1,
+      };
+    }
+    const drawerNode = app?.querySelector('.sidebar-dock');
+    const drawer = drawerNode?.getBoundingClientRect();
+    const header = app?.querySelector('.header')?.getBoundingClientRect();
+    const top =
+      header && hostRect && !app?.classList.contains('header-hidden')
+        ? Math.max(24, header.bottom - hostRect.top + 26)
+        : 26;
+    const left =
+      !mobile && drawer && hostRect && !drawerNode?.classList.contains('is-collapsed')
+        ? Math.max(28, drawer.right - hostRect.left + 42)
+        : mobile
+          ? 20
+          : 42;
+    const right = width - (mobile ? 24 : 78);
+    const bottom =
+      mobile && drawer && hostRect
+        ? Math.min(height - 24, drawer.top - hostRect.top - 30)
+        : height - 44;
+    const availableWidth = Math.max(1, right - left);
+    const availableHeight = Math.max(1, bottom - top);
     const scale = Math.max(
       0.01,
-      Math.min((width - leftInset - 32) / campusFrame.width, (height - 90) / campusFrame.height),
+      Math.min(availableWidth / campusFrame.width, availableHeight / campusFrame.height),
     );
     return {
-      x: leftInset + (width - leftInset) / 2 - (campusFrame.x + campusFrame.width / 2) * scale,
-      y: height / 2 - (campusFrame.y + campusFrame.height / 2) * scale,
+      x: left + availableWidth / 2 - (campusFrame.x + campusFrame.width / 2) * scale,
+      y: top + availableHeight / 2 - (campusFrame.y + campusFrame.height / 2) * scale,
       scale,
       zoom: 1,
     };
   }
+  function beginExploring() {
+    overview.current = false;
+    cancelAnimationFrame(fitAnimation.current);
+  }
+  function fit(smooth = false) {
+    cancelAnimationFrame(fitAnimation.current);
+    const next = fitted();
+    if (!smooth || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      update(next);
+      return;
+    }
+    const from = transformRef.current;
+    const start = performance.now();
+    const tick = (time: number) => {
+      const progress = Math.min(1, (time - start) / 280);
+      const ease = 1 - (1 - progress) ** 3;
+      update({
+        x: from.x + (next.x - from.x) * ease,
+        y: from.y + (next.y - from.y) * ease,
+        scale: from.scale + (next.scale - from.scale) * ease,
+        zoom: 1,
+      });
+      if (progress < 1) fitAnimation.current = requestAnimationFrame(tick);
+    };
+    fitAnimation.current = requestAnimationFrame(tick);
+  }
+  function reset() {
+    overview.current = true;
+    fit(true);
+  }
   function zoomAt(factor: number, x = size.current.width / 2, y = size.current.height / 2) {
+    beginExploring();
     const old = transformRef.current;
     const zoom = Math.max(0.85, Math.min(8, old.zoom * factor)),
       ratio = zoom / old.zoom;
@@ -71,7 +140,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
   }
   useImperativeHandle(ref, () => ({
     zoom: zoomAt,
-    reset: () => update(fitted()),
+    reset,
     rotate: () => {},
   }));
   useEffect(() => {
@@ -86,6 +155,12 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             '.breadcrumbs, .compass, .map-tools, .map-scale, .style-toggle, .sidebar-dock, .sidebar-handle, .header, .header-reveal',
           ),
       ]
+        .filter((node) => {
+          const style = getComputedStyle(node);
+          return (
+            style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0
+          );
+        })
         .map((node) => node.getBoundingClientRect())
         .filter((r) => r.width && r.height)
         .map((r) => ({
@@ -99,7 +174,8 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
       const rect = element.getBoundingClientRect();
       size.current = { width: rect.width, height: rect.height };
       measureOverlays();
-      update(fitted());
+      if (overview.current || window.matchMedia('(max-width: 700px)').matches) fit();
+      else update({ ...transformRef.current });
     });
     observer.observe(element);
     let overlayFrame = 0;
@@ -111,6 +187,12 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
       });
     };
     window.addEventListener('foodmap:overlays', refreshOverlays);
+    const refreshDrawer = () => {
+      measureOverlays();
+      if (overview.current) fit(true);
+      else update({ ...transformRef.current });
+    };
+    window.addEventListener('foodmap:drawer', refreshDrawer);
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
       const rect = surface.getBoundingClientRect();
@@ -120,7 +202,9 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     return () => {
       observer.disconnect();
       cancelAnimationFrame(overlayFrame);
+      cancelAnimationFrame(fitAnimation.current);
       window.removeEventListener('foodmap:overlays', refreshOverlays);
+      window.removeEventListener('foodmap:drawer', refreshDrawer);
       surface.removeEventListener('wheel', wheel);
     };
   }, []);
@@ -142,6 +226,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             priority: 0,
             badge: true,
             fontSize: 10.5,
+            lineHeight: 14,
             preferred: anchor.labelOffset,
           },
         ]
@@ -166,7 +251,11 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
     labels.filter((label) => label.badge).map((label) => [label.id, label]),
   );
   return (
-    <div ref={host} className="campus-plan">
+    <div
+      ref={host}
+      className="campus-plan"
+      data-camera-mode={overview.current ? 'overview' : 'exploring'}
+    >
       <svg
         ref={svg}
         width="100%"
@@ -186,7 +275,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
           }
           if (event.key === 'Home') {
             event.preventDefault();
-            update(fitted());
+            reset();
           }
           const offset: Record<string, [number, number]> = {
             ArrowLeft: [45, 0],
@@ -196,6 +285,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
           };
           if (offset[event.key]) {
             event.preventDefault();
+            beginExploring();
             const [x, y] = offset[event.key];
             update({
               ...transformRef.current,
@@ -206,6 +296,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
         }}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+          cancelAnimationFrame(fitAnimation.current);
           const p = point(event);
           pointers.current.set(event.pointerId, p);
           if (pointers.current.size === 1)
@@ -225,6 +316,11 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
           if (!oldPoint) return;
           const p = point(event),
             old = transformRef.current;
+          if (
+            Math.hypot(p.x - gesture.current.x, p.y - gesture.current.y) > 5 ||
+            pointers.current.size === 2
+          )
+            beginExploring();
           if (pointers.current.size === 2) {
             const other = [...pointers.current.entries()].find(
               ([id]) => id !== event.pointerId,
@@ -256,44 +352,53 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
         }}
         onLostPointerCapture={(event) => pointers.current.delete(event.pointerId)}
       >
-        <defs>
-          <radialGradient id="tree-leaf">
-            <stop stopColor="#b5c39a" />
-            <stop offset=".68" stopColor="#8eaa78" />
-            <stop offset="1" stopColor="#7d946c" stopOpacity=".55" />
-          </radialGradient>
-          <symbol id="plan-tree" viewBox="-10 -10 20 20">
-            <ellipse cx="2" cy="3" rx="7" ry="6" fill="#6a735c" opacity=".13" />
-            <circle r="7" fill="url(#tree-leaf)" />
-            <circle cx="-2" cy="-2" r="4" fill="#c6d1ae" opacity=".45" />
-            <path d="M-4 2L3-3M0-5L1 5" stroke="#6e855b" strokeWidth=".5" opacity=".3" />
-          </symbol>
-          <pattern id="contours" width="270" height="220" patternUnits="userSpaceOnUse">
-            <g fill="none" stroke="#f8f8e9" strokeWidth="1" opacity=".42">
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                <path
-                  key={i}
-                  d={`M${-40 + i * 9} 220 C${180 + i * 9} 160 ${-80 + i * 9} 60 ${90 + i * 10} -20`}
-                />
-              ))}
-            </g>
-          </pattern>
-          <pattern
-            id="lawn-lines"
-            width="9"
-            height="9"
-            patternUnits="userSpaceOnUse"
-            patternTransform="rotate(-20)"
-          >
-            <path d="M0 0V9" stroke="#faf9e9" strokeWidth="1" opacity=".23" />
-          </pattern>
-        </defs>
+        {legacyMobile ? (
+          <defs>
+            <radialGradient id="tree-leaf">
+              <stop stopColor="#b5c39a" />
+              <stop offset=".68" stopColor="#8eaa78" />
+              <stop offset="1" stopColor="#7d946c" stopOpacity=".55" />
+            </radialGradient>
+            <symbol id="plan-tree" viewBox="-10 -10 20 20">
+              <ellipse cx="2" cy="3" rx="7" ry="6" fill="#6a735c" opacity=".13" />
+              <circle r="7" fill="url(#tree-leaf)" />
+              <circle cx="-2" cy="-2" r="4" fill="#c6d1ae" opacity=".45" />
+              <path d="M-4 2L3-3M0-5L1 5" stroke="#6e855b" strokeWidth=".5" opacity=".3" />
+            </symbol>
+            <pattern id="contours" width="270" height="220" patternUnits="userSpaceOnUse">
+              <g fill="none" stroke="#f8f8e9" strokeWidth="1" opacity=".42">
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <path
+                    key={i}
+                    d={`M${-40 + i * 9} 220 C${180 + i * 9} 160 ${-80 + i * 9} 60 ${90 + i * 10} -20`}
+                  />
+                ))}
+              </g>
+            </pattern>
+            <pattern
+              id="lawn-lines"
+              width="9"
+              height="9"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(-20)"
+            >
+              <path d="M0 0V9" stroke="#faf9e9" strokeWidth="1" opacity=".23" />
+            </pattern>
+          </defs>
+        ) : (
+          <defs>
+            <symbol id="plan-tree" viewBox="-10 -10 20 20">
+              <circle r="7" fill="#aab99c" />
+              <circle cx="-1" cy="-1" r="4.5" fill="#bac7ae" />
+            </symbol>
+          </defs>
+        )}
         <g transform={`translate(${transform.x} ${transform.y}) scale(${transform.scale})`}>
           <path
             d="M218 500Q232 370 250 165L1000 165Q1124 500 1062 990L1040 1280 1140 1525Q850 1650 442 1658Q277 1260 203 916Q174 724 218 500Z"
-            fill="#e4e6d5"
-            stroke="#d8dbca"
-            strokeWidth="2"
+            fill={legacyMobile ? '#e4e6d5' : 'var(--campus-ground)'}
+            stroke={legacyMobile ? '#d8dbca' : '#dedfd4'}
+            strokeWidth={legacyMobile ? 2 : 1}
           />
           {features
             .filter((f) => f.kind === 1 || f.kind === 2)
@@ -301,31 +406,55 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
               <path
                 key={f.id}
                 d={f.path}
-                fill={f.kind === 1 ? '#cfd7b7' : '#d4dbb8'}
-                stroke="#c4cdab"
-                strokeWidth="1"
+                fill={
+                  legacyMobile
+                    ? f.kind === 1
+                      ? '#cfd7b7'
+                      : '#d4dbb8'
+                    : f.kind === 1
+                      ? 'var(--campus-woodland)'
+                      : 'var(--campus-green)'
+                }
+                stroke={legacyMobile ? '#c4cdab' : '#d0d9c9'}
+                strokeWidth={legacyMobile ? 1 : 0.6}
                 fillRule="evenodd"
               />
             ))}
-          <path d={woodland} fill="url(#contours)" fillRule="evenodd" />
+          {legacyMobile && <path d={woodland} fill="url(#contours)" fillRule="evenodd" />}
           {drawing.water.map((f) => (
             <g key={f.name}>
               <path
                 d={f.path}
-                fill="#b8d2ce"
-                stroke="#a8c4c0"
+                fill={legacyMobile ? '#b8d2ce' : 'var(--campus-water)'}
+                stroke={legacyMobile ? '#a8c4c0' : '#b5ccc7'}
                 strokeWidth="1.2"
                 fillRule="evenodd"
               />
-              <path d={f.path} fill="url(#lawn-lines)" />
+              {legacyMobile && <path d={f.path} fill="url(#lawn-lines)" />}
             </g>
           ))}
           <g fill="none" strokeLinecap="round" strokeLinejoin="round">
             {drawing.roads.map((f) => (
-              <path key={f.name} d={f.path} stroke="#c9c9bf" strokeWidth={f.width + 2} />
+              <path
+                key={f.name}
+                d={f.path}
+                stroke={legacyMobile ? '#c9c9bf' : 'var(--campus-road-edge)'}
+                strokeWidth={f.width + (legacyMobile ? 2 : 1.5)}
+              />
             ))}
             {drawing.roads.map((f) => (
-              <path key={f.name} d={f.path} stroke="#e7e5df" strokeWidth={f.width} />
+              <path
+                key={f.name}
+                d={f.path}
+                stroke={
+                  legacyMobile
+                    ? '#e7e5df'
+                    : f.width >= 8
+                      ? 'var(--campus-road)'
+                      : 'var(--campus-path)'
+                }
+                strokeWidth={f.width}
+              />
             ))}
           </g>
           {features
@@ -334,12 +463,12 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
               <g key={f.id}>
                 <path
                   d={f.path}
-                  fill="#d9d6c2"
-                  stroke="#f5f4e9"
+                  fill={legacyMobile ? '#d9d6c2' : '#e0ddcf'}
+                  stroke={legacyMobile ? '#f5f4e9' : '#f8f6ef'}
                   strokeWidth="1.5"
                   fillRule="evenodd"
                 />
-                <path d={f.path} fill="url(#lawn-lines)" />
+                {legacyMobile && <path d={f.path} fill="url(#lawn-lines)" />}
               </g>
             ))}
           {layout.trees.map(([x, y, s], i) => (
@@ -350,7 +479,9 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
               y={y - 8 * s}
               width={16 * s}
               height={16 * s}
-              opacity=".82"
+              opacity={
+                legacyMobile ? 0.82 : transform.zoom < 1.65 ? 0.24 : transform.zoom < 3 ? 0.4 : 0.55
+              }
             />
           ))}
           <g className="ordinary-buildings">
@@ -358,16 +489,25 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
               <g key={f.id}>
                 <path
                   d={f.path}
-                  transform="translate(2 3)"
-                  fill="#7f8477"
-                  opacity=".17"
+                  transform={legacyMobile ? 'translate(2 3)' : 'translate(1 1.5)'}
+                  fill={legacyMobile ? '#7f8477' : '#817c73'}
+                  opacity={legacyMobile ? 0.17 : 0.07}
                   fillRule="evenodd"
                 />
                 <path
                   d={f.path}
-                  fill="#fffefb"
-                  stroke="#b8bcaf"
-                  strokeWidth="1"
+                  fill={legacyMobile ? '#fffefb' : 'var(--campus-building)'}
+                  stroke={legacyMobile ? '#b8bcaf' : 'var(--campus-outline)'}
+                  strokeWidth={
+                    legacyMobile
+                      ? 1
+                      : transform.zoom < 1.65
+                        ? 0.45
+                        : transform.zoom < 3
+                          ? 0.65
+                          : 0.8
+                  }
+                  vectorEffect={legacyMobile ? undefined : 'non-scaling-stroke'}
                   strokeLinejoin="round"
                   fillRule="evenodd"
                 />
@@ -412,6 +552,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             const [x, y] = venue.campusPosition,
               [w, h] = venue.footprint,
               raised = 5;
+            const hitSize = 24;
             const placedLabel = venueLabels.get(venue.id);
             const labelLines = placedLabel?.lines || [];
             const labelWidth = placedLabel?.width || 0,
@@ -421,11 +562,19 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             return (
               <g
                 key={venue.id}
-                className="plan-venue"
+                className={`plan-venue ${venue.kind}${highlightedVenueId === venue.id ? ' is-highlighted' : ''}`}
                 data-venue={venue.id}
                 role="button"
                 tabIndex={0}
                 aria-label={`进入${venue.name}`}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === 'mouse') onHighlightVenue?.(venue.id);
+                }}
+                onPointerLeave={(event) => {
+                  if (event.pointerType === 'mouse') onHighlightVenue?.(null);
+                }}
+                onFocus={() => onHighlightVenue?.(venue.id)}
+                onBlur={() => onHighlightVenue?.(null)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -474,10 +623,10 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
                     strokeWidth=".8"
                   />
                   <rect
-                    x={-Math.max(w, 24 * inv) / 2}
-                    y={-Math.max(h, 24 * inv) / 2}
-                    width={Math.max(w, 24 * inv)}
-                    height={Math.max(h, 24 * inv)}
+                    x={-Math.max(w, hitSize * inv) / 2}
+                    y={-Math.max(h, hitSize * inv) / 2}
+                    width={Math.max(w, hitSize * inv)}
+                    height={Math.max(h, hitSize * inv)}
                     fill="transparent"
                   />
                 </g>
@@ -485,6 +634,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
                   <g className="venue-map-label" transform={`translate(${x} ${y})`}>
                     <path
                       d={`M0 ${-raised}L${dx} ${dy}`}
+                      className="venue-label-leader"
                       stroke="#929681"
                       strokeWidth={0.8 * inv}
                       fill="none"
@@ -492,6 +642,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
                     />
                     <g transform={`translate(${dx} ${dy}) scale(${inv})`}>
                       <rect
+                        className="venue-label-box"
                         x={-labelWidth / 2}
                         y={-labelHeight / 2}
                         width={labelWidth}
@@ -507,7 +658,7 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
                         <text
                           key={line}
                           x="4"
-                          y={(i - (labelLines.length - 1) / 2) * 14 + 0.5}
+                          y={(i - (labelLines.length - 1) / 2) * placedLabel.lineHeight + 0.5}
                           dominantBaseline="middle"
                           textAnchor="middle"
                           fontSize="10.5"
@@ -535,11 +686,17 @@ export const CampusMap = forwardRef<SceneHandle, Props>(function CampusMap(
             y="1"
             width={Math.max(1, scaleBar.pixels - 1)}
             height="5"
-            fill="#f9f4fb"
-            stroke="#78518e"
+            fill={legacyMobile ? '#f9f4fb' : '#fffefb'}
+            stroke={legacyMobile ? '#78518e' : '#716976'}
             strokeWidth="1"
           />
-          <rect x=".5" y="1" width={scaleBar.pixels / 2} height="5" fill="#78518e" />
+          <rect
+            x=".5"
+            y="1"
+            width={scaleBar.pixels / 2}
+            height="5"
+            fill={legacyMobile ? '#78518e' : '#716976'}
+          />
         </svg>
       </div>
     </div>

@@ -1,8 +1,8 @@
-/** Vector compass rose: paired purple facets stay crisp at every display size. */
+/** Original compass rose on desktop; preserve the existing compact mobile compass. */
 export function CompassRose() {
   return (
     <div className="compass compass-rose" role="img" aria-label="指北针：上北、下南、左西、右东">
-      <svg viewBox="0 0 120 120" aria-hidden="true">
+      <svg className="compass-classic-svg" viewBox="0 0 120 120" aria-hidden="true">
         <circle cx="60" cy="60" r="39" fill="#faf5fbe0" stroke="#a48ab6" strokeWidth=".8" />
         <circle cx="60" cy="60" r="31" fill="none" stroke="#a48ab6" strokeWidth=".65" />
         <circle
@@ -56,6 +56,36 @@ export function CompassRose() {
             E
           </text>
         </g>
+      </svg>
+      <svg className="compass-compact-svg" viewBox="0 0 56 64" aria-hidden="true">
+        <text
+          x="28"
+          y="10"
+          textAnchor="middle"
+          fill="#5B3D70"
+          fontSize="11"
+          fontFamily="inherit"
+          fontWeight="600"
+        >
+          N
+        </text>
+        <circle cx="28" cy="37" r="20" fill="#fffefbbb" stroke="#cec6d0" strokeWidth=".8" />
+        <path d="M8 37h40M28 17v40" stroke="#d5cdd6" strokeWidth=".8" />
+        <path
+          d="m28 18-6 21 6-4 6 4Z"
+          fill="#5B3D70"
+          stroke="#5B3D70"
+          strokeWidth=".8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="m28 56-6-21 6 4 6-4Z"
+          fill="#e3d9e9"
+          stroke="#aa97b6"
+          strokeWidth=".8"
+          strokeLinejoin="round"
+        />
+        <circle cx="28" cy="37" r="2" fill="#FFFEFB" stroke="#5B3D70" strokeWidth="1" />
       </svg>
     </div>
   );

@@ -1,0 +1,664 @@
+/* Desktop visual system. Mobile uses the original interface except dining labels. */
+@media (min-width: 701px) {
+  /* Campus atlas. Layout and map tokens are local to the first level. */
+  .view-campus {
+    --campus-paper: #f6f4ef;
+    --campus-panel: #fffefb;
+    --campus-purple: #5b3d70;
+    --campus-soft: #efe8f3;
+    --campus-ink: #302b34;
+    --campus-muted: #716976;
+    --campus-line: #e5e0e7;
+    --campus-green: #dee5d7;
+    --campus-woodland: #d8e1cf;
+    --campus-ground: #ebece2;
+    --campus-water: #c8ddda;
+    --campus-building: #e7e2d9;
+    --campus-outline: #c6c0b7;
+    --campus-road: #fffdf6;
+    --campus-path: #f7f5ee;
+    --campus-road-edge: #d4d1c6;
+    --purple: var(--campus-purple);
+    --purple-dark: var(--campus-purple);
+    --purple-soft: var(--campus-soft);
+    --ink: var(--campus-ink);
+    --muted: var(--campus-muted);
+    --line: var(--campus-line);
+    --paper: var(--campus-panel);
+    --campus-sidebar-width: clamp(300px, 23vw, 328px);
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    color: var(--campus-ink);
+    background: var(--campus-paper);
+  }
+  .floating-shell.view-campus .map-area {
+    border-color: #e5e1d9;
+    border-radius: 18px;
+    background: var(--campus-paper);
+    box-shadow: none;
+  }
+  .view-campus .campus-plan {
+    background: var(--campus-paper);
+  }
+  .view-campus .compass-rose .compass-classic-svg {
+    display: none;
+  }
+
+  .floating-shell.view-campus .header {
+    height: 64px;
+    padding: 0 20px;
+    gap: 32px;
+    border-radius: 16px;
+    background: var(--campus-panel);
+    box-shadow: 0 2px 12px #302b3405;
+  }
+  .view-campus .brand {
+    min-width: calc(var(--campus-sidebar-width) - 22px);
+    gap: 12px;
+  }
+  .view-campus .brand-mark {
+    width: 38px;
+    height: 40px;
+    border-radius: 10px 10px 10px 3px;
+    font-size: 26px;
+    box-shadow: none;
+  }
+  .view-campus .brand-mark > span {
+    font-size: 13px;
+    right: -3px;
+    top: -3px;
+  }
+  .view-campus .brand strong {
+    font-family: 'STKaiti', 'KaiTi', 'Noto Serif SC', serif;
+    font-size: 23px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 2px;
+  }
+  .view-campus .brand small {
+    margin-top: 3px;
+    font:
+      9px/1.4 'Segoe UI',
+      sans-serif;
+    letter-spacing: 1.65px;
+    color: var(--campus-muted);
+  }
+  .view-campus .header-nav {
+    gap: 12px;
+  }
+  .view-campus .header-nav button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .view-campus .header-nav .nav-active {
+    font-weight: 500;
+  }
+  .floating-shell.view-campus .header-location {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .view-campus .header-collapse {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 36px;
+    background: transparent;
+    border-radius: 8px;
+    color: var(--campus-muted);
+  }
+  .view-campus .header-collapse svg {
+    transform: rotate(-90deg);
+  }
+  .view-campus .header-collapse:hover {
+    background: var(--campus-soft);
+    color: var(--campus-purple);
+  }
+  .view-campus .header-reveal {
+    top: 12px;
+    left: 50%;
+    width: auto;
+    height: 32px;
+    padding: 0 12px;
+    gap: 6px;
+    display: flex;
+    background: var(--campus-panel);
+    border: 1px solid var(--campus-line);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--campus-purple);
+  }
+  .view-campus .header-reveal span {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+  .view-campus .header-reveal svg {
+    transform: rotate(90deg);
+  }
+  .view-campus.header-open .header-reveal {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .view-campus .sidebar-dock {
+    top: 92px;
+    bottom: 20px;
+    left: 20px;
+    width: var(--campus-sidebar-width);
+    transition: transform 280ms ease;
+  }
+  .floating-shell.view-campus .sidebar {
+    padding: 20px;
+    border-radius: 18px;
+    background: var(--campus-panel);
+    box-shadow: 0 8px 28px #302b340a;
+  }
+  .floating-shell.view-campus .sidebar-top {
+    min-height: 112px;
+    padding: 2px 0 20px;
+    margin: 0 0 18px;
+    border-radius: 0;
+    border-bottom: 1px solid var(--campus-line);
+    background: transparent;
+    color: var(--campus-purple);
+  }
+  .view-campus .sidebar-top::after {
+    content: none;
+  }
+  .floating-shell.view-campus .sidebar-top h1 {
+    margin: 0;
+    font:
+      500 29px/1.45 'Noto Sans SC',
+      'Microsoft YaHei',
+      'PingFang SC',
+      sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .view-campus .hero-art {
+    display: block;
+    width: 90px;
+    height: 98px;
+    right: -2px;
+    bottom: 10px;
+    opacity: 0.2;
+    color: var(--campus-purple);
+    transform: none;
+  }
+  .view-campus .search {
+    height: 44px;
+    padding: 0 12px;
+    gap: 9px;
+    border-radius: 9px;
+    border-color: #ded8e1;
+    background: #faf8f5;
+    color: #8b7c95;
+  }
+  .view-campus .search input {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .view-campus .search input::placeholder {
+    color: #827987;
+  }
+  .view-campus .search:focus-within {
+    border-color: #927ba3;
+    background: var(--campus-panel);
+    box-shadow: 0 0 0 2px #5b3d700d;
+  }
+  .view-campus .filters {
+    margin: 12px 0 16px;
+    padding: 3px;
+    gap: 2px;
+    border-radius: 9px;
+    background: #f5f2f5;
+  }
+  .view-campus .filters button {
+    height: 36px;
+    padding: 0 7px;
+    color: var(--campus-muted);
+    font-size: 13px;
+    border-radius: 7px;
+  }
+  .view-campus .filters button.active {
+    color: var(--campus-purple);
+    background: #e9e0ef;
+    font-weight: 600;
+    box-shadow: none;
+  }
+  .view-campus .filters button:hover {
+    background: var(--campus-soft);
+    color: var(--campus-purple);
+  }
+  .view-campus .venue-list {
+    padding: 0 2px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #d8ccdf transparent;
+    overscroll-behavior: contain;
+  }
+  .view-campus .venue-card {
+    min-height: 62px;
+    padding: 11px 8px;
+    margin: 0;
+    gap: 11px;
+    border: 0;
+    border-bottom: 1px solid #eee9ec;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  .view-campus .venue-card:last-child {
+    border-bottom-color: transparent;
+  }
+  .view-campus .venue-card:hover,
+  .view-campus .venue-card:focus-visible,
+  .view-campus .venue-card.is-highlighted {
+    background: var(--campus-soft);
+    border-radius: 8px;
+    border-bottom-color: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  .view-campus .venue-card:focus-visible {
+    outline-offset: -2px;
+  }
+  .view-campus .venue-icon,
+  .view-campus .venue-icon.cart {
+    width: 28px;
+    height: 32px;
+    border-radius: 0;
+    background: transparent;
+    color: #80668f;
+  }
+  .view-campus .venue-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+  .view-campus .venue-copy strong {
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 450;
+    color: var(--campus-ink);
+    overflow-wrap: anywhere;
+  }
+  .view-campus .venue-card.is-highlighted .venue-copy strong {
+    color: var(--campus-purple);
+  }
+  .view-campus .venue-arrow {
+    color: #9b8ba4;
+  }
+  .view-campus .venue-arrow svg {
+    width: 15px;
+    height: 15px;
+  }
+  .view-campus .venue-number {
+    display: none;
+  }
+  .view-campus .sidebar-bottom {
+    display: block;
+    margin-top: 16px;
+    padding: 13px 0 0;
+    border-top: 1px solid var(--campus-line);
+    border-radius: 0;
+    background: transparent;
+  }
+  .view-campus .mini-spark {
+    display: none;
+  }
+  .view-campus .sidebar-bottom p {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--campus-muted);
+  }
+  .view-campus .sidebar-bottom small {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--campus-muted);
+  }
+  .floating-shell.view-campus .sidebar-handle {
+    width: 24px;
+    height: 64px;
+    right: -23px;
+    border-color: var(--campus-line);
+    border-radius: 0 9px 9px 0;
+    color: var(--campus-purple);
+    background: var(--campus-panel);
+    box-shadow: 4px 2px 10px #302b3405;
+  }
+  .floating-shell.view-campus .sidebar-handle .ui-icon {
+    transform: none;
+  }
+  .floating-shell.view-campus .sidebar-handle .points-left {
+    transform: rotate(180deg);
+  }
+  .floating-shell.view-campus .sidebar-handle:hover {
+    background: var(--campus-soft);
+  }
+  .floating-shell.view-campus .breadcrumbs,
+  .floating-shell.view-campus.header-hidden .breadcrumbs {
+    left: auto;
+    right: 88px;
+    top: 84px;
+    padding: 8px 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 12px;
+    color: var(--campus-muted);
+    transition: none;
+  }
+  .floating-shell.view-campus .compass-rose,
+  .floating-shell.view-campus.header-hidden .compass-rose {
+    top: 82px;
+    right: 20px;
+    width: 50px;
+    height: 58px;
+    transition: none;
+  }
+  .view-campus .map-tools {
+    right: 20px;
+    padding: 3px;
+    border: 1px solid var(--campus-line);
+    border-radius: 10px;
+    background: var(--campus-panel);
+    box-shadow: 0 3px 12px #302b3406;
+  }
+  .view-campus .map-tools button {
+    width: 40px;
+    height: 42px;
+    border-radius: 7px;
+    color: var(--campus-purple);
+  }
+  .view-campus .map-tools button + button {
+    border-top: 1px solid #eee9ee;
+  }
+  .view-campus .map-tools button:hover,
+  .view-campus .map-tools button[aria-pressed='false'] {
+    background: var(--campus-soft);
+  }
+  .view-campus .map-tools .ui-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.65;
+  }
+  .floating-shell.view-campus .map-scale {
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    width: auto;
+    height: 26px;
+    color: var(--campus-muted);
+  }
+  .view-campus .scale-reading {
+    font-size: 11px;
+  }
+  .view-campus .map-scale svg rect {
+    stroke: #716976;
+  }
+  .view-campus .map-scale svg rect + rect {
+    fill: #716976;
+  }
+  .view-campus button:focus-visible,
+  .view-campus a:focus-visible,
+  .view-campus .campus-plan > svg:focus-visible {
+    outline: 2px solid #9276a4;
+  }
+  .view-campus .empty-state {
+    color: var(--campus-muted);
+    font-size: 13px;
+  }
+
+  /* Only shared button finishes carry over; level 2/3 layouts stay intact. */
+  .floating-shell:is(.view-building, .view-floor)
+    :is(.map-tools, .back-button, .detail-top button, .modal-close) {
+    border-color: #e5e0e7;
+    border-radius: 9px;
+    color: #5b3d70;
+    background: #fffefb;
+    box-shadow: none;
+  }
+  .floating-shell:is(.view-building, .view-floor)
+    :is(.map-tools button, .back-button, .detail-top button, .modal-close):hover {
+    background: #efe8f3;
+    color: #5b3d70;
+  }
+
+  /* Requested desktop refinements; the existing mobile sheet is unchanged. */
+  @media (min-width: 701px) {
+    .floating-shell.view-campus .sidebar-top {
+      display: flex;
+      align-items: center;
+      min-height: 126px;
+      padding: 18px;
+      border: 0;
+      border-radius: 12px;
+      background: #4b2b64;
+      color: #fff9f1;
+    }
+    .floating-shell.view-campus .sidebar-top h1 {
+      font-size: 28px;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .view-campus .sidebar-top .hero-art {
+      width: 86px;
+      height: 94px;
+      right: 3px;
+      bottom: 10px;
+      color: #e5d3ee;
+      opacity: 0.45;
+    }
+    .view-campus .search {
+      border-color: #d8cee0;
+      background: #fbf8fd;
+      color: #866997;
+    }
+    .view-campus .filters {
+      background: #f0eaf5;
+    }
+    .view-campus .filters button {
+      color: #7c668b;
+    }
+    .view-campus .filters button.active {
+      background: #74469b;
+      color: #fffaf5;
+    }
+    .view-campus .venue-card {
+      border-bottom-color: #e4dbe9;
+    }
+    .view-campus .venue-icon {
+      background: #eee5f4;
+      color: #79518f;
+      border-radius: 7px;
+    }
+    .view-campus .venue-icon.cart {
+      background: #f1e5ef;
+      color: #925e91;
+    }
+    .view-campus .venue-arrow {
+      color: #8f739f;
+    }
+    .view-campus .venue-number {
+      display: block;
+      color: #a28aae;
+    }
+    .view-campus .sidebar-bottom {
+      display: none;
+    }
+    .floating-shell.view-campus .compass-rose,
+    .floating-shell.view-campus.header-hidden .compass-rose {
+      width: 88px;
+      height: 88px;
+    }
+    .view-campus .compass-rose .compass-classic-svg {
+      display: block;
+    }
+    .view-campus .compass-rose .compass-compact-svg {
+      display: none;
+    }
+    .floating-shell.view-campus .breadcrumbs,
+    .floating-shell.view-campus.header-hidden .breadcrumbs {
+      right: 128px;
+    }
+
+    /* Carry the desktop component finish through the building and floor views. */
+    .floating-shell:is(.view-building, .view-floor) .sidebar {
+      background: #fffefb;
+      border-color: #e5e0e7;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px #302b340a;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-top {
+      background: #4b2b64;
+      color: #fff9f1;
+      border-radius: 12px;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-top::after {
+      display: none;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-top :is(.eyebrow, p) {
+      color: #e5d3ee;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-bottom {
+      display: none;
+    }
+    .floating-shell:is(.view-building, .view-floor) .back-button {
+      background: #fbf8fd;
+      border-color: #d8cee0;
+      color: #74469b;
+    }
+    .floating-shell:is(.view-building, .view-floor) .back-button:hover {
+      background: #efe8f3;
+      color: #4b2b64;
+    }
+    .floating-shell:is(.view-building, .view-floor) .tiny-tag {
+      background: #eee5f4;
+      color: #79518f;
+    }
+    .floating-shell:is(.view-building, .view-floor) .venue-description p,
+    .floating-shell:is(.view-building, .view-floor) .list-heading > span {
+      color: #716976;
+    }
+    .floating-shell:is(.view-building, .view-floor) .list-heading strong {
+      color: #4b2b64;
+    }
+    .floating-shell:is(.view-building, .view-floor) :is(.floor-card, .stall-card) {
+      background: transparent;
+      border-color: transparent;
+      border-bottom-color: #e4dbe9;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .floating-shell:is(.view-building, .view-floor) :is(.floor-card, .stall-card):last-child {
+      border-bottom-color: transparent;
+    }
+    .floating-shell:is(.view-building, .view-floor)
+      :is(.floor-card, .stall-card):is(:hover, :focus-visible) {
+      background: #efe8f3;
+      border-color: transparent;
+      border-radius: 8px;
+    }
+    .floating-shell:is(.view-building, .view-floor) .floor-card > b {
+      background: #eee5f4;
+      color: #79518f;
+      border-radius: 7px;
+    }
+    .floating-shell:is(.view-building, .view-floor) :is(.floor-card > span, .stall-card strong) {
+      color: #302b34;
+    }
+    .floating-shell:is(.view-building, .view-floor) :is(.floor-card small, .stall-card small) {
+      color: #716976;
+    }
+    .floating-shell:is(.view-building, .view-floor) :is(.floor-card > svg, .stall-card > svg) {
+      color: #8f739f;
+    }
+    .floating-shell:is(.view-building, .view-floor) .stall-number {
+      color: #79518f;
+    }
+    .floating-shell.view-floor .stall-card.selected {
+      background: #efe8f3;
+      border-color: transparent;
+      border-bottom-color: #b998ce;
+      border-radius: 8px;
+      box-shadow: inset 3px 0 #74469b;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-handle {
+      background: #fffefb;
+      border-color: #e5e0e7;
+      color: #79518f;
+    }
+    .floating-shell:is(.view-building, .view-floor) .sidebar-handle:hover {
+      background: #efe8f3;
+    }
+    .floating-shell.view-floor .detail-panel {
+      background: #fffefb;
+      border-color: #e5e0e7;
+      border-radius: 18px;
+    }
+    .floating-shell.view-floor .detail-top button {
+      background: #fbf8fd;
+      color: #79518f;
+    }
+    .floating-shell.view-floor .detail-top button:hover {
+      background: #efe8f3;
+    }
+    .floating-shell.view-floor .photo-placeholder {
+      background: #f4eef7;
+      border-color: #d8cee0;
+      color: #80668f;
+    }
+    .floating-shell.view-floor .detail-panel h2 {
+      color: #4b2b64;
+    }
+    .floating-shell.view-floor :is(.detail-location, .detail-rating) {
+      color: #716976;
+      border-color: #e5e0e7;
+    }
+    .floating-shell.view-floor .dish b {
+      color: #74469b;
+    }
+    .floating-shell.view-floor .review-placeholder {
+      background: #f4eef7;
+      border-radius: 8px;
+    }
+  }
+
+  .floating-shell.view-campus .sidebar-dock.is-dragging {
+    transition: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .view-campus *,
+    .view-campus *::before,
+    .view-campus *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .view-campus .compass-rose .compass-classic-svg {
+    display: block;
+  }
+  .view-campus .compass-rose .compass-compact-svg {
+    display: none;
+  }
+}
+
+/* Original map annotations and venue emphasis, shared by desktop and mobile. */
+.view-campus .venue-map-label text {
+  font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-weight: 400;
+  fill: #555b4c;
+}
+.view-campus .plan-venue.is-highlighted .venue-roof {
+  stroke: #737e5b;
+  stroke-width: 2.5;
+}
+.view-campus .plan-venue.is-highlighted .venue-label-box {
+  stroke: #899875;
+  stroke-width: 1.5;
+  fill: #fffef8;
+}

@@ -22,6 +22,20 @@ export default function App() {
   const aboutDialog = useRef<HTMLElement>(null);
   const header = useRef<HTMLElement>(null);
   const [headerOpen, setHeaderOpen] = useState(true);
+  const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 700px)');
+    const changed = () => setMobile(media.matches);
+    media.addEventListener('change', changed);
+    return () => media.removeEventListener('change', changed);
+  }, []);
+  const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null);
+  const highlightVenue = useCallback((id: string | null) => {
+    const focused = document.activeElement?.closest('[data-place-id], [data-venue]');
+    setHighlightedVenueId(
+      id || focused?.getAttribute('data-place-id') || focused?.getAttribute('data-venue') || null,
+    );
+  }, []);
   useEffect(() => {
     window.dispatchEvent(new Event('foodmap:overlays'));
   }, [headerOpen]);
@@ -47,7 +61,7 @@ export default function App() {
         search.current
       ) {
         event.preventDefault();
-        search.current.focus();
+        window.dispatchEvent(new Event('foodmap:search'));
       }
     };
     window.addEventListener('keydown', keydown);
@@ -90,6 +104,9 @@ export default function App() {
   const navigate = useCallback((next: View) => {
     setView(next);
     setStallId(null);
+    setHighlightedVenueId(null);
+    if (next.level === 'campus' && !window.matchMedia('(max-width: 700px)').matches)
+      setHeaderOpen(true);
   }, []);
   const pick = useCallback(
     (kind: string, id: string) => {
@@ -118,12 +135,19 @@ export default function App() {
         aria-controls="floating-header"
         aria-expanded={headerOpen}
         onPointerEnter={(e) => {
-          if (e.pointerType === 'mouse') setHeaderOpen(true);
+          if (mobile && e.pointerType === 'mouse') setHeaderOpen(true);
         }}
         onFocus={() => setHeaderOpen(true)}
         onClick={() => setHeaderOpen(true)}
       >
-        <span aria-hidden="true" />
+        {!mobile ? (
+          <>
+            <UiIcon name="chevron-right" size={15} />
+            <span>展开导航</span>
+          </>
+        ) : (
+          <span aria-hidden="true" />
+        )}
       </button>
       <header
         ref={header}
@@ -166,9 +190,21 @@ export default function App() {
           <UiIcon name="pin" size={17} />
           <span>南大仙林校区</span>
         </div>
+        {!mobile && (
+          <button
+            className="header-collapse"
+            aria-label="收起顶部导航"
+            aria-controls="floating-header"
+            aria-expanded={headerOpen}
+            title="收起顶部导航"
+            onClick={hideHeader}
+          >
+            <UiIcon name="chevron-right" size={17} />
+          </button>
+        )}
       </header>
       <main className="workspace">
-        <FloatingSidebar>
+        <FloatingSidebar campus={view.level === 'campus'}>
           <aside className="sidebar">
             <div className="sidebar-top">
               {view.level !== 'campus' && (
@@ -182,7 +218,7 @@ export default function App() {
               <h1>
                 {view.level === 'campus' ? (
                   <>
-                    今天
+                    今天{!mobile && '，'}
                     <br />
                     <span>去哪里吃？</span>
                   </>
@@ -199,12 +235,6 @@ export default function App() {
               )}
               {view.level === 'campus' && (
                 <svg className="hero-art" viewBox="0 0 130 140" fill="none" aria-hidden="true">
-                  <ellipse cx="66" cy="118" rx="48" ry="7" fill="currentColor" opacity=".08" />
-                  <path
-                    d="M24 74h84c-3 27-18 41-42 41S27 101 24 74Z"
-                    fill="currentColor"
-                    opacity=".13"
-                  />
                   <path
                     d="M24 74h84c-3 27-18 41-42 41S27 101 24 74ZM31 86h70M55 115h22M49 120h34"
                     stroke="currentColor"
@@ -216,11 +246,6 @@ export default function App() {
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
-                  />
-                  <path
-                    d="m28 24 3 8 8 3-8 3-3 8-3-8-8-3 8-3ZM112 49l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"
-                    fill="currentColor"
-                    opacity=".8"
                   />
                 </svg>
               )}
@@ -266,10 +291,17 @@ export default function App() {
                   ))}
                 </div>
                 <div className="venue-list">
-                  {visible?.map((v, i) => (
+                  {visible?.map((v) => (
                     <button
-                      className="venue-card"
+                      className={`venue-card ${highlightedVenueId === v.id ? 'is-highlighted' : ''}`}
                       key={v.id}
+                      data-place-id={v.id}
+                      onPointerEnter={(e) => {
+                        if (e.pointerType === 'mouse') highlightVenue(v.id);
+                      }}
+                      onPointerLeave={() => highlightVenue(null)}
+                      onFocus={() => highlightVenue(v.id)}
+                      onBlur={() => requestAnimationFrame(() => highlightVenue(null))}
                       onClick={() => navigate({ level: 'building', venueId: v.id })}
                     >
                       <span className={`venue-icon ${v.kind}`}>
@@ -281,7 +313,11 @@ export default function App() {
                       <span className="venue-arrow">
                         <UiIcon name="chevron-right" size={17} />
                       </span>
-                      <span className="venue-number">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="venue-number" aria-hidden="true">
+                        {String(
+                          (data?.venues.findIndex((venue) => venue.id === v.id) ?? -1) + 1,
+                        ).padStart(2, '0')}
+                      </span>
                     </button>
                   ))}
                   {visible?.length === 0 && (
@@ -366,13 +402,23 @@ export default function App() {
           className="map-area"
           aria-label="交互地图"
           onPointerEnter={(e) => {
-            if (e.pointerType === 'mouse') hideHeader();
+            if (mobile && e.pointerType === 'mouse') hideHeader();
           }}
-          onPointerDown={hideHeader}
+          onPointerDown={() => {
+            if (mobile) hideHeader();
+          }}
         >
           {data ? (
             view.level === 'campus' ? (
-              <CampusMap ref={scene} data={data} onPick={pick} showLabels={showMapLabels} />
+              <CampusMap
+                ref={scene}
+                data={data}
+                onPick={pick}
+                showLabels={showMapLabels}
+                highlightedVenueId={highlightedVenueId}
+                onHighlightVenue={highlightVenue}
+                legacyMobile={mobile}
+              />
             ) : (
               <MapScene
                 ref={scene}
@@ -431,15 +477,26 @@ export default function App() {
             >
               <UiIcon name="reset" />
             </button>
+            {view.level === 'campus' && !mobile && (
+              <button
+                className="name-toggle"
+                title={showMapLabels ? '隐藏名称' : '显示名称'}
+                aria-label={showMapLabels ? '隐藏名称' : '显示名称'}
+                aria-pressed={showMapLabels}
+                onClick={() => setShowMapLabels(!showMapLabels)}
+              >
+                <UiIcon name={showMapLabels ? 'eye' : 'eye-off'} size={20} />
+              </button>
+            )}
           </div>
           <div className="map-bottom">
-            {view.level === 'campus' && (
+            {view.level === 'campus' && mobile && (
               <button
                 className="style-toggle"
                 aria-pressed={showMapLabels}
                 onClick={() => setShowMapLabels(!showMapLabels)}
               >
-                <UiIcon name={showMapLabels ? 'eye' : 'eye-off'} size={17} />{' '}
+                <UiIcon name={showMapLabels ? 'eye' : 'eye-off'} size={17} />
                 <span>{showMapLabels ? '隐藏名称' : '显示名称'}</span>
               </button>
             )}
@@ -520,41 +577,43 @@ export default function App() {
               <UiIcon name="close" size={22} />
             </button>
             <div className="about-scroll">
-            <span className="eyebrow">FROM CAMPUS, FOR CAMPUS</span>
-            <h2 id="about-title">
-              让好好吃饭，
-              <br />
-              成为校园里的小确幸。
-            </h2>
-            <p>
-              「仙林食光」是由同学共同建设的交互式美食地图。目前处于 Phase
-              0，正在打磨从校园、食堂建筑到楼层窗口的探索体验。
-            </p>
-            <p>
-              校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
-              标记定位。地图只使用相对位置；楼层、窗口和菜单仍为示例。
-            </p>
-            <section className="zoom-guide" aria-labelledby="zoom-guide-title">
-              <h3 id="zoom-guide-title">缩放规则</h3>
-              <ul>
-                <li>鼠标滚轮：向上放大、向下缩小，校园地图以鼠标所在位置为缩放中心。</li>
-                <li>触屏操作：在校园地图上双指张开放大、合拢缩小，单指拖动浏览。</li>
-                <li>右侧 ＋／－：以画面中心放大或缩小。校园地图的缩放范围为初始视角的 0.85—8 倍。</li>
-                <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
-              </ul>
-              <p>进入食堂建筑或楼层后，也可通过滚轮或加减按钮缩放，右键拖动旋转视角。</p>
-            </section>
-            <p>下一步：现场采集 → 校准空间 → 接入照片与菜单 → 开放真实评价。</p>
-            <p className="source-credits">
-              比例尺校准数据：{' '}
-              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-                © OpenStreetMap contributors
-              </a>{' '}
-              （ODbL）。
-            </p>
-            <button className="primary-button" onClick={() => setShowInfo(false)}>
-              开始探索 <UiIcon name="arrow-right" size={18} />
-            </button>
+              <span className="eyebrow">FROM CAMPUS, FOR CAMPUS</span>
+              <h2 id="about-title">
+                让好好吃饭，
+                <br />
+                成为校园里的小确幸。
+              </h2>
+              <p>
+                「仙林食光」是由同学共同建设的交互式美食地图。目前处于 Phase
+                0，正在打磨从校园、食堂建筑到楼层窗口的探索体验。
+              </p>
+              <p>
+                校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
+                标记定位。地图只使用相对位置；楼层、窗口和菜单仍为示例。
+              </p>
+              <section className="zoom-guide" aria-labelledby="zoom-guide-title">
+                <h3 id="zoom-guide-title">缩放规则</h3>
+                <ul>
+                  <li>鼠标滚轮：向上放大、向下缩小，校园地图以鼠标所在位置为缩放中心。</li>
+                  <li>触屏操作：在校园地图上双指张开放大、合拢缩小，单指拖动浏览。</li>
+                  <li>
+                    右侧 ＋／－：以画面中心放大或缩小。校园地图的缩放范围为初始视角的 0.85—8 倍。
+                  </li>
+                  <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
+                </ul>
+                <p>进入食堂建筑或楼层后，也可通过滚轮或加减按钮缩放，右键拖动旋转视角。</p>
+              </section>
+              <p>下一步：现场采集 → 校准空间 → 接入照片与菜单 → 开放真实评价。</p>
+              <p className="source-credits">
+                比例尺校准数据：{' '}
+                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+                  © OpenStreetMap contributors
+                </a>{' '}
+                （ODbL）。
+              </p>
+              <button className="primary-button" onClick={() => setShowInfo(false)}>
+                开始探索 <UiIcon name="arrow-right" size={18} />
+              </button>
             </div>
           </section>
         </div>

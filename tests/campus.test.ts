@@ -50,12 +50,16 @@ test('map labels never overlap, and road names stay attached to their road ancho
         const y = height / 2 - (campusFrame.y + campusFrame.height / 2) * scale + panY;
         const requests: LabelRequest[] = Object.entries(venueAnchors).map(([id, a]) => ({
           id,
-          lines: [a.source.replace(/\.(jpg|png)$/, '')],
+          lines:
+            id === 'v-hut'
+              ? ['四五六食堂东侧', '美食小屋／小餐车']
+              : [a.source.replace(/\.(jpg|png)$/, '')],
           x: x + a.point[0] * scale,
           y: y + a.point[1] * scale,
           priority: 0,
           badge: true,
           fontSize: 10.5,
+          lineHeight: 14,
           preferred: a.labelOffset,
         }));
         requests.push(

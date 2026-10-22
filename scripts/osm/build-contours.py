@@ -13,9 +13,9 @@ sys.path.insert(0, str(ROOT / '.cache/osm-build'))
 import contourpy
 import numpy as np
 from PIL import Image
-from scipy.ndimage import gaussian_filter, map_coordinates
+from scipy.ndimage import gaussian_filter, gaussian_filter1d, map_coordinates
 from shapely.geometry import shape, mapping, LineString
-from shapely.ops import transform, unary_union
+from shapely.ops import transform, unary_union, linemerge
 from shapely import contains_xy
 
 OUT = ROOT / 'public/osm'
@@ -24,6 +24,9 @@ INTERVAL = 5
 MIN_GREEN_AREA = 10000
 SMOOTH_SIGMA = 0.8
 GRID_STEP = 8  # Interpolated display grid, not additional measurement resolution.
+MIN_OPEN_LENGTH = 50
+ENDPOINT_FADE = 14
+MAX_DISPLACEMENT = 2.5
 GREEN_TYPES = {'wood', 'forest', 'scrub', 'grass', 'grassland', 'meadow', 'garden', 'park', 'recreation_ground'}
 
 
@@ -41,10 +44,39 @@ def parts(geometry, kind):
 
 def svg_path(geometry):
     if geometry.geom_type == 'LineString':
-        return ''.join(('M' if i == 0 else 'L') + f'{x:.2f} {y:.2f}' for i, (x, y) in enumerate(geometry.coords))
+        coordinates = list(geometry.coords)
+        closed = geometry.is_ring
+        if closed:
+            coordinates = coordinates[:-1]
+        return ''.join(('M' if i == 0 else 'L') + f'{x:.2f} {y:.2f}' for i, (x, y) in enumerate(coordinates)) + ('Z' if closed else '')
     if geometry.geom_type == 'Polygon':
-        return ''.join(svg_path(LineString(ring.coords)) + 'Z' for ring in [geometry.exterior, *geometry.interiors])
+        return ''.join(svg_path(LineString(ring.coords)) for ring in [geometry.exterior, *geometry.interiors])
     return ''.join(svg_path(g) for g in geometry.geoms) if hasattr(geometry, 'geoms') else ''
+
+
+def smooth_line(original, height, sample_heights):
+    """Smooth each complete parent, never join different parents or heights.
+
+    Uniform sampling avoids vertex-density-dependent smoothing; periodic mode
+    preserves closed rings. Accept only simple curves with bounded displacement
+    and residual against the unchanged source DEM.
+    """
+    closed = original.is_ring
+    count = max(8, math.ceil(original.length / 6))
+    distances = np.linspace(0, original.length, count, endpoint=not closed)
+    points = np.array([original.interpolate(d).coords[0] for d in distances])
+    for sigma in [1.2, .8, .4]:
+        smooth = gaussian_filter1d(points, sigma=sigma, axis=0, mode='wrap' if closed else 'nearest')
+        if closed:
+            smooth = np.vstack([smooth, smooth[0]])
+        else:
+            smooth[0], smooth[-1] = points[0], points[-1]
+        candidate = LineString(smooth)
+        displacement = original.hausdorff_distance(candidate)
+        residual = float(np.abs(sample_heights(smooth) - height).max())
+        if candidate.is_simple and candidate.is_ring == closed and displacement <= MAX_DISPLACEMENT and residual < .48:
+            return candidate, displacement
+    return original, 0.0
 
 
 def main():
@@ -106,23 +138,44 @@ def main():
     if min(columns.min(), rows.min()) < 3 or max(columns.max(), rows.max()) > 252:
         raise ValueError('DEM does not fully cover campus plus smoothing margin')
     grid = map_coordinates(smoothed, [rows, columns], order=1, mode='nearest')
+    def sample_heights(coordinates):
+        lons, lats = inverse(coordinates[:, 0], coordinates[:, 1])
+        cols = ((lons + 180) / 360 * n - source['x']) * 256 - .5
+        row = ((1 - np.arcsinh(np.tan(np.radians(lats))) / math.pi) / 2 * n - source['y']) * 256 - .5
+        return map_coordinates(smoothed, [row, cols], order=1, mode='nearest')
     inside = contains_xy(green, xx, yy)
     low, high = float(grid[inside].min()), float(grid[inside].max())
     generator = contourpy.contour_generator(x=xs, y=ys, z=grid, name='serial', line_type='Separate')
-    features, rendered = [], []
+    features, rendered, parents = [], [], []
+    removed_short = merged_seams = 0
+    maximum_displacement = 0.0
     for height in range(math.ceil(low / INTERVAL) * INTERVAL, math.floor(high / INTERVAL) * INTERVAL + 1, INTERVAL):
         for coordinates in generator.lines(height):
-            # Simplification is much smaller than the source grid. Reclip after
-            # simplification so lines can never cut across a road or an inner hole.
-            line = LineString(coordinates).simplify(0.7).intersection(mask)
-            for segment in parts(line, 'LineString'):
-                if segment.length < 18:
+            original = LineString(coordinates)
+            parent_id = f'dem-{height}-{len(parents)}'
+            parents.append({'type': 'Feature', 'id': parent_id,
+                            'properties': {'elevation_m': height},
+                            'geometry': mapping(transform(inverse, original))})
+            smooth, displacement = smooth_line(original, height, sample_heights)
+            maximum_displacement = max(maximum_displacement, displacement)
+            pieces = list(parts(smooth.intersection(mask), 'LineString'))
+            # GEOS may split a clipped closed contour at its arbitrary first
+            # vertex. Merge only exact touching pieces from this same parent.
+            merged = linemerge(pieces) if len(pieces) > 1 else (pieces[0] if pieces else None)
+            segments = list(parts(merged, 'LineString')) if merged is not None else []
+            merged_seams += len(pieces) - len(segments)
+            for segment in segments:
+                closed = segment.is_ring
+                if segment.length < (35 if closed else MIN_OPEN_LENGTH):
+                    removed_short += 1
                     continue
                 identifier = f'contour-{height}-{len(features)}'
                 features.append({'type': 'Feature', 'id': identifier,
-                                 'properties': {'elevation_m': height, 'interval_m': INTERVAL},
+                                 'properties': {'elevation_m': height, 'interval_m': INTERVAL, 'parent_id': parent_id},
                                  'geometry': mapping(transform(inverse, segment))})
-                rendered.append({'id': identifier, 'elevation': height, 'path': svg_path(segment)})
+                rendered.append({'id': identifier, 'elevation': height, 'path': svg_path(segment),
+                                 'bounds': list(segment.bounds),
+                                 'endpoints': [] if closed else [list(segment.coords[0]), list(segment.coords[-1])]})
 
     if not rendered:
         raise ValueError('DEM generated no contours in campus green areas')
@@ -134,12 +187,17 @@ def main():
         'sourceGridSpacingMetres': round(spacing, 2), 'gaussianSigmaPixels': SMOOTH_SIGMA,
         'interpolatedGridMetres': GRID_STEP, 'minimumGreenAreaM2': MIN_GREEN_AREA,
         'greenOsmIds': green_ids, 'displayAreaM2': round(mask.area, 2), 'lineCount': len(rendered),
+        'minimumOpenLengthMetres': MIN_OPEN_LENGTH, 'endpointFadeMetres': ENDPOINT_FADE,
+        'mergedArtificialSeams': merged_seams, 'removedShortSegments': removed_short,
+        'maximumSmoothingDisplacementMetres': round(maximum_displacement, 4),
+        'sourceParentCount': len(parents), 'cartographyRevision': 'contour-refinement-1',
         'attribution': 'Mapzen / Tilezen; SRTM and GMTED2010 terrain data courtesy of the U.S. Geological Survey',
         'use': 'Smoothed terrain illustration; contour interval is not a statement of vertical accuracy.',
         'inputHashes': {name: hashlib.sha256((OUT / name).read_bytes()).hexdigest()
                         for name in ['campus-map.geojson', 'campus-retention.geojson', 'campus-render.json']},
     }
     outputs = {
+        'campus-contours-source.geojson': {'type': 'FeatureCollection', 'features': parents},
         'campus-contours.geojson': {'type': 'FeatureCollection', 'features': features},
         'campus-contour-mask.geojson': {'type': 'FeatureCollection', 'features': [
             {'type': 'Feature', 'properties': {'role': 'contour-display-mask'}, 'geometry': mapping(transform(inverse, mask))}]},

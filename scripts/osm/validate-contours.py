@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / '.cache/osm-build'))
 import numpy as np
 from PIL import Image
 from scipy.ndimage import gaussian_filter, map_coordinates
-from shapely.geometry import shape
+from shapely.geometry import shape, Point
 from shapely.ops import transform, unary_union
 
 
@@ -67,15 +67,33 @@ def main():
     heights = gaussian_filter(rgb[:,:,0]*256 + rgb[:,:,1] + rgb[:,:,2]/256 - 32768,
                               sigma=report['gaussianSigmaPixels'], mode='nearest')
     features = read(out / 'campus-contours.geojson')['features']
+    parents = {f['id']: f for f in read(out / 'campus-contours-source.geojson')['features']}
     require(len(features) == report['lineCount'] == len(render['lines']) > 0, 'Contour count mismatch')
     require(len({f['id'] for f in features}) == len(features), 'Duplicate contour IDs')
     require(render['intervalMetres'] == report['intervalMetres'] == 5, 'Unexpected contour interval')
     require([(f['id'],f['properties']['elevation_m']) for f in features] == [(f['id'],f['elevation']) for f in render['lines']], 'GeoJSON/render elevations differ')
     max_error = 0
+    geometries, endpoints = [], []
     for f in features:
         g = transform(project, shape(f['geometry']))
         elevation = f['properties']['elevation_m']
-        require(g.is_valid and not g.is_empty and g.geom_type == 'LineString', 'Invalid contour geometry')
+        require(g.is_valid and g.is_simple and not g.is_empty and g.geom_type == 'LineString', 'Invalid/self-crossing contour geometry')
+        parent = parents[f['properties']['parent_id']]
+        original = transform(project, shape(parent['geometry']))
+        require(parent['properties']['elevation_m'] == elevation, 'Joined different contour elevations')
+        require(original.buffer(2.501).covers(g), 'Smoothed contour displaced more than 2.5 m')
+        require(g.length >= (35 if g.is_ring else report['minimumOpenLengthMetres']) - .001, 'Short fragment remains')
+        if g.is_ring:
+            require(original.is_ring, 'Invented a closed contour from an open source')
+        else:
+            for coordinate in [g.coords[0], g.coords[-1]]:
+                end = Point(coordinate)
+                require(end.distance(mask.boundary) < .001, 'Artificial endpoint remains inside green area')
+                require(not any(h == elevation and end.distance(p) < .001 for h,p in endpoints), 'Unmerged same-height seam remains')
+                endpoints.append((elevation,end))
+        for other_elevation, other in geometries:
+            require(not g.intersects(other), f'Contour crossing/touch: {elevation} m and {other_elevation} m')
+        geometries.append((elevation,g))
         require(mask.buffer(.001).covers(g), f'Contour escapes green mask: {f["id"]}')
         require(not g.intersects(obstacles), f'Contour crosses an obstacle: {f["id"]}')
         require(elevation % report['intervalMetres'] == 0, 'Wrong height spacing')
@@ -90,6 +108,8 @@ def main():
     print(json.dumps({'status':'valid', 'lines':len(features), 'greenAreas':len(greens),
                       'intervalMetres':report['intervalMetres'], 'maximumInterpolationResidualM':round(max_error,4),
                       'insideCampusGreens':True, 'avoidsRoadsBuildingsWaterSports':True,
+                      'noArtificialInteriorEndpoints':True, 'noContourCrossings':True,
+                      'sameElevationParentsVerified':True, 'smoothingWithin2Point5Metres':True,
                       'rawDemHashVerified':True}, indent=2))
 
 

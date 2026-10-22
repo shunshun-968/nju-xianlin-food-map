@@ -50,7 +50,14 @@ export type CampusContours = {
   version: number;
   intervalMetres: number;
   maskPath: string;
-  lines: { id: string; elevation: number; path: string }[];
+  endpointFadeMetres?: number;
+  lines: {
+    id: string;
+    elevation: number;
+    path: string;
+    bounds?: [number, number, number, number];
+    endpoints?: XY[];
+  }[];
 };
 export type MapTransform = { x: number; y: number; scale: number; zoom: number };
 export type DetailLabel = {

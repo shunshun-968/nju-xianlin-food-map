@@ -227,6 +227,8 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
     ? mapLabels(map, transform, size.current, reserved.current, showLabels)
     : { food: [], details: [] };
   const scaleBar = metricScaleBar(transform.scale);
+  // Ground-distance fade with an 8 px ceiling: restrained even at close zoom.
+  const contourFade = Math.min(contours?.endpointFadeMetres ?? 14, 8 / transform.scale);
   const venueById = new Map(map?.venues.map((v) => [v.id, v]) || []);
   const validVenueIds = new Set(data.venues.map((v) => v.id));
   function point(event: React.PointerEvent): XY {
@@ -355,6 +357,38 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                   <path d={contours.maskPath} fillRule="evenodd" clipRule="evenodd" />
                 </clipPath>
               )}
+              <radialGradient id="geo-contour-end-fade">
+                <stop offset="0" stopColor="#000" />
+                <stop offset="0.25" stopColor="#222" />
+                <stop offset="0.6" stopColor="#aaa" />
+                <stop offset="1" stopColor="#fff" />
+              </radialGradient>
+              {contours?.lines.map((line) => {
+                if (!line.bounds || !line.endpoints?.length) return null;
+                const [left, top, right, bottom] = line.bounds;
+                return line.endpoints.map(([x, y], index) => (
+                  <mask
+                    key={`${line.id}-${index}`}
+                    id={`geo-fade-${line.id}-${index}`}
+                    maskUnits="userSpaceOnUse"
+                    maskContentUnits="userSpaceOnUse"
+                    style={{ maskType: 'luminance' }}
+                    x={left - contourFade}
+                    y={top - contourFade}
+                    width={right - left + 2 * contourFade}
+                    height={bottom - top + 2 * contourFade}
+                  >
+                    <rect
+                      x={left - contourFade}
+                      y={top - contourFade}
+                      width={right - left + 2 * contourFade}
+                      height={bottom - top + 2 * contourFade}
+                      fill="#fff"
+                    />
+                    <circle cx={x} cy={y} r={contourFade} fill="url(#geo-contour-end-fade)" />
+                  </mask>
+                ));
+              })}
             </defs>
             <g
               data-geo-world
@@ -402,7 +436,18 @@ export const GeoCampusMap = forwardRef<SceneHandle, Props>(function GeoCampusMap
                   aria-hidden="true"
                 >
                   {contours.lines.map((line) => (
-                    <path key={line.id} d={line.path} />
+                    // Separate masks multiply the two fades even when the ends
+                    // sit close together on opposite sides of a narrow path.
+                    <g
+                      key={line.id}
+                      mask={line.endpoints?.length ? `url(#geo-fade-${line.id}-0)` : undefined}
+                    >
+                      <path
+                        d={line.path}
+                        data-major={line.elevation % 20 === 0}
+                        mask={line.endpoints?.length ? `url(#geo-fade-${line.id}-1)` : undefined}
+                      />
+                    </g>
                   ))}
                 </g>
               )}

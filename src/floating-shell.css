@@ -348,7 +348,7 @@
   .floating-shell .map-bottom { bottom: 48px; }
   .floating-shell .map-scale { bottom: 48px; }
   .floating-shell .modal-backdrop {
-    align-items: end;
+    align-items: center;
     justify-items: center;
     padding: 12px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));

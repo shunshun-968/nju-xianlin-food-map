@@ -13,3 +13,6 @@ Thumbs.db
 .playwright-cli/
 output/playwright/
 .cache/
+
+# Local reference photographs are not website assets.
+public/media/fourth-canteen/

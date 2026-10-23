@@ -338,7 +338,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 fillRule="evenodd"
                 strokeLinejoin="round"
               >
-                <title>{f.name || (f.inCampus ? '校园建筑' : '周边建筑')}</title>
+                {f.inCampus !== false && <title>{f.name || '校园建筑'}</title>}
               </path>
             ))}
             <RadioTelescope point={map.observatory} />
@@ -735,6 +735,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 {buildingArtwork}
                 {nightMode && (
                   <CampusNightLights
+                    campusPath={map.campusPath}
                     features={baseMap?.features ?? map.features}
                     venues={map.venues}
                   />

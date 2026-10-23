@@ -6,20 +6,27 @@ import { CompassRose } from './components/CompassRose';
 import { FloatingSidebar } from './components/FloatingSidebar';
 import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
+import { useAppNavigation } from './lib/use-app-navigation';
 import { catalogRepository } from './services/catalog';
-import { mediaUrl, type Catalog, type MapTheme, type View } from './domain';
+import { getIndoorCanteen } from './data/indoor-canteens';
+import type { Catalog, MapTheme, View } from './domain';
 
 export default function App() {
   const [interfaceTheme, setInterfaceTheme] = useInterfaceTheme();
   const [data, setData] = useState<Catalog | null>(null),
     [error, setError] = useState('');
-  const [view, setView] = useState<View>({ level: 'campus' }),
-    [theme] = useState<MapTheme>('garden');
+  const {
+    view,
+    stallId,
+    showInfo,
+    setStallId,
+    setShowInfo,
+    navigate: changeView,
+  } = useAppNavigation();
+  const [theme] = useState<MapTheme>('garden');
   const [query, setQuery] = useState(''),
-    [filter, setFilter] = useState('all'),
-    [stallId, setStallId] = useState<string | null>(null);
-  const [showMapLabels, setShowMapLabels] = useState(true),
-    [showInfo, setShowInfo] = useState(false);
+    [filter, setFilter] = useState('all');
+  const [showMapLabels, setShowMapLabels] = useState(true);
   const scene = useRef<SceneHandle>(null);
   const search = useRef<HTMLInputElement>(null);
   const aboutDialog = useRef<HTMLElement>(null);
@@ -72,11 +79,16 @@ export default function App() {
       return;
     hideHeader();
   };
-  const navigate = useCallback((next: View) => {
-    setView(next);
-    setStallId(null);
+  const navigate = useCallback(
+    (next: View) => {
+      changeView(next);
+      setHighlightedVenueId(null);
+    },
+    [changeView],
+  );
+  useEffect(() => {
     setHighlightedVenueId(null);
-  }, []);
+  }, [view]);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -150,13 +162,31 @@ export default function App() {
   const venue = data?.venues.find((v) => view.level !== 'campus' && v.id === view.venueId);
   const floor = data?.floors.find((f) => view.level === 'floor' && f.id === view.floorId);
   const stall = data?.stalls.find((s) => s.id === stallId);
+  const indoorCanteen = getIndoorCanteen(floor?.id);
+  const isModeledFloor = !!indoorCanteen;
+  const isSouthCart = venue?.id === 'v-south';
+  const modelWindowCount = indoorCanteen?.faces.reduce(
+    (total, face) => total + face.windowCount,
+    0,
+  );
+  const modelWindowNumber = (id: string) => {
+    if (indoorCanteen?.showWindowNumbers === false) return undefined;
+    const localNumber = Number(id.match(/-w(\d+)$/)?.[1]);
+    const face = indoorCanteen?.faces.find((row) => row.faceId === id.replace(/-w\d+$/, ''));
+    if (!face || !localNumber) return undefined;
+    return face.windowNumbers?.[localNumber - 1] ?? localNumber;
+  };
+  const stallFace =
+    indoorCanteen && stall
+      ? indoorCanteen.faces.find((face) => face.faceId === stall.id.replace(/-w\d+$/, ''))
+      : undefined;
   const visible = data?.venues.filter(
     (v) => (filter === 'all' || v.kind === filter) && v.name.includes(query),
   );
   return (
     <div
+      className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}${isModeledFloor || isSouthCart ? ' fourth-model-active' : ''}`}
       data-interface-theme={interfaceTheme}
-      className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}`}
     >
       {!mobile && (
         <div
@@ -245,9 +275,11 @@ export default function App() {
               {view.level !== 'campus' && (
                 <div className="eyebrow">
                   <span className="hero-dot" />{' '}
-                  {view.level === 'building'
-                    ? '走进一栋楼，发现一餐饭'
-                    : '慢慢挑，找到想吃的那一口'}
+                  {isSouthCart
+                    ? '校园里的烟火气'
+                    : view.level === 'building'
+                      ? '走进一栋楼，发现一餐饭'
+                      : '慢慢挑，找到想吃的那一口'}
                 </div>
               )}
               <h1>
@@ -257,15 +289,19 @@ export default function App() {
                     <br />
                     <span>去哪里吃？</span>
                   </>
+                ) : indoorCanteen ? (
+                  indoorCanteen.name
                 ) : (
                   venue?.name
                 )}
               </h1>
               {view.level !== 'campus' && (
                 <p>
-                  {view.level === 'building'
-                    ? '转一转这栋建筑，选一层开始探索。'
-                    : '走近窗口，看看今天想吃些什么。'}
+                  {isSouthCart
+                    ? '开棚营业的小餐车，早餐与夜宵各有滋味。'
+                    : view.level === 'building'
+                      ? '转一转这栋建筑，选一层开始探索。'
+                      : '走近窗口，看看今天想吃些什么。'}
                 </p>
               )}
               {view.level === 'campus' && (
@@ -390,56 +426,96 @@ export default function App() {
                   <UiIcon name="arrow-left" size={17} />{' '}
                   {view.level === 'floor' ? '返回建筑' : '返回校园地图'}
                 </button>
-                <div className="venue-description">
-                  <span className="tiny-tag">空间示意 · 未经测量</span>
-                  <p>{venue?.description}</p>
-                </div>
-                <div className="list-heading">
-                  <strong>{view.level === 'building' ? '选择楼层' : '本层窗口'}</strong>
-                  <span>
-                    {view.level === 'building' ? '点击楼层进入' : `${floor?.name} · 示例布局`}
-                  </span>
-                </div>
-                <div className="venue-list">
-                  {view.level === 'building'
-                    ? data?.floors
-                        .filter((f) => f.venueId === venue?.id)
-                        .map((f) => (
-                          <button
-                            className="floor-card"
-                            key={f.id}
-                            onClick={() =>
-                              navigate({
-                                level: 'floor',
-                                venueId: f.venueId,
-                                floorId: f.id,
-                              })
-                            }
-                          >
-                            <b>{f.name}</b>
-                            <span>
-                              示例餐饮空间<small>查看窗口与布局</small>
-                            </span>
-                            <UiIcon name="arrow-right" size={19} />
-                          </button>
-                        ))
-                    : data?.stalls
-                        .filter((s) => s.floorId === floor?.id)
-                        .map((s, i) => (
-                          <button
-                            key={s.id}
-                            className={`stall-card ${stallId === s.id ? 'selected' : ''}`}
-                            onClick={() => setStallId(s.id)}
-                          >
-                            <span className="stall-number">{String(i + 1).padStart(2, '0')}</span>
-                            <span>
-                              <strong>{s.name}</strong>
-                              <small>{s.category} · 示例窗口</small>
-                            </span>
-                            <UiIcon name="arrow-right" size={19} />
-                          </button>
-                        ))}
-                </div>
+                {isSouthCart ? (
+                  <div className="venue-description cart-description">
+                    <span className="tiny-tag">开棚营业 · 南门小餐车</span>
+                    <p>南大门西侧的小餐车，打开遮阳棚，看看柜台上今天有什么。</p>
+                    <h3>{interfaceTheme === 'night' ? '夜晚 · 炸串时间' : '白天 · 早餐时光'}</h3>
+                    <p>
+                      {interfaceTheme === 'night'
+                        ? '餐台亮起暖灯，肉串、香肠、蔬菜与豆制品摆上柜台。'
+                        : '汉堡、饭团与玉米，配上茶叶蛋和一杯咖啡。'}
+                    </p>
+                    <div className="cart-food-tags">
+                      {(interfaceTheme === 'night'
+                        ? ['肉串', '香肠', '蔬菜串', '豆制品', '玉米串']
+                        : ['早餐汉堡', '饭团', '玉米', '茶叶蛋', '咖啡']
+                      ).map((name) => (
+                        <span key={name}>{name}</span>
+                      ))}
+                    </div>
+                    <p>顶部切换昼夜 · 拖动平移 · 右键旋转 · 滚轮放大</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="venue-description">
+                      <span className="tiny-tag">
+                        {isModeledFloor ? '窗口模型 · 空间示意' : '空间示意 · 未经测量'}
+                      </span>
+                      <p>{indoorCanteen?.description || venue?.description}</p>
+                    </div>
+                    <div className="list-heading">
+                      <strong>{view.level === 'building' ? '选择楼层' : '本层窗口'}</strong>
+                      <span>
+                        {view.level === 'building'
+                          ? '点击楼层进入'
+                          : indoorCanteen
+                            ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口`
+                            : `${floor?.name} · 示例布局`}
+                      </span>
+                    </div>
+                    <div className="venue-list">
+                      {view.level === 'building'
+                        ? data?.floors
+                            .filter((f) => f.venueId === venue?.id)
+                            .map((f) => {
+                              const canteen = getIndoorCanteen(f.id);
+                              return (
+                                <button
+                                  className="floor-card"
+                                  key={f.id}
+                                  onClick={() =>
+                                    navigate({ level: 'floor', venueId: f.venueId, floorId: f.id })
+                                  }
+                                >
+                                  <b>{canteen ? `${f.level}F` : f.name}</b>
+                                  <span>
+                                    {canteen?.name || '示例餐饮空间'}
+                                    <small>
+                                      {canteen ? '查看窗口模型与 L 形布局' : '查看窗口与布局'}
+                                    </small>
+                                  </span>
+                                  <UiIcon name="arrow-right" size={19} />
+                                </button>
+                              );
+                            })
+                        : data?.stalls
+                            .filter((s) => s.floorId === floor?.id)
+                            .map((s, i) => (
+                              <button
+                                key={s.id}
+                                className={`stall-card ${stallId === s.id ? 'selected' : ''}`}
+                                onClick={() => setStallId(s.id)}
+                              >
+                                <span className="stall-number">
+                                  {String(modelWindowNumber(s.id) ?? i + 1).padStart(2, '0')}
+                                </span>
+                                <span>
+                                  <strong>{s.name}</strong>
+                                  <small>
+                                    {isModeledFloor
+                                      ? indoorCanteen?.style === 'sixth'
+                                        ? '电子屏 · 售餐窗口'
+                                        : '牌坊模型 · 独立窗口'
+                                      : `${s.category} · 示例窗口`}
+                                  </small>
+                                </span>
+                                <UiIcon name="arrow-right" size={19} />
+                              </button>
+                            ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
             <div className="sidebar-bottom">
@@ -447,8 +523,7 @@ export default function App() {
                 <UiIcon name="sparkles" size={22} />
               </span>
               <p>
-                一份慢慢完善的校园食记
-                <small>照片、菜单与真实评价，正在准备中。</small>
+                一份慢慢完善的校园食记<small>菜单与真实评价，正在准备中。</small>
               </p>
             </div>
           </aside>
@@ -482,6 +557,7 @@ export default function App() {
                 data={data}
                 view={view}
                 theme={theme}
+                interfaceTheme={interfaceTheme}
                 selectedStall={stallId}
                 onPick={pick}
               />
@@ -518,7 +594,7 @@ export default function App() {
             <button title="缩小" aria-label="缩小" onClick={() => scene.current?.zoom(0.8)}>
               <UiIcon name="minus" />
             </button>
-            {view.level !== 'campus' && (
+            {view.level !== 'campus' && !isModeledFloor && (
               <button
                 title="旋转视角"
                 aria-label="旋转视角"
@@ -559,59 +635,61 @@ export default function App() {
             )}
           </div>
           {view.level !== 'campus' && (
-            <div className="interaction-hint">拖动平移 · 右键旋转 · 滚轮缩放 · 双指旋转</div>
+            <div className="interaction-hint">
+              {isModeledFloor
+                ? '拖动平移 · 滚轮缩放 · 切换 3D 后可右键旋转'
+                : '拖动平移 · 右键旋转 · 滚轮缩放 · 双指旋转'}
+            </div>
           )}
           {stall && (
             <aside className="detail-panel" aria-label="窗口详情">
               <div className="detail-top">
-                <span className="tiny-tag">示例窗口</span>
+                <span className="tiny-tag">{isModeledFloor ? '窗口信息' : '示例窗口'}</span>
                 <button aria-label="关闭窗口详情" onClick={() => setStallId(null)}>
                   <UiIcon name="close" size={19} />
                 </button>
               </div>
-              <div className="photo-placeholder">
-                {mediaUrl(stall.photoKey, import.meta.env.VITE_MEDIA_BASE_URL || '') ? (
-                  <img
-                    src={mediaUrl(stall.photoKey, import.meta.env.VITE_MEDIA_BASE_URL || '')!}
-                    alt={stall.name}
-                  />
-                ) : (
-                  <>
-                    <span>
-                      <UiIcon name="image" size={35} />
-                    </span>
-                    <p>把真实的味道，留在这里</p>
-                    <small>窗口实拍照片待采集</small>
-                  </>
-                )}
-              </div>
-              <h2>{stall.name}</h2>
-              <p className="detail-location">
-                {venue?.name} · {floor?.name}
-              </p>
-              <div className="detail-rating">
-                <UiIcon name="star" size={19} /> <strong>暂无评分</strong>
-                <span>尚未开放评价</span>
-              </div>
-              <h3>
-                菜单预览 <small>演示数据</small>
-              </h3>
-              {stall.dishes.map((d) => (
-                <div className="dish" key={d.name}>
-                  <span>
-                    <strong>{d.name}</strong>
-                    <small>{d.description}</small>
-                  </span>
-                  <b>{d.price === null ? '待核实' : `¥${d.price}`}</b>
-                </div>
-              ))}
-              <div className="review-placeholder">
-                <strong>第一条真实评价，留给你。</strong>
-                <p>评论、评分和照片上传将在账号与审核功能完成后开放。</p>
-              </div>
-              <div className="read-only">
-                <UiIcon name="info" size={13} /> 当前为探索演示，暂未开放评价
-              </div>
+              <h2>{stallFace?.name || stall.name}</h2>
+              {indoorCanteen && (
+                <p className="detail-location">
+                  {indoorCanteen.name} ·{' '}
+                  {indoorCanteen.showWindowNumbers === false
+                    ? stallFace?.pickup
+                      ? '侧面取餐口'
+                      : stall.name.split(' · ').at(-1)
+                    : `${modelWindowNumber(stall.id)}号窗口`}
+                </p>
+              )}
+              {!isModeledFloor && (
+                <>
+                  <p className="detail-location">
+                    {venue?.name} · {floor?.name}
+                  </p>
+                  <div className="detail-rating">
+                    <UiIcon name="star" size={19} /> <strong>暂无评分</strong>
+                    <span>尚未开放评价</span>
+                  </div>
+                  <h3>
+                    菜单预览 <small>演示数据</small>
+                  </h3>
+                  {stall.dishes.map((d) => (
+                    <div className="dish" key={d.name}>
+                      <span>
+                        <strong>{d.name}</strong>
+                        <small>{d.description}</small>
+                      </span>
+                      <b>{d.price === null ? '待核实' : `¥${d.price}`}</b>
+                    </div>
+                  ))}
+                  <div className="review-placeholder">
+                    <strong>第一条真实评价，留给你。</strong>
+                    <p>评论、评分和照片上传将在账号与审核功能完成后开放。</p>
+                  </div>
+                  <div className="read-only">
+                    <UiIcon name="info" size={13} /> 当前为探索演示，暂未开放评价
+                  </div>
+                </>
+              )}
             </aside>
           )}
         </section>
@@ -647,7 +725,7 @@ export default function App() {
               <p>开发者：顺顺和 lungfish</p>
               <p>
                 校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
-                标记定位。地图只使用相对位置；楼层、窗口和菜单仍为示例。
+                标记定位。四五六食堂已按参考资料建模，其他楼层与菜单仍为示例；模型尺寸为示意比例。
               </p>
               <section className="zoom-guide" aria-labelledby="zoom-guide-title">
                 <h3 id="zoom-guide-title">缩放规则</h3>
@@ -661,7 +739,7 @@ export default function App() {
                 </ul>
                 <p>进入食堂建筑或楼层后，也可通过滚轮或加减按钮缩放，右键拖动旋转视角。</p>
               </section>
-              <p>下一步：现场采集 → 校准空间 → 接入照片与菜单 → 开放真实评价。</p>
+              <p>下一步：现场采集 → 校准空间 → 完善菜单 → 开放真实评价。</p>
               <p className="source-credits">
                 比例尺校准数据：{' '}
                 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">

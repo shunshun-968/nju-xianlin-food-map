@@ -341,3 +341,39 @@ test('metric scale-bar length corresponds to ground metres across zoom levels', 
     assert.ok(Math.abs(bar.pixels / scale - bar.distance) < 1e-7);
   }
 });
+
+test('outside buildings and roads never expose detail names at any label tier', () => {
+  const building = {
+    ...map.features.find((f) => f.kind === 'building' && f.name)!,
+    id: 'outside-building',
+    name: '校外测试建筑',
+    area: 40000,
+    bounds: [100, 100, 300, 300] as [number, number, number, number],
+    inCampus: false,
+  };
+  const road = {
+    ...map.features.find((f) => f.kind === 'road' && f.name)!,
+    id: 'outside-road',
+    name: '校外测试道路',
+    width: 50,
+    footway: false,
+    lines: [
+      [
+        [100, 500],
+        [800, 500],
+      ],
+    ] as XY[][],
+    inCampus: false,
+  };
+  for (const zoom of [2, 4, 8, 16]) {
+    const fixture = { ...map, venues: [], features: [building, road] };
+    const t = { x: 0, y: 0, scale: 1, zoom };
+    assert.equal(mapLabels(fixture, t, { width: 1000, height: 800 }, [], true).details.length, 0);
+    const inside = {
+      ...fixture,
+      features: fixture.features.map((f) => ({ ...f, inCampus: true })),
+    };
+    if (zoom >= detailZoomThreshold)
+      assert.ok(mapLabels(inside, t, { width: 1000, height: 800 }, [], true).details.length > 0);
+  }
+});

@@ -1,7 +1,22 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { themes, type Catalog, type MapTheme, type View } from '../domain';
+import {
+  getIndoorCanteen,
+  fourthCanteenSpec,
+  type IndoorCanteenSpec,
+} from '../data/indoor-canteens';
+import {
+  createCanteenModel,
+  type FourthCanteenModel,
+  type FourthViewMode,
+} from './FourthCanteenModel';
+import type { InterfaceTheme } from '../lib/use-interface-theme';
+import './fourth-canteen.css';
+import { createSouthGateCartModel } from './SouthGateCartModel';
+import { batchModel } from '../lib/model-batches';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -10,6 +25,7 @@ type Props = {
   theme: MapTheme;
   onPick: (kind: string, id: string) => void;
   selectedStall: string | null;
+  interfaceTheme?: InterfaceTheme;
 };
 type Engine = {
   scene: THREE.Scene;
@@ -21,7 +37,54 @@ type Engine = {
   focus: THREE.Vector3;
   animating: boolean;
   range: number;
+  fourth?: FourthCanteenModel;
+  fourthMode?: FourthViewMode;
+  indoorSpec?: IndoorCanteenSpec;
+  indoorEnvironment?: THREE.WebGLRenderTarget;
+  keyLight: THREE.DirectionalLight;
+  ambientLight: THREE.HemisphereLight;
+  models: Map<string, FourthCanteenModel>;
+  preparing?: boolean;
 };
+
+function frameFourth(e: Engine, mode: FourthViewMode) {
+  const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
+  e.fourthMode = mode;
+  e.fourth?.setMode(mode);
+  e.animating = false;
+  e.controls.enableDamping = false;
+  e.controls.update();
+  e.controls.enableRotate = mode === '3d';
+  e.controls.zoomToCursor = true;
+  e.controls.maxZoom = 14;
+  e.controls.minPolarAngle = 0;
+  e.controls.maxPolarAngle = Math.PI / 2.05;
+  e.controls.target.set(framing.x, 0.7, framing.z);
+  if (mode === 'plan') {
+    e.controls.target.set(framing.x, 0, framing.z);
+    e.camera.position.set(framing.x, 45, framing.z + 0.0001);
+  } else if (e.indoorSpec?.id === 'v-south') {
+    e.controls.target.set(0, 1.6, 0.25);
+    e.camera.position.set(-8.8, 5.6, 11.7);
+  } else e.camera.position.set(framing.x - 25, 17.5, framing.z + 36);
+  e.goal.copy(e.camera.position);
+  e.focus.copy(e.controls.target);
+  e.camera.zoom = 1;
+  const aspect =
+    e.renderer.domElement.clientWidth / Math.max(e.renderer.domElement.clientHeight, 1);
+  e.range = Math.max(
+    mode === 'plan' ? framing.planRange : framing.spatialRange,
+    framing.halfWidth / aspect,
+  );
+  e.camera.left = -e.range * aspect;
+  e.camera.right = e.range * aspect;
+  e.camera.top = e.range;
+  e.camera.bottom = -e.range;
+  e.camera.updateProjectionMatrix();
+  e.controls.update();
+  e.controls.enableDamping = true;
+  e.renderer.shadowMap.needsUpdate = true;
+}
 
 function box(
   parent: THREE.Object3D,
@@ -118,25 +181,39 @@ function dispose(group: THREE.Group) {
 }
 
 export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
-  { data, view, theme, onPick, selectedStall },
+  { data, view, theme, onPick, selectedStall, interfaceTheme = 'day' },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null),
     engine = useRef<Engine | null>(null),
     callback = useRef(onPick);
   const [error, setError] = useState(false);
+  const [loadingModel, setLoadingModel] = useState(false);
+  const [fourthView, setFourthView] = useState<FourthViewMode>('plan');
+  const [cartRotating, setCartRotating] = useState(false);
+  const modeledCanteen = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
+  const isFourthFloor = !!modeledCanteen;
+  const isCart = view.venueId === 'v-south';
+  const interfaceThemeRef = useRef(interfaceTheme);
+  interfaceThemeRef.current = interfaceTheme;
   callback.current = onPick;
   useImperativeHandle(ref, () => ({
     zoom(factor) {
       const e = engine.current;
       if (e) {
-        e.camera.zoom = THREE.MathUtils.clamp(e.camera.zoom * factor, 0.55, 4);
+        e.camera.zoom = THREE.MathUtils.clamp(e.camera.zoom * factor, 0.55, e.fourth ? 14 : 4);
         e.camera.updateProjectionMatrix();
       }
     },
     reset() {
       const e = engine.current;
       if (e) {
+        e.controls.autoRotate = false;
+        setCartRotating(false);
+        if (e.fourth) {
+          frameFourth(e, e.fourthMode || 'plan');
+          return;
+        }
         e.camera.zoom = 1;
         e.camera.updateProjectionMatrix();
         e.animating = true;
@@ -145,6 +222,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     rotate() {
       const e = engine.current;
       if (e) {
+        if (e.fourth && e.fourthMode === 'plan') {
+          return;
+        }
         e.animating = false;
         const offset = e.camera.position
           .clone()
@@ -169,6 +249,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = false;
     renderer.domElement.setAttribute(
       'aria-label',
       '食堂三维示意场景；可使用左侧列表选择楼层和窗口',
@@ -190,7 +271,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
     const content = new THREE.Group();
     scene.add(content);
-    scene.add(new THREE.HemisphereLight('#ffffff', '#9da495', 1.5));
+    const ambientLight = new THREE.HemisphereLight('#ffffff', '#9da495', 1.5);
+    scene.add(ambientLight);
     const light = new THREE.DirectionalLight('#ffffff', 1.7);
     light.position.set(-80, 160, 60);
     light.castShadow = true;
@@ -208,12 +290,22 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       focus: new THREE.Vector3(),
       animating: true,
       range: 94,
+      keyLight: light,
+      ambientLight,
+      models: new Map(),
     };
     engine.current = e;
     const resize = () => {
       const { width, height } = element.getBoundingClientRect();
       if (!height || !width) return;
       const aspect = width / height;
+      if (e.fourth) {
+        const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
+        e.range = Math.max(
+          e.fourthMode === 'plan' ? framing.planRange : framing.spatialRange,
+          framing.halfWidth / aspect,
+        );
+      }
       camera.left = -e.range * aspect;
       camera.right = e.range * aspect;
       camera.top = e.range;
@@ -226,6 +318,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     resize();
     controls.addEventListener('start', () => {
       e.animating = false;
+      controls.autoRotate = false;
+      setCartRotating(false);
     });
     const raycaster = new THREE.Raycaster(),
       pointer = new THREE.Vector2();
@@ -242,22 +336,36 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         (-(event.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
-      const hit = raycaster
-        .intersectObjects(content.children, true)
-        .find((h) => h.object.userData.kind);
+      const hit = raycaster.intersectObjects(content.children, true).find((h) => {
+        if (!h.object.userData.kind) return false;
+        let object: THREE.Object3D | null = h.object;
+        while (object) {
+          if (!object.visible) return false;
+          object = object.parent;
+        }
+        return true;
+      });
       if (hit) callback.current(hit.object.userData.kind, hit.object.userData.id);
     };
     renderer.domElement.addEventListener('pointerdown', down);
     renderer.domElement.addEventListener('pointerup', up);
-    renderer.setAnimationLoop(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let previousFrame = 0;
+    renderer.setAnimationLoop((time) => {
+      const delta = previousFrame ? Math.min((time - previousFrame) / 1000, 0.08) : 0;
+      previousFrame = time;
+      if (document.hidden || e.preparing) return;
       if (e.animating) {
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         camera.position.lerp(e.goal, reduce ? 1 : 0.085);
         controls.target.lerp(e.focus, reduce ? 1 : 0.085);
         if (camera.position.distanceTo(e.goal) < 0.03) e.animating = false;
       }
-      controls.update();
+      controls.update(delta);
+      if (!reducedMotion.matches) e.fourth?.tick(time / 1000);
       renderer.render(scene, camera);
+      if (import.meta.env.DEV)
+        renderer.domElement.dataset.drawCalls = String(renderer.info.render.calls);
     });
     return () => {
       observer.disconnect();
@@ -265,8 +373,12 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       renderer.domElement.removeEventListener('pointerdown', down);
       renderer.domElement.removeEventListener('pointerup', up);
       controls.dispose();
+      e.fourth?.group.removeFromParent();
       dispose(content);
+      for (const model of e.models.values()) dispose(model.group);
+      e.models.clear();
       renderer.dispose();
+      e.indoorEnvironment?.dispose();
       element.removeChild(renderer.domElement);
       engine.current = null;
     };
@@ -277,10 +389,122 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     if (!e) return;
     const { content, scene, camera, controls } = e;
     const t = themes[theme];
+    controls.autoRotate = false;
+    controls.autoRotateSpeed = 0.65;
+    setCartRotating(false);
+    e.preparing = false;
+    if (e.fourth) e.fourth.group.removeFromParent();
+    e.fourth = undefined;
+    e.indoorSpec = undefined;
+    scene.environment = null;
+    scene.environmentIntensity = 1;
+    controls.zoomToCursor = false;
+    controls.maxZoom = 4;
+    controls.maxPolarAngle = Math.PI / 2.15;
+    e.ambientLight.intensity = 1.5;
+    e.ambientLight.visible = true;
+    e.keyLight.visible = true;
+    e.renderer.toneMappingExposure = 1;
+    e.ambientLight.color.set('#ffffff');
+    e.keyLight.intensity = 1.7;
+    e.keyLight.color.set('#ffffff');
+    e.keyLight.shadow.normalBias = 0;
+    Object.assign(e.keyLight.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120 });
+    e.keyLight.shadow.camera.updateProjectionMatrix();
     dispose(content);
+    e.renderer.shadowMap.needsUpdate = true;
     scene.background = new THREE.Color(t.ground);
     camera.zoom = 1;
-    if (view.level === 'building') {
+    const spec = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
+    if (spec || view.venueId === 'v-south') {
+      let cancelled = false;
+      let frame = 0;
+      setLoadingModel(true);
+      const activate = async () => {
+        e.preparing = true;
+        const started = performance.now();
+        const id = spec?.id ?? 'v-south';
+        let model = e.models.get(id);
+        const cached = !!model;
+        if (!model) {
+          model = spec ? createCanteenModel(spec) : createSouthGateCartModel();
+          if (spec) batchModel(model.group);
+          e.models.set(id, model);
+        }
+        if (cancelled) return;
+        model.group.traverse((node) => {
+          if (node instanceof THREE.Mesh && node.userData.baseColor)
+            (node.material as THREE.MeshStandardMaterial).color.set(node.userData.baseColor);
+        });
+        e.renderer.domElement.setAttribute(
+          'aria-label',
+          spec
+            ? `${spec.name}窗口模型，可切换俯视与三维、拖动缩放`
+            : '南门小餐车模型，可拖动平移、右键旋转、滚轮缩放',
+        );
+        e.indoorSpec = spec ?? {
+          ...fourthCanteenSpec,
+          id: 'v-south',
+          frame: { x: 0, z: 0.25, planRange: 5, spatialRange: 4.7, halfWidth: 6.3 },
+        };
+        if (!e.indoorEnvironment) {
+          const room = new RoomEnvironment();
+          const pmrem = new THREE.PMREMGenerator(e.renderer);
+          e.indoorEnvironment = pmrem.fromScene(room, 0.04);
+          room.dispose();
+          pmrem.dispose();
+        }
+        scene.environment = e.indoorEnvironment.texture;
+        scene.environmentIntensity = 0.28;
+        e.ambientLight.intensity = 0.65;
+        e.ambientLight.color.set('#fff1d9');
+        e.keyLight.intensity = 1.0;
+        e.keyLight.color.set('#fff1db');
+        Object.assign(e.keyLight.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30 });
+        e.keyLight.shadow.camera.updateProjectionMatrix();
+        e.keyLight.shadow.normalBias = 0.025;
+        e.fourth = model;
+        content.add(model.group);
+        const night = interfaceThemeRef.current === 'night';
+        scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
+        model.setInterfaceTheme(night);
+        setFourthView(spec ? 'plan' : '3d');
+        frameFourth(e, spec ? 'plan' : '3d');
+        if (!spec) {
+          scene.environment = null;
+          e.keyLight.visible = false;
+          e.ambientLight.visible = false;
+          e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
+        }
+        await e.renderer.compileAsync(scene, camera);
+        if (!cancelled) {
+          e.preparing = false;
+          setLoadingModel(false);
+          if (import.meta.env.DEV) {
+            e.renderer.domElement.dataset.modelCached = String(cached);
+            e.renderer.domElement.dataset.modelPrepareMs = String(
+              Math.round(performance.now() - started),
+            );
+          }
+        }
+      };
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
+          void activate().catch((error: unknown) => {
+            if (!cancelled) {
+              console.error(error);
+              setError(true);
+              e.preparing = false;
+              setLoadingModel(false);
+            }
+          });
+        });
+      });
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(frame);
+      };
+    } else if (view.level === 'building') {
       const v = data.venues.find((v) => v.id === view.venueId)!;
       e.range = 28;
       e.goal.set(43, 35, 49);
@@ -368,7 +592,17 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     camera.updateProjectionMatrix();
     controls.enableRotate = true;
     e.animating = true;
+    setLoadingModel(false);
   }, [data, view, theme]);
+  useEffect(() => {
+    const e = engine.current;
+    if (!e?.fourth) return;
+    const night = interfaceTheme === 'night';
+    e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
+    e.fourth.setInterfaceTheme(night);
+    if (e.indoorSpec?.id === 'v-south') e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
+    e.renderer.shadowMap.needsUpdate = true;
+  }, [interfaceTheme, view]);
   useEffect(() => {
     engine.current?.content.traverse((obj) => {
       if (obj.userData.kind === 'stall' && obj.userData.baseColor) {
@@ -379,7 +613,59 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     });
   }, [selectedStall, data, view, theme]);
   return (
-    <div className="scene" ref={host}>
+    <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host}>
+      {isCart && (
+        <div className="fourth-view-controls" role="group" aria-label="餐车模型控制">
+          <button
+            disabled={loadingModel || error}
+            aria-label="自动旋转"
+            aria-pressed={cartRotating}
+            onClick={() => {
+              const e = engine.current;
+              if (!e?.fourth) return;
+              e.animating = false;
+              e.controls.autoRotate = !e.controls.autoRotate;
+              setCartRotating(e.controls.autoRotate);
+            }}
+          >
+            {cartRotating ? '暂停旋转' : '自动旋转'}
+          </button>
+        </div>
+      )}
+      {loadingModel && (
+        <div className="loading" role="status">
+          正在展开模型…
+        </div>
+      )}
+      {isFourthFloor && (
+        <>
+          <div className="fourth-view-controls" role="group" aria-label="食堂显示模式">
+            <button
+              aria-pressed={fourthView === 'plan'}
+              onClick={() => {
+                if (engine.current) frameFourth(engine.current, 'plan');
+                setFourthView('plan');
+              }}
+            >
+              俯视图
+            </button>
+            <button
+              aria-pressed={fourthView === '3d'}
+              onClick={() => {
+                if (engine.current) frameFourth(engine.current, '3d');
+                setFourthView('3d');
+              }}
+            >
+              3D 模式
+            </button>
+          </div>
+          <div className="fourth-view-note">
+            {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
+            {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
+            {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
+          </div>
+        </>
+      )}
       {error && (
         <div className="scene-error">
           <strong>当前设备未能启动 3D 地图</strong>

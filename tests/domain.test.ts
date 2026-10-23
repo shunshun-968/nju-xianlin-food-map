@@ -16,7 +16,14 @@ test('malformed external catalogs fail validation instead of crashing', () => {
 test('orphan and rotated out-of-bounds layouts are rejected', () => {
   const data = structuredClone(catalog);
   data.stalls[0].floorId = 'missing';
-  data.stalls[1].position = { x: 15, z: 0, width: 6, depth: 6, rotationY: Math.PI / 4 };
+  const floor = data.floors.find((f) => f.id === data.stalls[1].floorId)!;
+  data.stalls[1].position = {
+    x: floor.width / 2 - 1,
+    z: 0,
+    width: 6,
+    depth: 6,
+    rotationY: Math.PI / 4,
+  };
   const errors = validateCatalog(data);
   assert(errors.some((e) => e.includes('missing floor')));
   assert(errors.some((e) => e.includes('outside floor')));

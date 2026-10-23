@@ -186,7 +186,9 @@ export function mapLabels(
     return true;
   }
   for (const feature of data.features
-    .filter((f) => f.kind === 'building' && f.name && !venueBuildings.has(f.id))
+    .filter(
+      (f) => f.inCampus !== false && f.kind === 'building' && f.name && !venueBuildings.has(f.id),
+    )
     .sort(
       (a, b) =>
         Number(overviewBuildings.has(b.id)) - Number(overviewBuildings.has(a.id)) ||
@@ -224,7 +226,12 @@ export function mapLabels(
   }
   const roads: (Omit<DetailLabel, 'box'> & { score: number })[] = [];
   for (const feature of data.features.filter(
-    (f) => t.zoom >= roadZoomThreshold && f.kind === 'road' && f.name && !f.footway,
+    (f) =>
+      f.inCampus !== false &&
+      t.zoom >= roadZoomThreshold &&
+      f.kind === 'road' &&
+      f.name &&
+      !f.footway,
   )) {
     const height = 10,
       width = textWidth(feature.name, 9.5),

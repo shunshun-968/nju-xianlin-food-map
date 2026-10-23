@@ -1,0 +1,450 @@
+/* Global appearance control; deliberately independent of the map's palette. */
+.floating-shell .theme-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex-shrink: 0;
+  gap: 4px;
+  padding: 4px;
+  width: 184px;
+  border-radius: 11px;
+  background: #efe8f3;
+  color: #7e7387;
+}
+.theme-toggle button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.theme-toggle button:hover {
+  background: #e3d8eb;
+  color: #5b3d70;
+}
+.theme-toggle button[aria-pressed='true'] {
+  background: #5b3d70;
+  color: #fffaf7;
+  box-shadow: 0 2px 6px #35203f12;
+}
+
+/* The appearance switch follows navigation; the campus stays at the far edge. */
+.app.floating-shell .header-location {
+  margin-left: auto;
+}
+@media (min-width: 701px) and (max-width: 1100px) {
+  .app.floating-shell .header {
+    gap: 16px;
+  }
+  .app.floating-shell .brand {
+    min-width: 0;
+    margin-right: 0;
+  }
+  .app.floating-shell .header-location {
+    display: flex;
+  }
+  .app.floating-shell .header-nav {
+    gap: 4px;
+  }
+  .app.floating-shell .header-nav button {
+    padding: 0 10px;
+  }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .app.floating-shell .header {
+    gap: 12px;
+    padding: 0 14px;
+  }
+  .app.floating-shell .brand {
+    gap: 8px;
+  }
+  .app.floating-shell .brand strong {
+    font-size: 21px;
+  }
+  .app.floating-shell .brand small {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .app.floating-shell .header-nav .about {
+    width: 30px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+    gap: 0;
+  }
+  .floating-shell .theme-toggle {
+    width: 160px;
+  }
+  .app.floating-shell .header-location {
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 700px) {
+  .app.floating-shell .header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px 22px auto;
+    grid-template-rows: 1fr;
+    column-gap: 5px;
+    row-gap: 0;
+    padding: 6px 10px;
+  }
+  .app.floating-shell .header-location {
+    display: flex;
+    grid-column: 4;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+    gap: 3px;
+    font-size: 9px;
+  }
+  .app.floating-shell .header-location > svg {
+    width: 12px;
+    height: 12px;
+  }
+  .floating-shell .theme-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    width: 112px;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  .theme-toggle button {
+    min-height: 38px;
+    padding: 0 5px;
+    gap: 4px;
+    font-size: 11px;
+    border-radius: 7px;
+  }
+  .theme-toggle .ui-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .app.floating-shell .brand {
+    grid-column: 1;
+    grid-row: 1;
+    gap: 7px;
+  }
+  .app.floating-shell .brand small {
+    letter-spacing: 1px;
+  }
+  .app.floating-shell .header-nav .about {
+    font-size: 0;
+    padding: 0;
+    width: 22px;
+    height: 32px;
+    justify-content: center;
+  }
+  .app.floating-shell .header-nav {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    align-self: center;
+  }
+  .app.floating-shell .header-nav .about .ui-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+@media (max-width: 420px) {
+  .app.floating-shell .brand-mark {
+    display: none;
+  }
+}
+@media (max-width: 359px) {
+  .app.floating-shell .header {
+    padding-inline: 8px;
+    column-gap: 3px;
+    grid-template-columns: minmax(0, 1fr) 106px 20px auto;
+  }
+  .app.floating-shell .brand strong {
+    font-size: 15px;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  .app.floating-shell .brand small {
+    font-size: 5px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .app.floating-shell .theme-toggle {
+    width: 106px;
+  }
+  .app.floating-shell .header-nav .about {
+    width: 20px;
+  }
+  .app.floating-shell .header-location {
+    font-size: 8px;
+    gap: 2px;
+  }
+}
+
+/* Palette shared with the neighbouring food-cart site. No filters or rules
+   target the campus SVG, canvas, basemap, labels, compass or scale. */
+.app.floating-shell[data-interface-theme='night'] {
+  --purple: #d5b7eb;
+  --purple-dark: #d5b7eb;
+  --purple-soft: #373043;
+  --purple-tint: #373043;
+  --ink: #e8e2ee;
+  --muted: #a59aaf;
+  --line: #443a4e;
+  --paper: #292634;
+  --night-raised: #302b3b;
+  --night-hover: #46374f;
+  --night-selected: #7b5893;
+  color: var(--ink);
+  background: #222331;
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.header, .sidebar, .detail-panel, .about-modal) {
+  color-scheme: dark;
+  color: var(--ink);
+  background: var(--paper);
+  border-color: var(--line);
+  box-shadow: 0 8px 28px #14111c24;
+}
+.app.floating-shell[data-interface-theme='night'] .brand-mark {
+  background: #4b335e;
+  color: #fffaf7;
+}
+.app.floating-shell[data-interface-theme='night'] .brand strong {
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.brand small, .header-location, .header-nav button) {
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night'] .header-nav :is(.nav-active, button:hover) {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] .theme-toggle {
+  background: var(--purple-soft);
+  color: #c3b6cc;
+}
+.app.floating-shell[data-interface-theme='night'] .theme-toggle button:hover {
+  background: var(--night-hover);
+  color: var(--ink);
+}
+.app.floating-shell[data-interface-theme='night'] .theme-toggle button[aria-pressed='true'] {
+  background: var(--night-selected);
+  color: #fffaf7;
+}
+.app.floating-shell[data-interface-theme='night'] .header-reveal {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] .header-reveal span {
+  background: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-top {
+  background: #4b335e;
+  color: #fffaf7;
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-top :is(p, .eyebrow) {
+  color: #d9c7e5;
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-top .hero-art {
+  color: #d5b7eb;
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-handle {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--purple);
+  box-shadow: none;
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-handle:hover {
+  background: var(--purple-soft);
+}
+.app.floating-shell[data-interface-theme='night'] .search {
+  background: #25222f;
+  border-color: var(--line);
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night'] .search:focus-within {
+  border-color: #b695cb;
+  box-shadow: 0 0 0 3px #b695cb18;
+}
+.app.floating-shell[data-interface-theme='night'] .search input {
+  color: var(--ink);
+  caret-color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] .search input::placeholder {
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night'] .filters {
+  background: var(--purple-soft);
+}
+.app.floating-shell[data-interface-theme='night'] .filters button {
+  color: #c3b6cc;
+}
+.app.floating-shell[data-interface-theme='night'] .filters button:hover {
+  background: var(--night-hover);
+  color: var(--ink);
+}
+.app.floating-shell[data-interface-theme='night'] .filters button.active {
+  background: var(--night-selected);
+  color: #fffaf7;
+  box-shadow: none;
+}
+.app.floating-shell[data-interface-theme='night'] :is(.venue-list, .detail-panel, .about-scroll) {
+  scrollbar-color: #65536f transparent;
+}
+.app.floating-shell[data-interface-theme='night'] :is(.venue-card, .floor-card, .stall-card) {
+  background: var(--night-raised);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.venue-card, .floor-card, .stall-card):is(
+    :hover,
+    :focus-visible,
+    .is-highlighted,
+    .selected
+  ) {
+  background: var(--night-hover);
+  border-color: #9576aa;
+  box-shadow: none;
+}
+.app.floating-shell[data-interface-theme='night'] .stall-card.selected {
+  box-shadow: inset 3px 0 var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] :is(.venue-icon, .floor-card > b) {
+  background: #44344f;
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night'] .venue-icon.cart {
+  background: #483449;
+  color: #d8b4d0;
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.venue-copy strong, .floor-card > span, .stall-card strong, .list-heading strong) {
+  color: var(--ink);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.venue-arrow, .stall-number, .floor-card > svg, .stall-card > svg, .mini-spark) {
+  color: #b999ce;
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(
+    .venue-number,
+    .floor-card small,
+    .stall-card small,
+    .list-heading > span,
+    .venue-description p,
+    .empty-state
+  ) {
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-bottom {
+  background: var(--purple-soft);
+  border-color: var(--line);
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-bottom p {
+  color: #cfbddc;
+}
+.app.floating-shell[data-interface-theme='night'] .sidebar-bottom small {
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.back-button, .tiny-tag, .detail-top button, .modal-close) {
+  background: var(--purple-soft);
+  border-color: var(--line);
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.back-button, .detail-top button, .modal-close):hover {
+  background: var(--night-hover);
+  color: var(--ink);
+}
+.app.floating-shell[data-interface-theme='night'] :is(.photo-placeholder, .review-placeholder) {
+  background: var(--purple-soft);
+  border-color: #65536f;
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.detail-panel h2, .about-modal h2, .zoom-guide h3, .dish b, .review-placeholder strong) {
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(
+    .detail-location,
+    .detail-rating,
+    .detail-rating > span,
+    .detail-panel h3 small,
+    .dish small,
+    .read-only,
+    .photo-placeholder small,
+    .review-placeholder p,
+    .about-modal p,
+    .zoom-guide ul
+  ) {
+  color: var(--muted);
+  border-color: var(--line);
+}
+.app.floating-shell[data-interface-theme='night'] .primary-button {
+  background: var(--night-selected);
+  color: #fffaf7;
+}
+.app.floating-shell[data-interface-theme='night'] .primary-button:hover {
+  background: #916ba9;
+}
+.app.floating-shell[data-interface-theme='night'] .modal-backdrop {
+  background: #17131f80;
+}
+
+/* Floating map buttons share the interface palette. */
+.app.floating-shell[data-interface-theme='night'] :is(.map-tools, .style-toggle) {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--purple);
+  box-shadow: 0 4px 20px #14111c18;
+}
+.app.floating-shell[data-interface-theme='night'] .map-tools button {
+  color: var(--purple);
+  border-color: var(--line);
+}
+.app.floating-shell[data-interface-theme='night']
+  :is(.map-tools button, .style-toggle):is(:hover, [aria-pressed='false']) {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.app.floating-shell[data-interface-theme='night']:is(.view-building, .view-floor) .breadcrumbs {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--purple);
+}
+/* Daylight breadcrumb fallback; night-campus.css supplies the night-map finish. */
+.app.floating-shell[data-interface-theme='night'].view-campus .breadcrumbs button:hover {
+  color: #5b3d70;
+}
+.app.floating-shell[data-interface-theme='night'] :is(.scene-error, .loading) {
+  background: var(--paper);
+  color: var(--muted);
+}
+.app.floating-shell[data-interface-theme='night'] .loading {
+  padding: 12px;
+  border-radius: 12px;
+}
+.app.floating-shell[data-interface-theme='night'] .scene-error p {
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .app.floating-shell[data-interface-theme='night'] .sidebar-top {
+    background: transparent;
+    color: var(--purple);
+  }
+  .app.floating-shell[data-interface-theme='night'] .sidebar-dock .sidebar-handle {
+    background: var(--paper);
+  }
+  .app.floating-shell[data-interface-theme='night'] .sidebar-handle::before {
+    background: #b999ce;
+  }
+}

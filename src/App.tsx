@@ -4,10 +4,13 @@ import { CampusMap } from './components/CampusMap';
 import { UiIcon } from './components/UiIcon';
 import { CompassRose } from './components/CompassRose';
 import { FloatingSidebar } from './components/FloatingSidebar';
+import { ThemeToggle } from './components/ThemeToggle';
+import { useInterfaceTheme } from './lib/use-interface-theme';
 import { catalogRepository } from './services/catalog';
 import { mediaUrl, type Catalog, type MapTheme, type View } from './domain';
 
 export default function App() {
+  const [interfaceTheme, setInterfaceTheme] = useInterfaceTheme();
   const [data, setData] = useState<Catalog | null>(null),
     [error, setError] = useState('');
   const [view, setView] = useState<View>({ level: 'campus' }),
@@ -48,7 +51,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     window.dispatchEvent(new Event('foodmap:overlays'));
-  }, [headerOpen]);
+  }, [headerOpen, interfaceTheme]);
   const hideHeader = () => {
     if (showInfo) return;
     if (
@@ -152,6 +155,7 @@ export default function App() {
   );
   return (
     <div
+      data-interface-theme={interfaceTheme}
       className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}`}
     >
       {!mobile && (
@@ -219,10 +223,16 @@ export default function App() {
           >
             <UiIcon name="map" size={18} /> 校园探索
           </button>
-          <button className="about" onClick={() => setShowInfo(true)}>
+          <button
+            className="about"
+            aria-label="关于食光"
+            title="关于食光"
+            onClick={() => setShowInfo(true)}
+          >
             关于食光 <UiIcon name="arrow-up-right" size={15} />
           </button>
         </nav>
+        <ThemeToggle theme={interfaceTheme} onChange={setInterfaceTheme} />
         <div className="header-location">
           <UiIcon name="pin" size={17} />
           <span>南大仙林校区</span>
@@ -399,7 +409,11 @@ export default function App() {
                             className="floor-card"
                             key={f.id}
                             onClick={() =>
-                              navigate({ level: 'floor', venueId: f.venueId, floorId: f.id })
+                              navigate({
+                                level: 'floor',
+                                venueId: f.venueId,
+                                floorId: f.id,
+                              })
                             }
                           >
                             <b>{f.name}</b>
@@ -433,7 +447,8 @@ export default function App() {
                 <UiIcon name="sparkles" size={22} />
               </span>
               <p>
-                一份慢慢完善的校园食记<small>照片、菜单与真实评价，正在准备中。</small>
+                一份慢慢完善的校园食记
+                <small>照片、菜单与真实评价，正在准备中。</small>
               </p>
             </div>
           </aside>
@@ -455,6 +470,7 @@ export default function App() {
                 data={data}
                 onPick={pick}
                 showLabels={showMapLabels}
+                nightMode={interfaceTheme === 'night'}
                 highlightedVenueId={highlightedVenueId}
                 onHighlightVenue={highlightVenue}
                 onExplore={mobile ? undefined : exploreMap}

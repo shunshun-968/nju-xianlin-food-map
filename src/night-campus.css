@@ -1,0 +1,119 @@
+/* Moonlit slate and evergreen ground, with warm pools of light at human scale.
+   Every daylight SVG color remains the fallback; theme switches keep the camera. */
+.geo-campus-map[data-map-theme='night'] {
+  --map-ground: #252c3c;
+  --map-developed: #293040;
+  --map-forest: #1b3035;
+  --map-grass: #293d40;
+  --map-park: #23383c;
+  --map-sport: #34384a;
+  --map-outer-land: #202b34;
+  --map-outer-forest: #1b2b31;
+  --map-outer-developed: #242d38;
+  --map-water: #142a3d;
+  --map-outer-water: #172b3a;
+  --map-water-edge: #395363;
+  --map-road: #666772;
+  --map-road-edge: #343743;
+  --map-path: #454a55;
+  --map-outer-road: #444852;
+  --map-outer-road-edge: #2a303b;
+  --map-outer-path: #343e48;
+  --map-building: #3f495b;
+  --map-building-edge: #657080;
+  --map-outer-building: #303a48;
+  --map-outer-building-edge: #475262;
+  --map-shadow: #030c1c;
+  --map-canopy: #45605b;
+  --map-canopy-light: #769187;
+  --map-pitch: #2b4543;
+  --map-tennis: #30494a;
+  --map-court: #454153;
+  --map-track: #463f50;
+  --map-court-line: #8b9898;
+  --map-track-line: #857b8e;
+  --map-venue-edge: #bc9a6c;
+  --map-venue-rim: #f3ce90;
+  --map-label-paper: #302f3e;
+  --map-label-border: #8b745b;
+  --map-label-ink: #f4e5ce;
+  --map-label-muted: #c6b8aa;
+  --map-label-dot: #efc784;
+  --map-label-leader: #b79b71;
+}
+.app.view-campus .campus-plan.geo-campus-map[data-map-theme='night'] {
+  background: #202b34;
+}
+.geo-campus-map[data-map-theme='night'] .geo-detail-labels {
+  fill: #c5cdd4;
+  paint-order: stroke;
+  stroke: #252c3c;
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+.geo-campus-map[data-map-theme='night'] .geo-detail-labels [data-label-kind='road'] {
+  fill: #c0bfc9;
+}
+.geo-campus-map[data-map-theme='night'] .geo-venue-wall {
+  fill: #7e674f;
+}
+.geo-campus-map[data-map-theme='night'] .geo-venue-roof {
+  fill: #a58c67;
+}
+.geo-campus-map[data-map-theme='night'] .geo-venue-rim {
+  stroke-opacity: 0.9;
+}
+.geo-campus-map[data-map-theme='night']
+  .geo-venue:is(:hover, :focus-visible, .is-highlighted)
+  .geo-venue-roof {
+  fill: #c6a473;
+  stroke: #ffe0a7;
+}
+.geo-campus-map[data-map-theme='night']
+  .geo-food-label:is(:hover, :focus-visible, .is-highlighted)
+  rect {
+  fill: #4d4050;
+  stroke: #f3ce90;
+}
+.geo-campus-map[data-map-theme='night'] :is(.geo-attribution, .geo-context-retry) {
+  background: #242d3be6;
+  color: #b7bfcc;
+  border-color: #596171;
+}
+.geo-campus-map[data-map-theme='night'] .geo-map-status {
+  color: #c5cdd4;
+}
+.geo-campus-map[data-map-theme='night'] [data-landmark='radio-telescope'] {
+  opacity: 0.6;
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .map-area {
+  background: #202b34;
+  border-color: #3c3e50;
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .breadcrumbs,
+.app.floating-shell[data-interface-theme='night'].view-campus .breadcrumbs button:hover {
+  color: #d5c5e4;
+}
+@media (max-width: 700px) {
+  .app.floating-shell[data-interface-theme='night'].view-campus .breadcrumbs {
+    background: #292634ed;
+    border-color: #51475e;
+  }
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .map-scale {
+  color: #c7bdcf;
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .map-scale svg rect {
+  fill: #333747;
+  stroke: #b8a6c8;
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .map-scale svg rect + rect {
+  fill: #b8a6c8;
+}
+/* The compass uses its own SVG palette rather than a page-wide filter. */
+.app.floating-shell[data-interface-theme='night'].view-campus .compass-rose {
+  --compass-paper: #292d3deb;
+  --compass-ink: #cfb7e3;
+  --compass-line: #8d7fa2;
+  --compass-soft: #5f506e;
+}

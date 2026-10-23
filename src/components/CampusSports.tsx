@@ -2,7 +2,13 @@ import type { MapFeature, MapFrame } from '../lib/campus-basemap';
 
 function Court({ sport }: { sport: string }) {
   return (
-    <g className="geo-court-markings" fill="none" stroke="#fffcf4" strokeWidth="1" opacity=".85">
+    <g
+      className="geo-court-markings"
+      fill="none"
+      stroke="var(--map-court-line, #fffcf4)"
+      strokeWidth="1"
+      opacity=".85"
+    >
       <rect x="8" y="8" width="84" height="164" />
       <path d="M8 90H92" />
       {sport === 'basketball' ? (
@@ -24,7 +30,7 @@ function Court({ sport }: { sport: string }) {
 
 function Football({ width: w, height: h }: { width: number; height: number }) {
   return (
-    <g fill="none" stroke="#f8f7e9" strokeWidth=".65" opacity=".9">
+    <g fill="none" stroke="var(--map-court-line, #f8f7e9)" strokeWidth=".65" opacity=".9">
       <rect x="0" y="0" width={w} height={h} />
       <path d={`M0 ${h / 2}H${w}`} />
       <circle cx={w / 2} cy={h / 2} r={w * 0.14} />
@@ -88,7 +94,7 @@ export function CampusSports({ features }: { features: MapFeature[] }) {
                 <g transform={`matrix(${frame.matrix.join(' ')})`}>
                   {stadium ? (
                     <>
-                      <rect width={w} height={h} fill="#cbbbbe" />
+                      <rect width={w} height={h} fill="var(--map-track, #cbbbbe)" />
                       {[0, 1, 2, 3, 4].map((i) => (
                         <rect
                           key={i}
@@ -98,7 +104,7 @@ export function CampusSports({ features }: { features: MapFeature[] }) {
                           height={h - 10 - i * 3.4}
                           rx={(w - 10 - i * 3.4) / 2}
                           fill="none"
-                          stroke="#f5eee7"
+                          stroke="var(--map-track-line, #f5eee7)"
                           strokeWidth=".65"
                           opacity=".85"
                         />
@@ -108,7 +114,7 @@ export function CampusSports({ features }: { features: MapFeature[] }) {
                         y={h * 0.2}
                         width={w * 0.58}
                         height={h * 0.6}
-                        fill="#bdcdb2"
+                        fill="var(--map-pitch, #bdcdb2)"
                       />
                       <g transform={`translate(${w * 0.21} ${h * 0.2})`}>
                         <Football width={w * 0.58} height={h * 0.6} />
@@ -121,10 +127,10 @@ export function CampusSports({ features }: { features: MapFeature[] }) {
                         height={h}
                         fill={
                           feature.sport === 'tennis'
-                            ? '#b6cbbd'
+                            ? 'var(--map-tennis, #b6cbbd)'
                             : feature.sport === 'basketball'
-                              ? '#cbbcc5'
-                              : '#d4c9b6'
+                              ? 'var(--map-court, #cbbcc5)'
+                              : 'var(--map-court, #d4c9b6)'
                         }
                       />
                       {Array.from({ length: columns * rows }, (_, i) => (
@@ -138,7 +144,7 @@ export function CampusSports({ features }: { features: MapFeature[] }) {
                     </>
                   ) : (
                     <>
-                      <rect width={w} height={h} fill="#bdcdb2" />
+                      <rect width={w} height={h} fill="var(--map-pitch, #bdcdb2)" />
                       <g transform={`translate(${w * 0.04} ${h * 0.04})`}>
                         <Football width={w * 0.92} height={h * 0.92} />
                       </g>

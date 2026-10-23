@@ -24,6 +24,7 @@ import {
 import type { PlacedLabel } from '../lib/map-labels';
 import { CampusSports, RadioTelescope } from './CampusSports';
 import { ForestTexture } from './ForestTexture';
+import { CampusNightLights } from './CampusNightLights';
 import { useCampusData } from '../lib/use-campus-data';
 import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
 import { batchRoads, batchBuildings } from '../lib/map-batches';
@@ -38,17 +39,19 @@ type Props = {
   onExplore?: () => void;
   // The UI keeps its mobile presentation; both devices use the approved OSM data.
   legacyMobile?: boolean;
+  nightMode?: boolean;
 };
 function landFill(feature: MapFeature, inside = true) {
-  if (feature.sport) return inside ? '#dcd8bb' : '#d5d9c8';
-  if (['wood', 'forest'].includes(feature.subtype || '')) return inside ? '#c7d4bd' : '#dce3d6';
+  if (feature.sport) return inside ? 'var(--map-sport, #dcd8bb)' : 'var(--map-outer-land, #d5d9c8)';
+  if (['wood', 'forest'].includes(feature.subtype || ''))
+    return inside ? 'var(--map-forest, #c7d4bd)' : 'var(--map-outer-forest, #dce3d6)';
   if (['grass', 'grassland', 'meadow'].includes(feature.subtype || ''))
-    return inside ? '#e6ebd9' : '#e8ece2';
+    return inside ? 'var(--map-grass, #e6ebd9)' : 'var(--map-outer-land, #e8ece2)';
   if (['scrub', 'garden', 'park', 'recreation_ground'].includes(feature.subtype || ''))
-    return inside ? '#dce5d1' : '#e3e8de';
+    return inside ? 'var(--map-park, #dce5d1)' : 'var(--map-outer-land, #e3e8de)';
   if (['residential', 'construction', 'commercial'].includes(feature.subtype || ''))
-    return inside ? '#efdfc1' : '#e3e7de';
-  return inside ? '#dce5d1' : '#e3e8de';
+    return inside ? 'var(--map-developed, #efdfc1)' : 'var(--map-outer-developed, #e3e7de)';
+  return inside ? 'var(--map-park, #dce5d1)' : 'var(--map-outer-land, #e3e8de)';
 }
 function cuboid(venue: MapVenue) {
   const angle = (venue.angle * Math.PI) / 180,
@@ -70,7 +73,7 @@ function cuboid(venue: MapVenue) {
 
 /** The outer map only: venue IDs still enter the existing building/floor scenes. */
 const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
-  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue, onExplore },
+  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue, onExplore, nightMode = false },
   ref,
 ) {
   const [priorityBounds, setPriorityBounds] = useState<Bounds | null>(null);
@@ -174,14 +177,14 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               <path
                 key={f.id}
                 d={f.path}
-                fill={f.area ? '#bdd2ce' : 'none'}
-                stroke="#abc2bc"
+                fill={f.area ? 'var(--map-outer-water, #bdd2ce)' : 'none'}
+                stroke="var(--map-water-edge, #abc2bc)"
                 strokeWidth={f.area ? 0.7 : 2.5}
                 fillRule="evenodd"
               />
             ))}
           </g>
-          <path d={map.campusPath} fill="#f3e5c5" />
+          <path d={map.campusPath} fill="var(--map-ground, #f3e5c5)" />
           <g
             clipPath="url(#geo-campus)"
             pointerEvents="none"
@@ -195,8 +198,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               <path
                 key={f.id}
                 d={f.path}
-                fill={f.area ? '#b6d9d1' : 'none'}
-                stroke="#9fc8bf"
+                fill={f.area ? 'var(--map-water, #b6d9d1)' : 'none'}
+                stroke="var(--map-water-edge, #9fc8bf)"
                 strokeWidth={f.area ? 0.7 : 2.5}
                 fillRule="evenodd"
               />
@@ -221,13 +224,20 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
             {roadBatches
               .filter((f) => !f.footway)
               .map((f) => (
-                <path key={f.id} d={f.path} stroke="#aab5a3" strokeWidth={(f.width || 6) + 1.4} />
+                <path
+                  key={f.id}
+                  d={f.path}
+                  stroke="var(--map-outer-road-edge, #aab5a3)"
+                  strokeWidth={(f.width || 6) + 1.4}
+                />
               ))}
             {roadBatches.map((f) => (
               <path
                 key={f.id}
                 d={f.path}
-                stroke={f.footway ? '#aebaab' : '#bac5b0'}
+                stroke={
+                  f.footway ? 'var(--map-outer-path, #aebaab)' : 'var(--map-outer-road, #bac5b0)'
+                }
                 strokeWidth={f.width}
                 strokeDasharray={f.footway ? '3 2' : undefined}
               />
@@ -239,7 +249,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                   <path
                     key={`inner-edge-${f.id}`}
                     d={f.path}
-                    stroke="#d5cbb3"
+                    stroke="var(--map-road-edge, #d5cbb3)"
                     strokeWidth={(f.width || 6) + 1.4}
                   />
                 ))}
@@ -247,7 +257,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 <path
                   key={`inner-${f.id}`}
                   d={f.path}
-                  stroke={f.footway ? '#f8f5e9' : '#fff8e9'}
+                  stroke={f.footway ? 'var(--map-path, #f8f5e9)' : 'var(--map-road, #fff8e9)'}
                   strokeWidth={f.width}
                 />
               ))}
@@ -258,13 +268,13 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 <g key={`boundary-${f.id}`} data-boundary-road={f.id}>
                   <path
                     d={f.boundaryPath}
-                    stroke="#acb6a5"
+                    stroke="var(--map-outer-road-edge, #acb6a5)"
                     strokeWidth={(f.width || 6) + 1.4}
                     strokeLinecap="butt"
                   />
                   <path
                     d={f.boundaryPath}
-                    stroke="#c4ccbc"
+                    stroke="var(--map-outer-road, #c4ccbc)"
                     strokeWidth={f.width}
                     strokeLinecap="butt"
                   />
@@ -286,7 +296,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                   key={`shadow-${f.id}`}
                   d={f.path}
                   transform="translate(2.5 3.3)"
-                  fill="#6f7b6e"
+                  fill="var(--map-shadow, #6f7b6e)"
                   fillOpacity=".16"
                   fillRule="evenodd"
                 />
@@ -297,7 +307,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 key={`shadow-${f.id}`}
                 d={f.path}
                 transform="translate(2.5 3.3)"
-                fill="#6f7b6e"
+                fill="var(--map-shadow, #6f7b6e)"
                 fillOpacity=".16"
                 fillRule="evenodd"
               />
@@ -308,8 +318,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                   key={f.id}
                   data-building-batch={f.count}
                   d={f.path}
-                  fill="#fffefa"
-                  stroke="#b9c2b4"
+                  fill="var(--map-outer-building, #fffefa)"
+                  stroke="var(--map-outer-building-edge, #b9c2b4)"
                   strokeWidth=".65"
                   fillRule="evenodd"
                   strokeLinejoin="round"
@@ -322,8 +332,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 data-building={f.id}
                 data-in-campus={f.inCampus}
                 d={f.path}
-                fill="#fffefa"
-                stroke="#b9c2b4"
+                fill="var(--map-building, #fffefa)"
+                stroke="var(--map-building-edge, #b9c2b4)"
                 strokeWidth=".65"
                 fillRule="evenodd"
                 strokeLinejoin="round"
@@ -557,6 +567,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   return (
     <div
       className="campus-plan geo-campus-map"
+      data-map-theme={nightMode ? 'night' : 'day'}
       ref={host}
       data-priority-ready={priorityReady}
       data-periphery-unlocked={unlocked}
@@ -722,6 +733,12 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               {roadArtwork}
               <g>
                 {buildingArtwork}
+                {nightMode && (
+                  <CampusNightLights
+                    features={baseMap?.features ?? map.features}
+                    venues={map.venues}
+                  />
+                )}
                 <g data-geo-food>
                   {map.venues
                     .filter((v) => validVenueIds.has(v.id))
@@ -751,12 +768,13 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                           </title>
                           <polygon
                             points={polygon(base.map(([x, y]) => [x + 3, y + 4]))}
-                            fill="#72816f"
+                            fill="var(--map-shadow, #72816f)"
                             fillOpacity=".17"
                           />
                           {base.map((point, i) => (
                             <polygon
                               key={i}
+                              className="geo-venue-wall"
                               points={polygon([
                                 point,
                                 base[(i + 1) % 4],
@@ -764,7 +782,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                                 roof[i],
                               ])}
                               fill={venue.color}
-                              stroke="#989f8e"
+                              stroke="var(--map-venue-edge, #989f8e)"
                               strokeWidth=".45"
                             />
                           ))}
@@ -772,13 +790,14 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                             className="geo-venue-roof"
                             points={polygon(roof)}
                             fill={venue.color}
-                            stroke="#969f8d"
+                            stroke="var(--map-venue-edge, #969f8d)"
                             strokeWidth=".8"
                           />
                           <path
+                            className="geo-venue-rim"
                             d={`M${roof[0].join(' ')}L${roof[1].join(' ')}L${roof[2].join(' ')}`}
                             fill="none"
-                            stroke="#fffdf3"
+                            stroke="var(--map-venue-rim, #fffdf3)"
                             strokeWidth=".7"
                             strokeOpacity=".65"
                           />
@@ -853,7 +872,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                     <path
                       d={`M${label.anchorX} ${label.anchorY}L${label.x} ${label.y}`}
                       fill="none"
-                      stroke="#929e89"
+                      stroke="var(--map-label-leader, #929e89)"
                       strokeWidth=".8"
                       pointerEvents="none"
                     />
@@ -864,16 +883,16 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                         width={label.width}
                         height={label.height}
                         rx="5"
-                        fill="#fffdf7"
+                        fill="var(--map-label-paper, #fffdf7)"
                         fillOpacity=".97"
-                        stroke="#c7cfbd"
+                        stroke="var(--map-label-border, #c7cfbd)"
                         strokeWidth=".8"
                       />
                       <circle
                         cx={-label.width / 2 + 8}
                         r="2.8"
-                        fill={venue.color}
-                        stroke="#9fa88f"
+                        fill={`var(--map-label-dot, ${venue.color})`}
+                        stroke="var(--map-label-border, #9fa88f)"
                         strokeWidth=".5"
                       />
                       {label.lines.map((line, i) => (
@@ -884,7 +903,11 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                           textAnchor="middle"
                           dominantBaseline="middle"
                           fontSize={line === '室内' ? 9 : 10.5}
-                          fill={line === '室内' ? '#7b8271' : '#4d594b'}
+                          fill={
+                            line === '室内'
+                              ? 'var(--map-label-muted, #7b8271)'
+                              : 'var(--map-label-ink, #4d594b)'
+                          }
                         >
                           {line}
                         </text>

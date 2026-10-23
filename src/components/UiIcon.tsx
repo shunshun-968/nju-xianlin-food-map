@@ -21,6 +21,8 @@ export type UiIconName =
   | 'star'
   | 'eye'
   | 'eye-off'
+  | 'sun'
+  | 'moon'
   | 'chevron-right';
 
 const paths: Record<UiIconName, ReactNode> = {
@@ -108,6 +110,18 @@ const paths: Record<UiIconName, ReactNode> = {
   'eye-off': (
     <>
       <path d="m3 3 18 18M10.6 5.1A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18.3 18.3 0 0 1-3.1 4M6.1 6.1A19 19 0 0 0 2 12s3.5 7 10 7a11.9 11.9 0 0 0 5.1-1.2M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </>
+  ),
+  moon: (
+    <>
+      <path d="M19.9 14.2A8.5 8.5 0 0 1 9.8 4.1a8.5 8.5 0 1 0 10.1 10.1Z" />
+      <path d="M17 3v6M14 6h6" />
     </>
   ),
   'chevron-right': <path d="m9 5 7 7-7 7" />,

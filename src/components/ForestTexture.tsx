@@ -60,7 +60,7 @@ export const ForestTexture = memo(function ForestTexture({
             data-tier={c.tier}
             href={`#canopy-${c.variant}`}
             transform={`translate(${c.x} ${c.y}) rotate(${c.rotation}) scale(${c.radius})`}
-            fill="#a8ba9d"
+            fill="var(--map-canopy, #a8ba9d)"
             opacity={opacity[c.tier]}
           />,
         ]) ?? [],
@@ -101,15 +101,27 @@ export const ForestTexture = memo(function ForestTexture({
         </clipPath>
         <g id="canopy-0">
           <path d="M-.85-.22C-.99-.61-.54-.86-.29-.75C-.1-1 .46-.92 .53-.63C.99-.55 .97-.06 .77.13C.93.49.43.82.18.7C-.15.96-.66.7-.61.42C-.99.34-1-.02-.85-.22Z" />
-          <path d="M-.5-.43Q-.18-.7.15-.48Q-.18-.32-.5-.43Z" fill="#eff3e8" opacity=".35" />
+          <path
+            d="M-.5-.43Q-.18-.7.15-.48Q-.18-.32-.5-.43Z"
+            fill="var(--map-canopy-light, #eff3e8)"
+            opacity=".35"
+          />
         </g>
         <g id="canopy-1">
           <path d="M-.81-.38C-.8-.85-.31-.92-.1-.7C.22-.98.69-.65.58-.34C.95-.19.91.29.63.37C.64.87.12.91-.1.68C-.48.89-.9.53-.74.22C-1.01.03-.98-.24-.81-.38Z" />
-          <path d="M-.54-.45Q-.28-.73-.12-.48Q-.28-.24-.54-.45Z" fill="#eff3e8" opacity=".35" />
+          <path
+            d="M-.54-.45Q-.28-.73-.12-.48Q-.28-.24-.54-.45Z"
+            fill="var(--map-canopy-light, #eff3e8)"
+            opacity=".35"
+          />
         </g>
         <g id="canopy-2">
           <path d="M-.68-.39C-.63-.88-.16-.9.09-.67C.5-.81.86-.45.68-.11C.98.2.62.69.31.59C.12.95-.41.89-.5.51C-.94.46-1.01-.13-.68-.39Z" />
-          <path d="M-.44-.42Q-.22-.65.04-.45Q-.15-.24-.44-.42Z" fill="#eff3e8" opacity=".35" />
+          <path
+            d="M-.44-.42Q-.22-.65.04-.45Q-.15-.24-.44-.42Z"
+            fill="var(--map-canopy-light, #eff3e8)"
+            opacity=".35"
+          />
         </g>
       </defs>
       {visible.map((c) => crownNodes.get(c.id))}

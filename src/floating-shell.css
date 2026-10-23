@@ -282,10 +282,15 @@
   padding: 40px;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+.about-scroll::-webkit-scrollbar {
+  display: none;
 }
 .floating-shell .about-modal .modal-close {
   z-index: 2;

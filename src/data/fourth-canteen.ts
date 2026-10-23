@@ -154,7 +154,7 @@ export const fourthCanteenStalls: Stall[] = fourthCanteenFaces.flatMap((face) =>
         depth: FOURTH_LAYOUT.kitchenDepth,
         rotationY: face.rotationY,
       },
-      photoKey: `fourth-canteen/${face.photoNumber}.jpg`,
+      photoKey: null,
       dishes: [],
     };
   }),

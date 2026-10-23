@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
 import * as THREE from 'three';
 import { catalog } from '../src/data/catalog';
 import {
@@ -250,12 +249,13 @@ test('thick kitchen footprints stay inside the floor and match their catalog win
   }
 });
 
-test('each opening references its source photo without invented menu content', () => {
+test('reference photo indices remain local metadata; windows expose no photos or invented menus', () => {
   for (const front of fourthCanteenFaces) {
-    const key = `fourth-canteen/${front.photoNumber}.jpg`;
-    assert.ok(existsSync(new URL(`../public/media/${key}`, import.meta.url)), key);
+    assert.ok(
+      Number.isInteger(front.photoNumber) && front.photoNumber >= 1 && front.photoNumber <= 7,
+    );
     for (const window of windowsFor(front)) {
-      assert.equal(window.photoKey, key);
+      assert.equal(window.photoKey, null);
       assert.deepEqual(window.dishes, []);
     }
   }

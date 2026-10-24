@@ -18,6 +18,7 @@ import './fourth-canteen.css';
 import { createSouthGateCartModel } from './SouthGateCartModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
+import { createStallPickTargets } from '../lib/stall-picking';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -34,6 +35,7 @@ type Engine = {
   renderer: THREE.WebGLRenderer;
   controls: OrbitControls;
   mouse: ReturnType<typeof attachModelMouseControls>;
+  stallTargets?: ReturnType<typeof createStallPickTargets>;
   content: THREE.Group;
   goal: THREE.Vector3;
   focus: THREE.Vector3;
@@ -53,6 +55,7 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.mouse.reset();
   const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
   e.fourthMode = mode;
+  e.stallTargets?.setMode(mode);
   e.fourth?.setMode(mode);
   e.animating = false;
   e.controls.enableDamping = false;
@@ -69,7 +72,10 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   } else if (e.indoorSpec?.id === 'v-south') {
     e.controls.target.set(0, 1.6, 0.25);
     e.camera.position.set(-8.8, 5.6, 11.7);
-  } else e.camera.position.set(framing.x - 25, 17.5, framing.z + 36);
+  } else {
+    const offset = framing.spatialOffset ?? { x: -25, y: 17.5, z: 36 };
+    e.camera.position.set(framing.x + offset.x, offset.y, framing.z + offset.z);
+  }
   e.goal.copy(e.camera.position);
   e.focus.copy(e.controls.target);
   e.camera.zoom = 1;
@@ -194,7 +200,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   const [loadingModel, setLoadingModel] = useState(false);
   const [fourthView, setFourthView] = useState<FourthViewMode>('plan');
   const [cartRotating, setCartRotating] = useState(false);
-  const modeledCanteen = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
+  const floorId = view.level === 'floor' ? view.floorId : undefined;
+  const modeledCanteen = getIndoorCanteen(floorId);
   const isFourthFloor = !!modeledCanteen;
   const isCart = view.venueId === 'v-south';
   const interfaceThemeRef = useRef(interfaceTheme);
@@ -350,6 +357,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         (-(event.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
+      const stallId = e.stallTargets?.pick(raycaster);
+      if (stallId) {
+        callback.current('stall', stallId);
+        return;
+      }
       const hit = raycaster.intersectObjects(content.children, true).find((h) => {
         if (!h.object.userData.kind) return false;
         let object: THREE.Object3D | null = h.object;
@@ -412,6 +424,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     if (e.fourth) e.fourth.group.removeFromParent();
     e.fourth = undefined;
     e.indoorSpec = undefined;
+    e.stallTargets = undefined;
     scene.environment = null;
     scene.environmentIntensity = 1;
     controls.zoomToCursor = false;
@@ -481,6 +494,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.keyLight.shadow.normalBias = 0.025;
         e.fourth = model;
         content.add(model.group);
+        if (spec) {
+          e.stallTargets = createStallPickTargets(data.stalls.filter((s) => s.floorId === spec.id));
+          content.add(e.stallTargets.group);
+        }
         const night = interfaceThemeRef.current === 'night';
         scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
         model.setInterfaceTheme(night);
@@ -562,6 +579,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       );
     } else {
       const f = data.floors.find((f) => f.id === view.floorId)!;
+      e.stallTargets = createStallPickTargets(data.stalls.filter((s) => s.floorId === f.id));
+      content.add(e.stallTargets.group);
       e.range = 21;
       e.goal.set(22, 40, 32);
       e.focus.set(0, 0, 0);
@@ -609,7 +628,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     controls.enableRotate = true;
     e.animating = true;
     setLoadingModel(false);
-  }, [data, view, theme]);
+    // Opening/closing a detail panel changes navigation history, not the model.
+    // Depend on actual route IDs so closing details preserves the 3D camera and mode.
+  }, [data, view.level, view.venueId, floorId, theme]);
   useEffect(() => {
     const e = engine.current;
     if (!e?.fourth) return;
@@ -679,6 +700,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
             {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
             {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
+            {modeledCanteen?.style === 'eighth' ? ' · 独立水饺超市' : ''}
           </div>
         </>
       )}

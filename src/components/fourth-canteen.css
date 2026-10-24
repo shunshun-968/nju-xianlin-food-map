@@ -1,5 +1,8 @@
+.app.fourth-model-active {
+  --model-inset-left: 350px;
+}
 .scene.fourth-canteen-scene {
-  left: 350px;
+  left: var(--model-inset-left);
   right: 20px;
   top: 105px;
   bottom: 48px;
@@ -47,16 +50,25 @@
   cursor: move;
 }
 @media (min-width: 701px) {
+  .app.floating-shell.fourth-model-active .breadcrumbs {
+    left: calc(var(--model-inset-left) + 15px);
+    right: auto;
+    top: 113px;
+    max-width: calc(100% - var(--model-inset-left) - 220px);
+  }
+  .fourth-view-note {
+    top: 62px;
+  }
   .fourth-view-controls {
-    top: 40px;
+    top: 8px;
   }
   .app.fourth-model-active .detail-panel {
     bottom: auto;
     height: auto;
     max-height: min(60vh, 320px);
   }
-  .fourth-model-active:has(.sidebar-dock.is-collapsed) .fourth-canteen-scene {
-    left: 20px;
+  .app.fourth-model-active:has(.sidebar-dock.is-collapsed) {
+    --model-inset-left: 20px;
   }
 }
 .app.fourth-model-active[data-interface-theme='night'] .map-area {
@@ -69,11 +81,17 @@
   color: #fff9f2;
 }
 @media (max-width: 1050px) and (min-width: 701px) {
-  .scene.fourth-canteen-scene {
-    left: 340px;
+  .app.fourth-model-active {
+    --model-inset-left: 340px;
+  }
+  .app.floating-shell.fourth-model-active .breadcrumbs {
+    max-width: calc(100% - var(--model-inset-left) - 50px);
+  }
+  .fourth-view-controls {
+    top: 62px;
   }
   .fourth-view-note {
-    top: 55px;
+    top: 112px;
     font-size: 10px;
   }
 }

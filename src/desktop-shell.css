@@ -194,12 +194,18 @@
 @media (min-width: 701px) {
   /* Reserve the drawer's full width, including its pull tab, at every level. */
   .floating-shell:is(.view-building, .view-floor) .breadcrumbs {
-    left: auto;
-    right: 24px;
+    left: calc(var(--desktop-sidebar-width) + 32px);
+    right: auto;
     max-width: calc(100% - var(--desktop-sidebar-width) - 60px);
     overflow-x: auto;
     white-space: nowrap;
     scrollbar-width: thin;
+  }
+  .floating-shell:is(.view-building, .view-floor):not(.fourth-model-active):has(
+      .sidebar-dock.is-collapsed
+    )
+    .breadcrumbs {
+    left: 20px;
   }
   .floating-shell:is(.view-building, .view-floor) .breadcrumbs > * {
     flex-shrink: 0;

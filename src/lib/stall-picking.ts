@@ -15,25 +15,26 @@ export function createStallPickTargets(
   const facades = new THREE.Group();
   group.add(plan, facades);
   const material = new THREE.MeshBasicMaterial({ visible: false });
-  const serviceEdges = new Map<string, { center: THREE.Vector3; normal: THREE.Vector3 }>();
+  const serviceEdges = new Map<THREE.Object3D, { center: THREE.Vector3; normal: THREE.Vector3 }>();
   for (const stall of stalls) {
-    const p = stall.position;
-    const normal = new THREE.Vector3(Math.sin(p.rotationY), 0, Math.cos(p.rotationY));
-    const center = new THREE.Vector3(p.x, 0, p.z).addScaledVector(normal, p.depth / 2);
-    serviceEdges.set(stall.id, { center, normal });
-    const footprint = new THREE.Mesh(new THREE.PlaneGeometry(p.width, p.depth + 0.3), material);
-    footprint.position.set(p.x + normal.x * 0.15, 4.2, p.z + normal.z * 0.15);
-    footprint.rotation.set(-Math.PI / 2, 0, p.rotationY);
-    footprint.userData = { stallId: stall.id };
-    plan.add(footprint);
-    // Standalone low counters must not intercept clicks on taller windows behind them.
-    const height = facadeHeights[stall.id] ?? 3.75;
-    const facade = new THREE.Mesh(new THREE.PlaneGeometry(p.width, height), material);
-    facade.position.copy(center).addScaledVector(normal, 0.3);
-    facade.position.y = height / 2;
-    facade.rotation.y = p.rotationY;
-    facade.userData = { stallId: stall.id };
-    facades.add(facade);
+    for (const p of [stall.position, ...(stall.serviceAreas ?? [])]) {
+      const normal = new THREE.Vector3(Math.sin(p.rotationY), 0, Math.cos(p.rotationY));
+      const center = new THREE.Vector3(p.x, 0, p.z).addScaledVector(normal, p.depth / 2);
+      const footprint = new THREE.Mesh(new THREE.PlaneGeometry(p.width, p.depth + 0.3), material);
+      footprint.position.set(p.x + normal.x * 0.15, 4.2, p.z + normal.z * 0.15);
+      footprint.rotation.set(-Math.PI / 2, 0, p.rotationY);
+      footprint.userData = { stallId: stall.id };
+      serviceEdges.set(footprint, { center, normal });
+      plan.add(footprint);
+      // Low counters must not intercept taller windows behind them.
+      const height = facadeHeights[stall.id] ?? 3.75;
+      const facade = new THREE.Mesh(new THREE.PlaneGeometry(p.width, height), material);
+      facade.position.copy(center).addScaledVector(normal, 0.3);
+      facade.position.y = height / 2;
+      facade.rotation.y = p.rotationY;
+      facade.userData = { stallId: stall.id };
+      facades.add(facade);
+    }
   }
   let mode: 'plan' | '3d' = '3d';
   return {
@@ -49,7 +50,7 @@ export function createStallPickTargets(
         // Shared corner kitchens can have two perpendicular service edges.
         // Choose the nearer edge, rather than whichever face was listed first.
         const distanceToService = (hit: THREE.Intersection) => {
-          const { center, normal } = serviceEdges.get(hit.object.userData.stallId)!;
+          const { center, normal } = serviceEdges.get(hit.object)!;
           const local = group.worldToLocal(hit.point.clone());
           return Math.abs(local.sub(center).dot(normal));
         };

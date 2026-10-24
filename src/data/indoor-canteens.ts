@@ -6,6 +6,7 @@ import {
 } from './fourth-canteen';
 import { FIFTH_CANTEEN_FLOOR_ID, FIFTH_LAYOUT, fifthCanteenFaces } from './fifth-canteen';
 import { SIXTH_CANTEEN_FLOOR_ID, SIXTH_LAYOUT, sixthCanteenFaces } from './sixth-canteen';
+import { NINTH_CANTEEN_FLOOR_ID, NINTH_LAYOUT, ninthCanteenFaces } from './ninth-canteen';
 import { EIGHTH_CANTEEN_FLOOR_ID, EIGHTH_LAYOUT, eighthCanteenFaces } from './eighth-canteen';
 import { MINZU_CANTEEN_FLOOR_ID, MINZU_LAYOUT, minzuCanteenFaces } from './minzu-canteen';
 
@@ -24,7 +25,7 @@ export type IndoorCanteenSpec = {
   id: string;
   name: string;
   faces: IndoorCanteenFace[];
-  style: 'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu';
+  style: 'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth';
   showWindowNumbers?: boolean;
   facadeHeight?: number;
   layout: { frontOffset: number; kitchenDepth: number; corner: { x: number; z: number } };
@@ -86,6 +87,29 @@ export const sixthCanteenSpec: IndoorCanteenSpec = {
     '共 20 个窗口，包含金陵小厨转角玻璃窗。金陵小厨转角玻璃窗与侧面取餐口属于同一长厨房，淮扬菜品主面两窗、侧面一窗。',
   stage: { width: 45, depth: 22, x: -0.5, z: 1 },
   frame: { x: -1, z: 1, planRange: 12, spatialRange: 15.5, halfWidth: 23 },
+};
+
+export const ninthCanteenSpec: IndoorCanteenSpec = {
+  id: NINTH_CANTEEN_FLOOR_ID,
+  name: '第九食堂',
+  faces: ninthCanteenFaces,
+  style: 'ninth',
+  showWindowNumbers: false,
+  layout: NINTH_LAYOUT,
+  cornerShopId: 'yue-qing-he',
+  cornerTitle: '悦轻荷',
+  cornerSubtitle: '自选轻餐 · 连续转角柜台',
+  description:
+    '两排店面相向，中间为就餐区。11 家店铺按连续售餐区点选；悦轻荷为同店转角，左左香柜台位于内凹区域后端。尺寸依照片与草图按比例示意。',
+  stage: { width: 48, depth: 38, x: 0, z: -2 },
+  frame: {
+    x: -1,
+    z: -2,
+    planRange: 20.5,
+    spatialRange: 21,
+    halfWidth: 25,
+    spatialOffset: { x: -31, y: 32, z: 40 },
+  },
 };
 
 export const eighthCanteenSpec: IndoorCanteenSpec = {
@@ -152,6 +176,7 @@ export function getIndoorCanteen(floorId: string | undefined): IndoorCanteenSpec
   if (floorId === FOURTH_CANTEEN_FLOOR_ID) return fourthCanteenSpec;
   if (floorId === FIFTH_CANTEEN_FLOOR_ID) return fifthCanteenSpec;
   if (floorId === SIXTH_CANTEEN_FLOOR_ID) return sixthCanteenSpec;
+  if (floorId === NINTH_CANTEEN_FLOOR_ID) return ninthCanteenSpec;
   if (floorId === EIGHTH_CANTEEN_FLOOR_ID) return eighthCanteenSpec;
   if (floorId === MINZU_CANTEEN_FLOOR_ID) return minzuCanteenSpec;
   return undefined;

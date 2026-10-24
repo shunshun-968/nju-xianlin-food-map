@@ -35,7 +35,7 @@
         35,
         46
       ],
-      "description": "民族食堂和第八食堂已按现场照片与手绘位置建立内部窗口模型，可查看实际售卖与牌匾。其他楼层暂为示例，外部建筑与楼层对应后续校准。",
+      "description": "民族食堂、第八食堂、第九食堂分处一至三层，已按现场照片建立内部窗口模型；模型尺寸为示意比例。",
       "verified": false
     },
     {
@@ -184,11 +184,11 @@
       "id": "v-891-f3",
       "venueId": "v-891",
       "level": 3,
-      "name": "3F",
-      "width": 32,
-      "depth": 22,
+      "name": "第九食堂",
+      "width": 48,
+      "depth": 40,
       "elevation": 8,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-10-f1",
@@ -1599,136 +1599,205 @@
       "dishes": []
     },
     {
-      "id": "v-891-f3-s1",
+      "id": "v-891-f3-yue-qing-he-w1",
       "floorId": "v-891-f3",
-      "name": "面食小站",
-      "category": "面食",
+      "name": "悦轻荷",
+      "category": "自选轻餐",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
+        "x": -15,
+        "z": -5,
         "width": 6,
-        "depth": 4
+        "depth": 6,
+        "rotationY": 0
       },
-      "photoKey": null,
-      "dishes": [
+      "serviceAreas": [
         {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
+          "x": -15,
+          "z": -5,
+          "width": 6,
+          "depth": 6,
+          "rotationY": -1.5707963267948966
         }
-      ]
+      ],
+      "photoKey": null,
+      "dishes": []
     },
     {
-      "id": "v-891-f3-s2",
+      "id": "v-891-f3-chili-pork-w1",
       "floorId": "v-891-f3",
-      "name": "家常小炒",
-      "category": "家常菜",
+      "name": "辣椒炒肉",
+      "category": "湘味下饭菜",
       "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -9.75,
+        "z": -6.3,
+        "width": 4.5,
+        "depth": 8.6,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-891-f3-s3",
+      "id": "v-891-f3-jimingtangbao-w1",
       "floorId": "v-891-f3",
-      "name": "热汤米线",
-      "category": "米线",
+      "name": "雞鳴湯包",
+      "category": "汤包、面点",
       "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -5.25,
+        "z": -6.3,
+        "width": 4.5,
+        "depth": 8.6,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-891-f3-s4",
+      "id": "v-891-f3-roast-goose-w1",
       "floorId": "v-891-f3",
-      "name": "轻食时刻",
-      "category": "轻食",
+      "name": "項錦記 燒鵝",
+      "category": "烧鹅、广式烧腊",
       "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -1.175,
+        "z": -6.3,
+        "width": 3.65,
+        "depth": 8.6,
+        "rotationY": 0
       },
-      "photoKey": null,
-      "dishes": [
+      "serviceAreas": [
         {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
+          "x": -1.1749999999999998,
+          "z": -5.6,
+          "width": 5.3,
+          "depth": 3.65,
+          "rotationY": 1.5707963267948966
         }
-      ]
+      ],
+      "photoKey": null,
+      "dishes": []
     },
     {
-      "id": "v-891-f3-s5",
+      "id": "v-891-f3-roujiamo-w1",
       "floorId": "v-891-f3",
-      "name": "香香盖饭",
-      "category": "盖饭",
+      "name": "左左香 · 老潼关肉夹馍",
+      "category": "肉夹馍、面食",
       "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": 5.25,
+        "z": -6.3,
+        "width": 5.5,
+        "depth": 8.6,
+        "rotationY": 0
       },
-      "photoKey": null,
-      "dishes": [
+      "serviceAreas": [
         {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
+          "x": 5.25,
+          "z": -8.5,
+          "width": 5.5,
+          "depth": 4.199999999999999,
+          "rotationY": 0
         }
-      ]
+      ],
+      "photoKey": null,
+      "dishes": []
     },
     {
-      "id": "v-891-f3-s6",
+      "id": "v-891-f3-hot-dry-noodles-w1",
       "floorId": "v-891-f3",
-      "name": "现做饼铺",
-      "category": "小吃",
+      "name": "武汉热干面",
+      "category": "热干面、炸酱面",
       "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": 10.25,
+        "z": -6.3,
+        "width": 4.5,
+        "depth": 8.6,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
+      "dishes": []
+    },
+    {
+      "id": "v-891-f3-home-stir-fry-w1",
+      "floorId": "v-891-f3",
+      "name": "百味小炒",
+      "category": "家常菜、小炒",
+      "position": {
+        "x": 15,
+        "z": -6.3,
+        "width": 5,
+        "depth": 8.6,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f3-dongbei-w1",
+      "floorId": "v-891-f3",
+      "name": "东北老味道",
+      "category": "烧烤 · 特色烤鱼",
+      "position": {
+        "x": -15,
+        "z": -11,
+        "width": 6,
+        "depth": 6,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f3-seafood-hotpot-w1",
+      "floorId": "v-891-f3",
+      "name": "渔船海鲜 · 自选老火锅",
+      "category": "海鲜、自选火锅",
+      "position": {
+        "x": -15,
+        "z": -16.5,
+        "width": 5,
+        "depth": 6,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f3-pizza-hut-w1",
+      "floorId": "v-891-f3",
+      "name": "必胜客",
+      "category": "披萨、西式餐点",
+      "position": {
+        "x": -14,
+        "z": 11,
+        "width": 8,
+        "depth": 5,
+        "rotationY": 3.141592653589793
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f3-burger-king-w1",
+      "floorId": "v-891-f3",
+      "name": "BURGER KING 汉堡王",
+      "category": "汉堡、薯条",
+      "position": {
+        "x": -1.8369701987210297e-16,
+        "z": 11,
+        "width": 8,
+        "depth": 5,
+        "rotationY": 3.141592653589793
+      },
+      "serviceAreas": [
         {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
+          "x": -2.663606788145493e-16,
+          "z": 11.675,
+          "width": 8,
+          "depth": 3.65,
+          "rotationY": 3.141592653589793
         }
-      ]
+      ],
+      "photoKey": null,
+      "dishes": []
     },
     {
       "id": "v-10-f1-s1",

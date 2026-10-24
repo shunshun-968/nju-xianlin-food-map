@@ -708,10 +708,16 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             </button>
           </div>
           <div className="fourth-view-note">
-            {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
-            {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
-            {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
-            {modeledCanteen?.style === 'eighth' ? ' · 独立水饺超市' : ''}
+            {modeledCanteen?.style === 'ninth' ? (
+              <>第九食堂 · 双排店面 · 11 家店铺</>
+            ) : (
+              <>
+                {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
+                {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
+                {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
+                {modeledCanteen?.style === 'eighth' ? ' · 独立水饺超市' : ''}
+              </>
+            )}
           </div>
         </>
       )}

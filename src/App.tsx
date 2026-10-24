@@ -471,9 +471,11 @@ export default function App() {
                       <span>
                         {view.level === 'building'
                           ? '点击楼层进入'
-                          : indoorCanteen
-                            ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口${isEighthFloor ? ' · 独立水饺超市' : ''}`
-                            : `${floor?.name} · 示例布局`}
+                          : indoorCanteen?.style === 'ninth'
+                            ? '双排店面 · 11 家店铺'
+                            : indoorCanteen
+                              ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口${isEighthFloor ? ' · 独立水饺超市' : ''}`
+                              : `${floor?.name} · 示例布局`}
                       </span>
                     </div>
                     <div className="venue-list">
@@ -494,7 +496,11 @@ export default function App() {
                                   <span>
                                     {canteen?.name || '示例餐饮空间'}
                                     <small>
-                                      {canteen ? '查看窗口模型与 L 形布局' : '查看窗口与布局'}
+                                      {canteen?.style === 'ninth'
+                                        ? '查看双排店面与就餐区'
+                                        : canteen
+                                          ? '查看窗口模型与 L 形布局'
+                                          : '查看窗口与布局'}
                                     </small>
                                   </span>
                                   <UiIcon name="arrow-right" size={19} />
@@ -519,15 +525,17 @@ export default function App() {
                                 <span>
                                   <strong>{s.name}</strong>
                                   <small>
-                                    {hasOfferings
-                                      ? getIndoorWindow(indoorCanteen, s.id)
-                                        ? `牌坊：${getIndoorWindow(indoorCanteen, s.id)!.signName}${s.breakfast ? ' · 供应早餐' : ''}`
-                                        : '独立冰柜 · 水饺售卖点'
-                                      : isModeledFloor
-                                        ? indoorCanteen?.style === 'sixth'
-                                          ? '电子屏 · 售餐窗口'
-                                          : '牌坊模型 · 独立窗口'
-                                        : `${s.category} · 示例窗口`}
+                                    {indoorCanteen?.style === 'ninth'
+                                      ? s.category
+                                      : hasOfferings
+                                        ? getIndoorWindow(indoorCanteen, s.id)
+                                          ? `牌坊：${getIndoorWindow(indoorCanteen, s.id)!.signName}${s.breakfast ? ' · 供应早餐' : ''}`
+                                          : '独立冰柜 · 水饺售卖点'
+                                        : isModeledFloor
+                                          ? indoorCanteen?.style === 'sixth'
+                                            ? '电子屏 · 售餐窗口'
+                                            : '牌坊模型 · 独立窗口'
+                                          : `${s.category} · 示例窗口`}
                                   </small>
                                 </span>
                                 <UiIcon name="arrow-right" size={19} />
@@ -669,16 +677,30 @@ export default function App() {
               {indoorCanteen && (
                 <p className="detail-location">
                   {indoorCanteen.name} ·{' '}
-                  {hasOfferings
-                    ? offeringWindow
-                      ? `${offeringWindow.windowNumber}号窗口 · 牌坊：${offeringWindow.signName}`
-                      : '独立水饺超市'
-                    : indoorCanteen.showWindowNumbers === false
-                      ? stallFace?.pickup
-                        ? '侧面取餐口'
-                        : stall.name.split(' · ').at(-1)
-                      : `${modelWindowNumber(stall.id)}号窗口`}
+                  {indoorCanteen.style === 'ninth'
+                    ? '3F · 连续售餐区'
+                    : hasOfferings
+                      ? offeringWindow
+                        ? `${offeringWindow.windowNumber}号窗口 · 牌坊：${offeringWindow.signName}`
+                        : '独立水饺超市'
+                      : indoorCanteen.showWindowNumbers === false
+                        ? stallFace?.pickup
+                          ? '侧面取餐口'
+                          : stall.name.split(' · ').at(-1)
+                        : `${modelWindowNumber(stall.id)}号窗口`}
                 </p>
+              )}
+              {indoorCanteen?.style === 'ninth' && (
+                <div className="ninth-stall-info">
+                  <span className="tiny-tag">主营品类</span>
+                  <p>{stall.category}</p>
+                  {stall.id.includes('yue-qing-he') && <p>南面与西面是同一家店的连续转角柜台。</p>}
+                  {stall.id.includes('roujiamo') && <p>从门面进入内凹区域，点餐柜台位于里面。</p>}
+                  {stall.id.includes('pizza-hut') && (
+                    <p>玻璃门面与相邻 Pizza Hut 红色装饰墙属于同一家店。</p>
+                  )}
+                  <small>牌坊文字依实拍保留，具体菜单与价格待补充。</small>
+                </div>
               )}
               {hasOfferings && (
                 <>

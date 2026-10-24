@@ -21,12 +21,21 @@ export type Floor = {
   elevation: number;
   layoutVersion: number;
 };
+export type StallPosition = {
+  x: number;
+  z: number;
+  rotationY: number;
+  width: number;
+  depth: number;
+};
 export type Stall = {
   id: string;
   floorId: string;
   name: string;
   category: string;
-  position: { x: number; z: number; rotationY: number; width: number; depth: number };
+  position: StallPosition;
+  /** Additional service faces belonging to this same shop and stable stall ID. */
+  serviceAreas?: StallPosition[];
   dishes: { name: string; price: number | null; description: string; photoKey: string | null }[];
   photoKey: string | null;
   /** Confirmed breakfast location. Omitted means unknown, not unavailable. */
@@ -115,24 +124,39 @@ export function validateCatalog(raw: unknown): string[] {
       errors.push(`${s.id}: missing floor`);
       continue;
     }
-    const p = s.position;
-    if (!p || !Array.isArray(s.dishes)) {
+    if (!s.position || !Array.isArray(s.dishes)) {
       errors.push(`${s.id}: invalid stall structure`);
       continue;
     }
-    if (
-      ![p.x, p.z, p.rotationY, p.width, p.depth].every(Number.isFinite) ||
-      p.width <= 0 ||
-      p.depth <= 0
-    )
-      errors.push(`${s.id}: invalid position`);
-    const c = Math.abs(Math.cos(p.rotationY)),
-      n = Math.abs(Math.sin(p.rotationY));
-    if (
-      Math.abs(p.x) + (p.width * c + p.depth * n) / 2 > f.width / 2 + 1e-6 ||
-      Math.abs(p.z) + (p.width * n + p.depth * c) / 2 > f.depth / 2 + 1e-6
-    )
-      errors.push(`${s.id}: outside floor`);
+    const validatePosition = (value: unknown, label: string) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        errors.push(`${label}: invalid position`);
+        return;
+      }
+      const p = value as StallPosition;
+      if (
+        ![p.x, p.z, p.rotationY, p.width, p.depth].every(Number.isFinite) ||
+        p.width <= 0 ||
+        p.depth <= 0
+      ) {
+        errors.push(`${label}: invalid position`);
+        return;
+      }
+      const c = Math.abs(Math.cos(p.rotationY)),
+        n = Math.abs(Math.sin(p.rotationY));
+      if (
+        Math.abs(p.x) + (p.width * c + p.depth * n) / 2 > f.width / 2 + 1e-6 ||
+        Math.abs(p.z) + (p.width * n + p.depth * c) / 2 > f.depth / 2 + 1e-6
+      )
+        errors.push(`${label}: outside floor`);
+    };
+    validatePosition(s.position, s.id);
+    if (s.serviceAreas !== undefined) {
+      if (!Array.isArray(s.serviceAreas)) errors.push(`${s.id}: invalid service areas`);
+      else
+        for (const [index, area] of s.serviceAreas.entries())
+          validatePosition(area, `${s.id}: serviceAreas[${index}]`);
+    }
   }
   return errors;
 }

@@ -56,87 +56,27 @@ function rod(p, a, b, r, c) {
   m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize());
   return m;
 }
-function textPanel(p, text, sub, x, y, z, w, h, rotation = 0, color = '#fff9e8', bg = null) {
-  const cv = document.createElement('canvas');
-  cv.width = 1024;
-  cv.height = 256;
-  const c = cv.getContext('2d');
-  if (bg) {
-    c.fillStyle = bg;
-    c.fillRect(0, 0, 1024, 256);
-  }
-  c.fillStyle = color;
-  c.textAlign = 'center';
-  c.textBaseline = 'middle';
-  c.font = '600 112px "KaiTi","STKaiti","Microsoft YaHei",serif';
-  c.fillText(text, 512, sub ? 99 : 134);
-  if (sub) {
-    c.font = '400 37px Georgia,serif';
-    c.fillText(sub, 512, 202);
-  }
-  const tx = new THREE.CanvasTexture(cv);
-  tx.colorSpace = THREE.SRGBColorSpace;
-  const m = mesh(
+// Use the supplied artwork verbatim; Vite resolves these under any deployment base.
+const logisticsArtwork = new URL('../../assets/branding/南大后勤.png', import.meta.url).href;
+const badgeArtwork = new URL('../../assets/branding/南大校徽.png', import.meta.url).href;
+function imagePanel(p, url, x, y, z, w, h, rotation = 0) {
+  const texture = new THREE.TextureLoader().load(url);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const panel = mesh(
     p,
     new THREE.PlaneGeometry(w, h),
-    new THREE.MeshStandardMaterial({
-      map: tx,
-      transparent: true,
-      roughness: 0.9,
-      depthWrite: false,
-    }),
+    new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9 }),
     x,
     y,
     z,
   );
-  m.rotation.y = rotation;
-  m.castShadow = false;
-  return m;
+  panel.rotation.y = rotation;
+  panel.castShadow = false;
+  return panel;
 }
 function badge(p, x, y, z, rotation = 0, scale = 1) {
-  const cv = document.createElement('canvas');
-  cv.width = 256;
-  cv.height = 320;
-  const c = cv.getContext('2d');
-  c.strokeStyle = '#fff8e9';
-  c.fillStyle = '#fff8e9';
-  c.lineWidth = 9;
-  c.beginPath();
-  c.moveTo(20, 20);
-  c.quadraticCurveTo(65, 42, 128, 16);
-  c.quadraticCurveTo(195, 42, 236, 20);
-  c.lineTo(226, 196);
-  c.quadraticCurveTo(210, 267, 128, 306);
-  c.quadraticCurveTo(44, 267, 30, 196);
-  c.closePath();
-  c.stroke();
-  c.textAlign = 'center';
-  c.font = '600 40px KaiTi,serif';
-  c.fillText('南 大', 128, 87);
-  c.beginPath();
-  c.moveTo(128, 105);
-  c.lineTo(163, 170);
-  c.lineTo(151, 170);
-  c.lineTo(185, 213);
-  c.lineTo(71, 213);
-  c.lineTo(105, 170);
-  c.lineTo(93, 170);
-  c.closePath();
-  c.fill();
-  c.font = '28px Georgia';
-  c.fillText('1902', 128, 265);
-  const t = new THREE.CanvasTexture(cv);
-  t.colorSpace = THREE.SRGBColorSpace;
-  const m = mesh(
-    p,
-    new THREE.PlaneGeometry(0.45 * scale, 0.58 * scale),
-    new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false }),
-    x,
-    y,
-    z,
-  );
-  m.rotation.y = rotation;
-  m.castShadow = false;
+  const height = 0.58 * scale;
+  return imagePanel(p, badgeArtwork, x, y, z, (height * 306) / 363, height, rotation);
 }
 export function createCart() {
   const cart = new THREE.Group();
@@ -354,11 +294,11 @@ export function createCart() {
     );
     round(cart, -3.13, 2.43, z > 0 ? 1.66 : -1.66, 0.12, 0.3, 0.17, '#48444f', 0.04);
   }
-  textPanel(cart, '南大後勤', 'NJU LOGISTICS', -3.405, 3.26, 0, 1.34, 0.34, -Math.PI / 2);
+  imagePanel(cart, logisticsArtwork, -3.405, 3.26, 0, 1, (1 * 180) / 390, -Math.PI / 2);
   badge(cart, -3.405, 1.18, 0, -Math.PI / 2, 1.12);
   for (const z of [-1.322, 1.322]) {
     const r = z > 0 ? 0 : Math.PI;
-    textPanel(cart, '南大後勤', 'NJU LOGISTICS', 0.25, 1.19, z, 2.15, 0.61, r);
+    imagePanel(cart, logisticsArtwork, 0.25, 1.19, z, 1.65, (1.65 * 180) / 390, r);
     badge(cart, z > 0 ? -1.2 : 1.7, 1.2, z, r, 0.95);
   }
   // Compact equipment and small display stands remain behind the food.

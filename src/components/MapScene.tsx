@@ -17,6 +17,7 @@ import type { InterfaceTheme } from '../lib/use-interface-theme';
 import './fourth-canteen.css';
 import { createSouthGateCartModel } from './SouthGateCartModel';
 import { batchModel } from '../lib/model-batches';
+import { attachModelMouseControls } from '../lib/model-mouse-controls';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -32,6 +33,7 @@ type Engine = {
   camera: THREE.OrthographicCamera;
   renderer: THREE.WebGLRenderer;
   controls: OrbitControls;
+  mouse: ReturnType<typeof attachModelMouseControls>;
   content: THREE.Group;
   goal: THREE.Vector3;
   focus: THREE.Vector3;
@@ -48,6 +50,7 @@ type Engine = {
 };
 
 function frameFourth(e: Engine, mode: FourthViewMode) {
+  e.mouse.reset();
   const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
   e.fourthMode = mode;
   e.fourth?.setMode(mode);
@@ -208,6 +211,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     reset() {
       const e = engine.current;
       if (e) {
+        e.mouse.reset();
         e.controls.autoRotate = false;
         setCartRotating(false);
         if (e.fourth) {
@@ -269,6 +273,12 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       RIGHT: THREE.MOUSE.ROTATE,
     };
     controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+    const interact = () => {
+      if (engine.current) engine.current.animating = false;
+      controls.autoRotate = false;
+      setCartRotating(false);
+    };
+    const mouse = attachModelMouseControls(renderer.domElement, controls, interact);
     const content = new THREE.Group();
     scene.add(content);
     const ambientLight = new THREE.HemisphereLight('#ffffff', '#9da495', 1.5);
@@ -285,6 +295,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       camera,
       renderer,
       controls,
+      mouse,
       content,
       goal: camera.position.clone(),
       focus: new THREE.Vector3(),
@@ -316,19 +327,22 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     const observer = new ResizeObserver(resize);
     observer.observe(element);
     resize();
-    controls.addEventListener('start', () => {
-      e.animating = false;
-      controls.autoRotate = false;
-      setCartRotating(false);
-    });
+    controls.addEventListener('start', interact);
     const raycaster = new THREE.Raycaster(),
       pointer = new THREE.Vector2();
-    let start = [0, 0];
+    let start: [number, number] | null = null;
     const down = (event: PointerEvent) => {
-      start = [event.clientX, event.clientY];
+      start = event.button === 0 && !mouse.isActive() ? [event.clientX, event.clientY] : null;
     };
     const up = (event: PointerEvent) => {
-      if (event.button !== 0 || Math.hypot(event.clientX - start[0], event.clientY - start[1]) > 6)
+      const origin = start;
+      start = null;
+      if (
+        !origin ||
+        mouse.isActive() ||
+        event.button !== 0 ||
+        Math.hypot(event.clientX - origin[0], event.clientY - origin[1]) > 6
+      )
         return;
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.set(
@@ -372,6 +386,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       renderer.setAnimationLoop(null);
       renderer.domElement.removeEventListener('pointerdown', down);
       renderer.domElement.removeEventListener('pointerup', up);
+      mouse.dispose();
       controls.dispose();
       e.fourth?.group.removeFromParent();
       dispose(content);
@@ -388,6 +403,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     const e = engine.current;
     if (!e) return;
     const { content, scene, camera, controls } = e;
+    e.mouse.reset();
     const t = themes[theme];
     controls.autoRotate = false;
     controls.autoRotateSpeed = 0.65;
@@ -440,7 +456,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           'aria-label',
           spec
             ? `${spec.name}窗口模型，可切换俯视与三维、拖动缩放`
-            : '南门小餐车模型，可拖动平移、右键旋转、滚轮缩放',
+            : '南门小餐车模型，可拖动平移、单击右键进入旋转模式、滚轮缩放',
         );
         e.indoorSpec = spec ?? {
           ...fourthCanteenSpec,

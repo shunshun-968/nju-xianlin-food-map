@@ -444,7 +444,7 @@ export default function App() {
                         <span key={name}>{name}</span>
                       ))}
                     </div>
-                    <p>顶部切换昼夜 · 拖动平移 · 右键旋转 · 滚轮放大</p>
+                    <p>单机右键进入旋转模式</p>
                   </div>
                 ) : (
                   <>
@@ -636,9 +636,7 @@ export default function App() {
           </div>
           {view.level !== 'campus' && (
             <div className="interaction-hint">
-              {isModeledFloor
-                ? '拖动平移 · 滚轮缩放 · 切换 3D 后可右键旋转'
-                : '拖动平移 · 右键旋转 · 滚轮缩放 · 双指旋转'}
+              单机右键进入旋转模式
             </div>
           )}
           {stall && (
@@ -737,7 +735,7 @@ export default function App() {
                   </li>
                   <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
                 </ul>
-                <p>进入食堂建筑或楼层后，也可通过滚轮或加减按钮缩放，右键拖动旋转视角。</p>
+                <p>单机右键进入旋转模式</p>
               </section>
               <p>下一步：现场采集 → 校准空间 → 完善菜单 → 开放真实评价。</p>
               <p className="source-credits">

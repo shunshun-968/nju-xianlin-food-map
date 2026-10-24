@@ -192,6 +192,18 @@
 
 /* Desktop hover navigation; mobile keeps its existing manual controls. */
 @media (min-width: 701px) {
+  /* Reserve the drawer's full width, including its pull tab, at every level. */
+  .floating-shell:is(.view-building, .view-floor) .breadcrumbs {
+    left: auto;
+    right: 24px;
+    max-width: calc(100% - var(--desktop-sidebar-width) - 60px);
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+  .floating-shell:is(.view-building, .view-floor) .breadcrumbs > * {
+    flex-shrink: 0;
+  }
   .floating-shell .desktop-header-hoverzone {
     position: absolute;
     z-index: 29;

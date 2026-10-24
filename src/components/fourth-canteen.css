@@ -43,7 +43,13 @@
 .fourth-canteen-scene canvas {
   border-radius: 18px;
 }
+.scene canvas[data-rotation-mode='true'] {
+  cursor: move;
+}
 @media (min-width: 701px) {
+  .fourth-view-controls {
+    top: 40px;
+  }
   .app.fourth-model-active .detail-panel {
     bottom: auto;
     height: auto;

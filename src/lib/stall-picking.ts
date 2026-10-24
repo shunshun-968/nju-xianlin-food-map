@@ -5,7 +5,10 @@ import type { Stall } from '../domain';
  * Plan: the entire kitchen footprint. 3D: the entire facade, from plinth to sign.
  * Keep these outside the visual model so batching, lighting and cached models stay intact.
  */
-export function createStallPickTargets(stalls: Stall[]) {
+export function createStallPickTargets(
+  stalls: Stall[],
+  facadeHeights: Readonly<Record<string, number>> = {},
+) {
   const group = new THREE.Group();
   group.name = 'stall-pick-targets';
   const plan = new THREE.Group();
@@ -23,9 +26,11 @@ export function createStallPickTargets(stalls: Stall[]) {
     footprint.rotation.set(-Math.PI / 2, 0, p.rotationY);
     footprint.userData = { stallId: stall.id };
     plan.add(footprint);
-    const facade = new THREE.Mesh(new THREE.PlaneGeometry(p.width, 3.75), material);
+    // Standalone low counters must not intercept clicks on taller windows behind them.
+    const height = facadeHeights[stall.id] ?? 3.75;
+    const facade = new THREE.Mesh(new THREE.PlaneGeometry(p.width, height), material);
     facade.position.copy(center).addScaledVector(normal, 0.3);
-    facade.position.y = 3.75 / 2;
+    facade.position.y = height / 2;
     facade.rotation.y = p.rotationY;
     facade.userData = { stallId: stall.id };
     facades.add(facade);

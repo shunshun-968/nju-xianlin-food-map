@@ -29,6 +29,8 @@ export type Stall = {
   position: { x: number; z: number; rotationY: number; width: number; depth: number };
   dishes: { name: string; price: number | null; description: string; photoKey: string | null }[];
   photoKey: string | null;
+  /** Confirmed breakfast location. Omitted means unknown, not unavailable. */
+  breakfast?: boolean;
 };
 export type Catalog = {
   version: number;

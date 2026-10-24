@@ -17,7 +17,7 @@
         47,
         43
       ],
-      "description": "位置按“四五六食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "第四、第五、第六食堂分处一至三层。选择楼层，查看按照片建立的窗口模型；模型尺寸为示意比例。",
       "verified": false
     },
     {
@@ -35,7 +35,7 @@
         35,
         46
       ],
-      "description": "位置按“民族食堂 八九食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "民族食堂和第八食堂已按现场照片与手绘位置建立内部窗口模型，可查看实际售卖与牌匾。其他楼层暂为示例，外部建筑与楼层对应后续校准。",
       "verified": false
     },
     {
@@ -107,7 +107,7 @@
         14,
         9
       ],
-      "description": "位置按“南门餐车.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "南大门西侧的开棚餐车，白天供应早餐，夜晚陈列炸串。",
       "verified": false
     },
     {
@@ -134,51 +134,51 @@
       "id": "v-456-f1",
       "venueId": "v-456",
       "level": 1,
-      "name": "1F",
-      "width": 32,
+      "name": "第四食堂",
+      "width": 44,
       "depth": 22,
       "elevation": 0,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-456-f2",
       "venueId": "v-456",
       "level": 2,
-      "name": "2F",
-      "width": 32,
+      "name": "第五食堂",
+      "width": 44,
       "depth": 22,
       "elevation": 4,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-456-f3",
       "venueId": "v-456",
       "level": 3,
-      "name": "3F",
-      "width": 32,
+      "name": "第六食堂",
+      "width": 44,
       "depth": 22,
       "elevation": 8,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-891-f1",
       "venueId": "v-891",
       "level": 1,
-      "name": "1F",
-      "width": 32,
-      "depth": 22,
+      "name": "民族食堂",
+      "width": 44,
+      "depth": 36,
       "elevation": 0,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-891-f2",
       "venueId": "v-891",
       "level": 2,
-      "name": "2F",
-      "width": 32,
+      "name": "第八食堂",
+      "width": 44,
       "depth": 22,
       "elevation": 4,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-891-f3",
@@ -263,664 +263,1340 @@
   ],
   "stalls": [
     {
-      "id": "v-456-f1-s1",
+      "id": "v-456-f1-maijindi-w1",
       "floorId": "v-456-f1",
-      "name": "面食小站",
-      "category": "面食",
+      "name": "优品麦选 · 1号窗口",
+      "category": "面点",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -16.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f1-s2",
+      "id": "v-456-f1-maijindi-w2",
       "floorId": "v-456-f1",
-      "name": "家常小炒",
-      "category": "家常菜",
+      "name": "优品麦选 · 2号窗口",
+      "category": "面点",
       "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -14.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f1-s3",
+      "id": "v-456-f1-zhongyuan-w1",
       "floorId": "v-456-f1",
-      "name": "热汤米线",
+      "name": "中原风味 · 1号窗口",
+      "category": "中原风味",
+      "position": {
+        "x": -13.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-zhongyuan-w2",
+      "floorId": "v-456-f1",
+      "name": "中原风味 · 2号窗口",
+      "category": "中原风味",
+      "position": {
+        "x": -11.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-fujian-w1",
+      "floorId": "v-456-f1",
+      "name": "福建风味 · 1号窗口",
+      "category": "福建风味",
+      "position": {
+        "x": -9.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-fujian-w2",
+      "floorId": "v-456-f1",
+      "name": "福建风味 · 2号窗口",
+      "category": "福建风味",
+      "position": {
+        "x": -7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-xiang-egang-w1",
+      "floorId": "v-456-f1",
+      "name": "湘鄂赣风味 · 1号窗口",
+      "category": "湘鄂赣风味",
+      "position": {
+        "x": -6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-xiang-egang-w2",
+      "floorId": "v-456-f1",
+      "name": "湘鄂赣风味 · 2号窗口",
+      "category": "湘鄂赣风味",
+      "position": {
+        "x": -4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-chuanyu-w1",
+      "floorId": "v-456-f1",
+      "name": "川渝风味 · 1号窗口",
+      "category": "川渝风味",
+      "position": {
+        "x": -2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-chuanyu-w2",
+      "floorId": "v-456-f1",
+      "name": "川渝风味 · 2号窗口",
+      "category": "川渝风味",
+      "position": {
+        "x": -0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-xibei-w1",
+      "floorId": "v-456-f1",
+      "name": "西北风味 · 1号窗口",
+      "category": "西北风味",
+      "position": {
+        "x": 0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-xibei-w2",
+      "floorId": "v-456-f1",
+      "name": "西北风味 · 2号窗口",
+      "category": "西北风味",
+      "position": {
+        "x": 2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-guangshi-w1",
+      "floorId": "v-456-f1",
+      "name": "广式风味 · 1号窗口",
+      "category": "广式风味",
+      "position": {
+        "x": 4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-guangshi-w2",
+      "floorId": "v-456-f1",
+      "name": "广式风味 · 2号窗口",
+      "category": "广式风味",
+      "position": {
+        "x": 6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-dongbei-w1",
+      "floorId": "v-456-f1",
+      "name": "东北风味 · 1号窗口",
+      "category": "东北风味",
+      "position": {
+        "x": 7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-dongbei-w2",
+      "floorId": "v-456-f1",
+      "name": "东北风味 · 2号窗口",
+      "category": "东北风味",
+      "position": {
+        "x": 9.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-chuangyi-w1",
+      "floorId": "v-456-f1",
+      "name": "创意融合 · 1号窗口",
+      "category": "融合风味",
+      "position": {
+        "x": 11.6,
+        "z": 5.55,
+        "width": 2.2,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-jitang-mixian-w1",
+      "floorId": "v-456-f1",
+      "name": "蒙自源鸡汤米线 · 1号窗口",
       "category": "米线",
       "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 13.45,
+        "z": 5.55,
+        "width": 1.5,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f1-s4",
+      "id": "v-456-f1-jitang-mixian-w2",
       "floorId": "v-456-f1",
-      "name": "轻食时刻",
-      "category": "轻食",
+      "name": "蒙自源鸡汤米线 · 2号窗口",
+      "category": "米线",
       "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": 14.95,
+        "z": 5.55,
+        "width": 1.5,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f1-s5",
+      "id": "v-456-f1-maijindi-side-w1",
       "floorId": "v-456-f1",
-      "name": "香香盖饭",
-      "category": "盖饭",
+      "name": "酱香醇厚 · 1号窗口",
+      "category": "面点",
       "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -15.75,
+        "z": 5.55,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f1-s6",
+      "id": "v-456-f1-jinling-w1",
       "floorId": "v-456-f1",
-      "name": "现做饼铺",
-      "category": "小吃",
+      "name": "金陵风味 · 1号窗口",
+      "category": "金陵风味",
       "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -15.75,
+        "z": 1.1749999999999998,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f2-s1",
+      "id": "v-456-f1-jinling-w2",
+      "floorId": "v-456-f1",
+      "name": "金陵风味 · 2号窗口",
+      "category": "金陵风味",
+      "position": {
+        "x": -15.75,
+        "z": 2.925,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-shuijiao-huntun-w1",
+      "floorId": "v-456-f1",
+      "name": "京兜水饺馄饨 · 1号窗口",
+      "category": "水饺馄饨",
+      "position": {
+        "x": -15.75,
+        "z": -2.325,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f1-shuijiao-huntun-w2",
+      "floorId": "v-456-f1",
+      "name": "京兜水饺馄饨 · 2号窗口",
+      "category": "水饺馄饨",
+      "position": {
+        "x": -15.75,
+        "z": -0.575,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-nanzhou-beimian-w1",
       "floorId": "v-456-f2",
-      "name": "面食小站",
+      "name": "南粥北面 · 16号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -16.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-nanzhou-beimian-w2",
+      "floorId": "v-456-f2",
+      "name": "南粥北面 · 15号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -14.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-weidao-zuofang-w1",
+      "floorId": "v-456-f2",
+      "name": "味道作坊 · 14号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -13.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-weidao-zuofang-w2",
+      "floorId": "v-456-f2",
+      "name": "味道作坊 · 13号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -11.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-qiaochu-tiandi-w1",
+      "floorId": "v-456-f2",
+      "name": "巧厨天地 · 12号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -9.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-qiaochu-tiandi-w2",
+      "floorId": "v-456-f2",
+      "name": "巧厨天地 · 11号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-xiangji-bafang-w1",
+      "floorId": "v-456-f2",
+      "name": "香積八方 · 10号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-xiangji-bafang-w2",
+      "floorId": "v-456-f2",
+      "name": "香積八方 · 9号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-xiangji-bafang-w3",
+      "floorId": "v-456-f2",
+      "name": "香積八方 · 8号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-xiangji-bafang-w4",
+      "floorId": "v-456-f2",
+      "name": "香積八方 · 7号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-jiachang-weidao-w1",
+      "floorId": "v-456-f2",
+      "name": "家常味道 · 6号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-jiachang-weidao-w2",
+      "floorId": "v-456-f2",
+      "name": "家常味道 · 5号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-jiachang-weidao-w3",
+      "floorId": "v-456-f2",
+      "name": "家常味道 · 4号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-jiachang-weidao-w4",
+      "floorId": "v-456-f2",
+      "name": "家常味道 · 3号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-shicheng-ziwei-w1",
+      "floorId": "v-456-f2",
+      "name": "石城滋味 · 2号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-shicheng-ziwei-w2",
+      "floorId": "v-456-f2",
+      "name": "石城滋味 · 1号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 9.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-shougong-shuijiao-w1",
+      "floorId": "v-456-f2",
+      "name": "手工·水饺 · 18号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -15.75,
+        "z": 4.675,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-shougong-shuijiao-w2",
+      "floorId": "v-456-f2",
+      "name": "手工·水饺 · 17号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -15.75,
+        "z": 6.425,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-wuwei-zachen-w1",
+      "floorId": "v-456-f2",
+      "name": "五味杂陈 · 21号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -15.75,
+        "z": -0.575,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-wuwei-zachen-w2",
+      "floorId": "v-456-f2",
+      "name": "五味杂陈 · 20号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -15.75,
+        "z": 1.175,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f2-wuwei-zachen-w3",
+      "floorId": "v-456-f2",
+      "name": "五味杂陈 · 19号窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -15.75,
+        "z": 2.925,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-jinling-kitchen-w1",
+      "floorId": "v-456-f3",
+      "name": "金陵小厨 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -16.625,
+        "z": -0.10000000000000053,
+        "width": 1.75,
+        "depth": 14.8,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-jinling-kitchen-w2",
+      "floorId": "v-456-f3",
+      "name": "金陵小厨 · 中间窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -14.875,
+        "z": -0.10000000000000053,
+        "width": 1.75,
+        "depth": 14.8,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-jinling-kitchen-w3",
+      "floorId": "v-456-f3",
+      "name": "金陵小厨 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -13.125,
+        "z": -0.10000000000000053,
+        "width": 1.75,
+        "depth": 14.8,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-zhongshi-miandian-w1",
+      "floorId": "v-456-f3",
+      "name": "中式面点 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -11.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-zhongshi-miandian-w2",
+      "floorId": "v-456-f3",
+      "name": "中式面点 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -9.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-meishi-dangkou-w1",
+      "floorId": "v-456-f3",
+      "name": "美食档口 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-meishi-dangkou-w2",
+      "floorId": "v-456-f3",
+      "name": "美食档口 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-baibian-chuangkou-w1",
+      "floorId": "v-456-f3",
+      "name": "百变窗口 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-baibian-chuangkou-w2",
+      "floorId": "v-456-f3",
+      "name": "百变窗口 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-difang-tese-w1",
+      "floorId": "v-456-f3",
+      "name": "地方特色 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": -0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-difang-tese-w2",
+      "floorId": "v-456-f3",
+      "name": "地方特色 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 0.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-fengwei-xiaochi-w1",
+      "floorId": "v-456-f3",
+      "name": "风味小吃 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 2.625,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-fengwei-xiaochi-w2",
+      "floorId": "v-456-f3",
+      "name": "风味小吃 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 4.375,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-tianfu-caiyao-w1",
+      "floorId": "v-456-f3",
+      "name": "天府菜肴 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 6.125,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-tianfu-caiyao-w2",
+      "floorId": "v-456-f3",
+      "name": "天府菜肴 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 7.875,
+        "z": 5.55,
+        "width": 1.75,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-huaiyang-caipin-w1",
+      "floorId": "v-456-f3",
+      "name": "淮扬菜品 · 左侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 10.0625,
+        "z": 5.55,
+        "width": 2.625,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-huaiyang-caipin-w2",
+      "floorId": "v-456-f3",
+      "name": "淮扬菜品 · 右侧窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 12.6875,
+        "z": 5.55,
+        "width": 2.625,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-jinling-pickup-w1",
+      "floorId": "v-456-f3",
+      "name": "金陵小厨取餐口",
+      "category": "取餐口",
+      "position": {
+        "x": -14.875,
+        "z": -4.5,
+        "width": 1.75,
+        "depth": 5.25,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-456-f3-huaiyang-side-w1",
+      "floorId": "v-456-f3",
+      "name": "淮扬菜品 · 侧面窗口",
+      "category": "食堂窗口",
+      "position": {
+        "x": 11.375,
+        "z": 5.5,
+        "width": 1.75,
+        "depth": 5.25,
+        "rotationY": 1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-lanzhou-w1",
+      "floorId": "v-891-f1",
+      "name": "拉面／刀削面／炒面／炒米粉 · 1号窗口",
+      "category": "拉面／刀削面／炒面／炒米粉",
+      "position": {
+        "x": -3.25,
+        "z": -14.25,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-lanzhou-w2",
+      "floorId": "v-891-f1",
+      "name": "脆皮鸡排饭 · 2号窗口",
+      "category": "脆皮鸡排饭",
+      "position": {
+        "x": -3.25,
+        "z": -10.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-paidang-w1",
+      "floorId": "v-891-f1",
+      "name": "学子特价套餐 · 3号窗口",
+      "category": "学子特价套餐",
+      "position": {
+        "x": -3.25,
+        "z": -7.25,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-paidang-w2",
+      "floorId": "v-891-f1",
+      "name": "麻辣烫 · 4号窗口",
+      "category": "麻辣烫",
+      "position": {
+        "x": -3.25,
+        "z": -3.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-paidang-w3",
+      "floorId": "v-891-f1",
+      "name": "暂无售卖 · 5号窗口",
+      "category": "暂无售卖",
+      "position": {
+        "x": -3.25,
+        "z": -0.25000000000000006,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-minzu-w1",
+      "floorId": "v-891-f1",
+      "name": "拌面／盖饭／水饺 · 6号窗口",
+      "category": "拌面／盖饭／水饺",
+      "position": {
+        "x": -3.25,
+        "z": 3.25,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-minzu-w2",
+      "floorId": "v-891-f1",
+      "name": "暂无售卖 · 7号窗口",
+      "category": "暂无售卖",
+      "position": {
+        "x": -3.25,
+        "z": 6.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-bianchui-w1",
+      "floorId": "v-891-f1",
+      "name": "自选菜 · 8号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": -3.25,
+        "z": 6.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "breakfast": true,
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-bianchui-w2",
+      "floorId": "v-891-f1",
+      "name": "自选菜 · 9号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": 0.25,
+        "z": 6.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f1-bianchui-w3",
+      "floorId": "v-891-f1",
+      "name": "自选菜 · 10号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": 3.75,
+        "z": 6.75,
+        "width": 3.5,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-lu-shui-w1",
+      "floorId": "v-891-f2",
+      "name": "减脂餐 · 1号窗口",
+      "category": "减脂餐",
+      "position": {
+        "x": -13.875,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-lu-shui-w2",
+      "floorId": "v-891-f2",
+      "name": "减脂餐 · 2号窗口",
+      "category": "减脂餐",
+      "position": {
+        "x": -11.625,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-te-se-w1",
+      "floorId": "v-891-f2",
+      "name": "3号窗口",
+      "category": "待补充",
+      "position": {
+        "x": -9.375,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-te-se-w2",
+      "floorId": "v-891-f2",
+      "name": "自选菜 · 4号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": -7.125,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-wei-dao-w1",
+      "floorId": "v-891-f2",
+      "name": "自选菜 · 5号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": -4.875,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-wei-dao-w2",
+      "floorId": "v-891-f2",
+      "name": "自选菜 · 6号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": -2.625,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-zhu-shi-w1",
+      "floorId": "v-891-f2",
+      "name": "自选菜 · 7号窗口",
+      "category": "自选菜",
+      "position": {
+        "x": -0.375,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-zhu-shi-w2",
+      "floorId": "v-891-f2",
+      "name": "吊梨汤 · 8号窗口",
+      "category": "吊梨汤",
+      "position": {
+        "x": 1.875,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-tie-ban-w1",
+      "floorId": "v-891-f2",
+      "name": "鸡排饭·牛排饭 · 9号窗口",
+      "category": "鸡排饭·牛排饭",
+      "position": {
+        "x": 4.125,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-891-f2-tie-ban-w2",
+      "floorId": "v-891-f2",
+      "name": "面食 · 10号窗口",
       "category": "面食",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 6.375,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f2-s2",
-      "floorId": "v-456-f2",
-      "name": "家常小炒",
-      "category": "家常菜",
-      "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f2-s3",
-      "floorId": "v-456-f2",
-      "name": "热汤米线",
-      "category": "米线",
-      "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f2-s4",
-      "floorId": "v-456-f2",
-      "name": "轻食时刻",
-      "category": "轻食",
-      "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f2-s5",
-      "floorId": "v-456-f2",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f2-s6",
-      "floorId": "v-456-f2",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f3-s1",
-      "floorId": "v-456-f3",
-      "name": "面食小站",
+      "id": "v-891-f2-mian-fang-w1",
+      "floorId": "v-891-f2",
+      "name": "面食 · 11号窗口",
       "category": "面食",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 8.625,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-456-f3-s2",
-      "floorId": "v-456-f3",
-      "name": "家常小炒",
-      "category": "家常菜",
-      "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f3-s3",
-      "floorId": "v-456-f3",
-      "name": "热汤米线",
-      "category": "米线",
-      "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f3-s4",
-      "floorId": "v-456-f3",
-      "name": "轻食时刻",
-      "category": "轻食",
-      "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f3-s5",
-      "floorId": "v-456-f3",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-456-f3-s6",
-      "floorId": "v-456-f3",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s1",
-      "floorId": "v-891-f1",
-      "name": "面食小站",
-      "category": "面食",
-      "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s2",
-      "floorId": "v-891-f1",
-      "name": "家常小炒",
-      "category": "家常菜",
-      "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s3",
-      "floorId": "v-891-f1",
-      "name": "热汤米线",
-      "category": "米线",
-      "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s4",
-      "floorId": "v-891-f1",
-      "name": "轻食时刻",
-      "category": "轻食",
-      "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s5",
-      "floorId": "v-891-f1",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f1-s6",
-      "floorId": "v-891-f1",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f2-s1",
+      "id": "v-891-f2-mian-fang-w2",
       "floorId": "v-891-f2",
-      "name": "面食小站",
-      "category": "面食",
+      "name": "暂无售卖 · 12号窗口",
+      "category": "暂无售卖",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 10.875,
+        "z": 2.25,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-891-f2-s2",
+      "id": "v-891-f2-mei-shi-w1",
       "floorId": "v-891-f2",
-      "name": "家常小炒",
-      "category": "家常菜",
+      "name": "椰子鸡 · 13号窗口",
+      "category": "椰子鸡",
       "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 10.25,
+        "z": 2.875,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-891-f2-s3",
+      "id": "v-891-f2-mei-shi-w2",
       "floorId": "v-891-f2",
-      "name": "热汤米线",
-      "category": "米线",
+      "name": "椰子鸡 · 14号窗口",
+      "category": "椰子鸡",
       "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 10.25,
+        "z": 0.625,
+        "width": 2.25,
+        "depth": 3.5,
+        "rotationY": 1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-891-f2-s4",
-      "floorId": "v-891-f2",
-      "name": "轻食时刻",
-      "category": "轻食",
+      "id": "v-891-f2-dumpling-kiosk",
+      "name": "水饺超市",
       "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": 9,
+        "z": 7.4,
+        "width": 3.4,
+        "depth": 1.5,
+        "rotationY": 1.5707963267948966
       },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f2-s5",
       "floorId": "v-891-f2",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
+      "category": "水饺",
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-891-f2-s6",
-      "floorId": "v-891-f2",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
       "id": "v-891-f3-s1",

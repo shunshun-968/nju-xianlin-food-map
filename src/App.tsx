@@ -8,7 +8,8 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
 import { catalogRepository } from './services/catalog';
-import { getIndoorCanteen } from './data/indoor-canteens';
+import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
+import { eighthDumplingKiosk } from './data/eighth-canteen';
 import type { Catalog, MapTheme, View } from './domain';
 
 export default function App() {
@@ -164,6 +165,8 @@ export default function App() {
   const stall = data?.stalls.find((s) => s.id === stallId);
   const indoorCanteen = getIndoorCanteen(floor?.id);
   const isModeledFloor = !!indoorCanteen;
+  const isEighthFloor = indoorCanteen?.style === 'eighth';
+  const hasOfferings = isEighthFloor || indoorCanteen?.style === 'minzu';
   const isSouthCart = venue?.id === 'v-south';
   const modelWindowCount = indoorCanteen?.faces.reduce(
     (total, face) => total + face.windowCount,
@@ -180,6 +183,15 @@ export default function App() {
     indoorCanteen && stall
       ? indoorCanteen.faces.find((face) => face.faceId === stall.id.replace(/-w\d+$/, ''))
       : undefined;
+  const offeringWindow =
+    hasOfferings && stall ? getIndoorWindow(indoorCanteen, stall.id) : undefined;
+  const sharedNumbers = offeringWindow
+    ? (data?.stalls ?? [])
+        .map((row) => getIndoorWindow(indoorCanteen, row.id))
+        .filter((row) => row?.shopId === offeringWindow.shopId)
+        .map((row) => row!.windowNumber)
+        .sort((a, b) => a - b)
+    : [];
   const visible = data?.venues.filter(
     (v) => (filter === 'all' || v.kind === filter) && v.name.includes(query),
   );
@@ -460,7 +472,7 @@ export default function App() {
                         {view.level === 'building'
                           ? '点击楼层进入'
                           : indoorCanteen
-                            ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口`
+                            ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口${isEighthFloor ? ' · 独立水饺超市' : ''}`
                             : `${floor?.name} · 示例布局`}
                       </span>
                     </div>
@@ -498,16 +510,24 @@ export default function App() {
                                 onClick={() => setStallId(s.id)}
                               >
                                 <span className="stall-number">
-                                  {String(modelWindowNumber(s.id) ?? i + 1).padStart(2, '0')}
+                                  {s.id === eighthDumplingKiosk.id ? (
+                                    <UiIcon name="cart" size={19} />
+                                  ) : (
+                                    String(modelWindowNumber(s.id) ?? i + 1).padStart(2, '0')
+                                  )}
                                 </span>
                                 <span>
                                   <strong>{s.name}</strong>
                                   <small>
-                                    {isModeledFloor
-                                      ? indoorCanteen?.style === 'sixth'
-                                        ? '电子屏 · 售餐窗口'
-                                        : '牌坊模型 · 独立窗口'
-                                      : `${s.category} · 示例窗口`}
+                                    {hasOfferings
+                                      ? getIndoorWindow(indoorCanteen, s.id)
+                                        ? `牌坊：${getIndoorWindow(indoorCanteen, s.id)!.signName}${s.breakfast ? ' · 供应早餐' : ''}`
+                                        : '独立冰柜 · 水饺售卖点'
+                                      : isModeledFloor
+                                        ? indoorCanteen?.style === 'sixth'
+                                          ? '电子屏 · 售餐窗口'
+                                          : '牌坊模型 · 独立窗口'
+                                        : `${s.category} · 示例窗口`}
                                   </small>
                                 </span>
                                 <UiIcon name="arrow-right" size={19} />
@@ -635,9 +655,7 @@ export default function App() {
             )}
           </div>
           {view.level !== 'campus' && (
-            <div className="interaction-hint">
-              单机右键进入旋转模式
-            </div>
+            <div className="interaction-hint">3D 模式下，单击右键进入旋转模式</div>
           )}
           {stall && (
             <aside className="detail-panel" aria-label="窗口详情">
@@ -647,16 +665,39 @@ export default function App() {
                   <UiIcon name="close" size={19} />
                 </button>
               </div>
-              <h2>{stallFace?.name || stall.name}</h2>
+              <h2>{hasOfferings ? stall.name : stallFace?.name || stall.name}</h2>
               {indoorCanteen && (
                 <p className="detail-location">
                   {indoorCanteen.name} ·{' '}
-                  {indoorCanteen.showWindowNumbers === false
-                    ? stallFace?.pickup
-                      ? '侧面取餐口'
-                      : stall.name.split(' · ').at(-1)
-                    : `${modelWindowNumber(stall.id)}号窗口`}
+                  {hasOfferings
+                    ? offeringWindow
+                      ? `${offeringWindow.windowNumber}号窗口 · 牌坊：${offeringWindow.signName}`
+                      : '独立水饺超市'
+                    : indoorCanteen.showWindowNumbers === false
+                      ? stallFace?.pickup
+                        ? '侧面取餐口'
+                        : stall.name.split(' · ').at(-1)
+                      : `${modelWindowNumber(stall.id)}号窗口`}
                 </p>
+              )}
+              {hasOfferings && (
+                <>
+                  <h3>实际售卖</h3>
+                  <p>
+                    {stall.category === '待补充'
+                      ? '餐品信息待补充'
+                      : (offeringWindow?.offering ?? stall.category)}
+                  </p>
+                  {sharedNumbers.length > 1 && (
+                    <p className="detail-location">同一档口：{sharedNumbers.join('、')} 号窗口</p>
+                  )}
+                  {indoorCanteen?.style === 'minzu' && (offeringWindow?.windowNumber ?? 0) >= 8 && (
+                    <p className="detail-location">两组自选菜均可在 8、9、10 号窗口购买。</p>
+                  )}
+                  {stall.breakfast && (
+                    <p className="detail-location">供应早餐 · 暖心早餐专用窗口</p>
+                  )}
+                </>
               )}
               {!isModeledFloor && (
                 <>
@@ -723,7 +764,7 @@ export default function App() {
               <p>开发者：顺顺和 lungfish</p>
               <p>
                 校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
-                标记定位。四五六食堂已按参考资料建模，其他楼层与菜单仍为示例；模型尺寸为示意比例。
+                标记定位。四五六食堂、民族食堂及第八食堂内部已按参考资料建模，其他楼层与菜单仍为示例；模型尺寸为示意比例。
               </p>
               <section className="zoom-guide" aria-labelledby="zoom-guide-title">
                 <h3 id="zoom-guide-title">缩放规则</h3>

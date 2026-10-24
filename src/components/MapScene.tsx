@@ -19,6 +19,7 @@ import { createSouthGateCartModel } from './SouthGateCartModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
 import { createStallPickTargets } from '../lib/stall-picking';
+import { eighthDumplingKiosk } from '../data/eighth-canteen';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -495,7 +496,17 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.fourth = model;
         content.add(model.group);
         if (spec) {
-          e.stallTargets = createStallPickTargets(data.stalls.filter((s) => s.floorId === spec.id));
+          e.stallTargets = createStallPickTargets(
+            data.stalls.filter((s) => s.floorId === spec.id),
+            {
+              ...Object.fromEntries(
+                data.stalls
+                  .filter((s) => s.floorId === spec.id)
+                  .map((s) => [s.id, spec.facadeHeight ?? 3.75]),
+              ),
+              [eighthDumplingKiosk.id]: 1.3,
+            },
+          );
           content.add(e.stallTargets.group);
         }
         const night = interfaceThemeRef.current === 'night';

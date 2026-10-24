@@ -7,6 +7,8 @@ import { addCanteenStaff } from './fourth-canteen-people';
 import { addCanteenSignage } from './fourth-canteen-signage';
 import { addFifthCanteenSignage } from './fifth-canteen-signage';
 import { createSixthCanteenModel } from './SixthCanteenModel';
+import { createEighthCanteenModel } from './EighthCanteenModel';
+import { createMinzuCanteenModel } from './MinzuCanteenModel';
 
 export type FourthViewMode = 'plan' | '3d';
 export type FourthCanteenModel = {
@@ -28,6 +30,8 @@ export function createFourthCanteenModel(): FourthCanteenModel {
 }
 
 export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel {
+  if (spec.style === 'minzu') return createMinzuCanteenModel(spec);
+  if (spec.style === 'eighth') return createEighthCanteenModel(spec);
   if (spec.style === 'sixth') return createSixthCanteenModel(spec);
   const faces = spec.faces,
     layout = spec.layout,

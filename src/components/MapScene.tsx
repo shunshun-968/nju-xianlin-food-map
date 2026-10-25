@@ -134,7 +134,8 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.fourthMode = mode;
   e.stallTargets?.setMode(mode);
   e.stallSelection?.setMode(mode);
-  e.fourth?.setMode(mode);
+  if (e.stallSelection) e.stallSelection.withLightingUpdate(() => e.fourth?.setMode(mode));
+  else e.fourth?.setMode(mode);
   e.animating = false;
   e.controls.enableDamping = false;
   e.controls.update();
@@ -626,7 +627,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             [eleventhDumplingKiosk.id]: 1.3,
           };
           e.stallTargets = createStallPickTargets(stalls, heights);
-          e.stallSelection = createStallSelection(stalls, heights);
+          e.stallSelection = createStallSelection(stalls, heights, {
+            model: model.group, scene, fillLights: [e.ambientLight, e.keyLight],
+          });
           e.stallSelection.select(selectedStallRef.current);
           content.add(e.stallTargets.group, e.stallSelection.group);
         } else {
@@ -635,13 +638,15 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           e.stallSelection = createStallSelection(
             data.stalls.filter((stall) => stall.id === southGateCartStall.id),
             { [southGateCartStall.id]: SOUTH_GATE_CART_HEIGHT },
+            { model: model.group, scene, fillLights: [e.ambientLight, e.keyLight] },
           );
           e.stallSelection.select(selectedStallRef.current);
           content.add(e.stallSelection.group);
         }
         const night = interfaceThemeRef.current === 'night';
         scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
-        model.setInterfaceTheme(night);
+        if (e.stallSelection) e.stallSelection.withLightingUpdate(() => model!.setInterfaceTheme(night));
+        else model.setInterfaceTheme(night);
         setFourthView(spec ? 'plan' : '3d');
         frameFourth(e, spec ? 'plan' : '3d');
         if (!spec) {
@@ -775,7 +780,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     if (!e?.fourth) return;
     const night = interfaceTheme === 'night';
     e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
-    e.fourth.setInterfaceTheme(night);
+    if (e.stallSelection) e.stallSelection.withLightingUpdate(() => e.fourth!.setInterfaceTheme(night));
+    else e.fourth.setInterfaceTheme(night);
     if (e.indoorSpec?.id === 'v-south') e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
     e.renderer.shadowMap.needsUpdate = true;
   }, [interfaceTheme, view]);

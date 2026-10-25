@@ -139,13 +139,48 @@
   top: calc(var(--model-overlay-top, 16px) + 98px);
 }
 @media (max-width: 700px) {
-  .fourth-view-note {
+  /* A single mobile toolbar follows the header: compact breadcrumbs on the
+     left, equally sized view/cart controls on the right, with no stagger. */
+  .app.fourth-model-active .map-area .fourth-view-controls {
+    top: var(--model-overlay-top, 16px);
+    right: 16px;
+    box-sizing: border-box;
+    width: 122px;
+    max-width: none;
+    height: 38px;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  .app.floating-shell.fourth-model-active .map-area .breadcrumbs,
+  .app.floating-shell.fourth-model-active .map-area[data-model-overlay-stacked='true'] .breadcrumbs {
+    box-sizing: border-box;
+    height: 38px;
+    max-width: max(0px, calc(var(--model-overlay-width) - 130px));
+    padding: 8px 6px;
+    gap: 4px;
+    scrollbar-width: none;
+  }
+  .app.fourth-model-active .map-area .breadcrumbs::-webkit-scrollbar {
+    display: none;
+  }
+  /* On a floor, keep the campus entry and current canteen readable. The
+     intermediate building remains available through the drawer's Back button. */
+  .app.fourth-model-active .map-area .breadcrumbs:has(> strong) > button:not(:first-child),
+  .app.fourth-model-active .map-area .breadcrumbs:has(> strong) > svg:first-of-type {
+    display: none;
+  }
+  .app.fourth-model-active .map-area .fourth-view-note {
+    top: calc(var(--model-overlay-top, 16px) + 48px);
     font-size: 10px;
   }
-  .fourth-view-controls button {
+  .app.fourth-model-active .map-area .fourth-view-controls button {
+    flex: 1 1 0;
     height: 30px;
-    min-width: 70px;
-    font-size: 11px;
+    min-width: 0;
+    padding: 0 3px;
+    white-space: nowrap;
+    font-size: 10.5px;
   }
 }
 

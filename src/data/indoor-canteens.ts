@@ -9,6 +9,12 @@ import { SIXTH_CANTEEN_FLOOR_ID, SIXTH_LAYOUT, sixthCanteenFaces } from './sixth
 import { NINTH_CANTEEN_FLOOR_ID, NINTH_LAYOUT, ninthCanteenFaces } from './ninth-canteen';
 import { EIGHTH_CANTEEN_FLOOR_ID, EIGHTH_LAYOUT, eighthCanteenFaces } from './eighth-canteen';
 import { MINZU_CANTEEN_FLOOR_ID, MINZU_LAYOUT, minzuCanteenFaces } from './minzu-canteen';
+import { TWELFTH_CANTEEN_FLOOR_ID, TWELFTH_LAYOUT, twelfthCanteenFaces } from './twelfth-canteen';
+import {
+  ELEVENTH_CANTEEN_FLOOR_ID,
+  ELEVENTH_LAYOUT,
+  eleventhCanteenFaces,
+} from './eleventh-canteen';
 
 export type IndoorCanteenFace = FourthCanteenFace & {
   windowNumbers?: number[];
@@ -25,7 +31,7 @@ export type IndoorCanteenSpec = {
   id: string;
   name: string;
   faces: IndoorCanteenFace[];
-  style: 'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth';
+  style: 'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth' | 'twelfth' | 'eleventh';
   showWindowNumbers?: boolean;
   facadeHeight?: number;
   layout: { frontOffset: number; kitchenDepth: number; corner: { x: number; z: number } };
@@ -49,6 +55,7 @@ export const fourthCanteenSpec: IndoorCanteenSpec = {
   name: '第四食堂',
   faces: fourthCanteenFaces,
   style: 'fourth',
+  showWindowNumbers: false,
   layout: FOURTH_LAYOUT,
   cornerShopId: 'maijindi',
   cornerTitle: '麦金地',
@@ -157,22 +164,75 @@ export const minzuCanteenSpec: IndoorCanteenSpec = {
   },
 };
 
+export const twelfthCanteenSpec: IndoorCanteenSpec = {
+  id: TWELFTH_CANTEEN_FLOOR_ID,
+  name: '第十二食堂',
+  faces: twelfthCanteenFaces,
+  style: 'twelfth',
+  facadeHeight: 3.95,
+  layout: TWELFTH_LAYOUT,
+  cornerShopId: '',
+  cornerTitle: '',
+  cornerSubtitle: '',
+  description:
+    '单排连续柜台，四块主牌匾下设 1—16 号窗口。初始视图横向排列，右侧为北；牌匾与实际售卖分别标注。尺寸按照片比例示意。',
+  stage: { width: 47, depth: 17, x: 0, z: 1 },
+  frame: {
+    x: 0,
+    z: 0.3,
+    planRange: 10,
+    spatialRange: 15,
+    halfWidth: 24,
+    spatialOffset: { x: -27, y: 25, z: 36 },
+  },
+};
+
+export const eleventhCanteenSpec: IndoorCanteenSpec = {
+  id: ELEVENTH_CANTEEN_FLOOR_ID,
+  name: '第十一食堂',
+  faces: eleventhCanteenFaces,
+  style: 'eleventh',
+  facadeHeight: 4.03,
+  layout: ELEVENTH_LAYOUT,
+  cornerShopId: '',
+  cornerTitle: '',
+  cornerSubtitle: '',
+  description:
+    '五组连续柜台，保留 1—18 号实际窗口；17、18 号为同一家现点小炒，水饺超市独立点选。初始视图横向排列，右侧为北；尺寸按照片比例示意。',
+  stage: { width: 57, depth: 15, x: 0, z: 0 },
+  frame: {
+    x: 0,
+    z: 0,
+    planRange: 9.5,
+    spatialRange: 16,
+    halfWidth: 29,
+    spatialOffset: { x: -29, y: 25, z: 38 },
+  },
+};
+
 /** Sign labels and operating groups are independent from the physical opening number. */
 export function getIndoorWindow(spec: IndoorCanteenSpec | undefined, stallId: string) {
   const face = spec?.faces.find((row) => row.faceId === stallId.replace(/-w\d+$/, ''));
   const index = Number(stallId.match(/-w(\d+)$/)?.[1]) - 1;
   if (!face?.windowLabels || !Number.isInteger(index) || index < 0 || index >= face.windowCount)
     return undefined;
+  const shopId = face.shopIds?.[index] ?? stallId;
+  const windowNumbers = face.shopIds
+    ? face.shopIds.flatMap((id, i) => (id === shopId ? [face.windowNumbers?.[i] ?? i + 1] : []))
+    : [face.windowNumbers?.[index] ?? index + 1];
   return {
     face,
     windowNumber: face.windowNumbers?.[index] ?? index + 1,
+    windowNumbers,
     offering: face.windowLabels[index],
     signName: (face.windowSignNames?.[index] ?? [face.name]).join('／'),
-    shopId: face.shopIds?.[index] ?? stallId,
+    shopId,
   };
 }
 
 export function getIndoorCanteen(floorId: string | undefined): IndoorCanteenSpec | undefined {
+  if (floorId === ELEVENTH_CANTEEN_FLOOR_ID) return eleventhCanteenSpec;
+  if (floorId === TWELFTH_CANTEEN_FLOOR_ID) return twelfthCanteenSpec;
   if (floorId === FOURTH_CANTEEN_FLOOR_ID) return fourthCanteenSpec;
   if (floorId === FIFTH_CANTEEN_FLOOR_ID) return fifthCanteenSpec;
   if (floorId === SIXTH_CANTEEN_FLOOR_ID) return sixthCanteenSpec;

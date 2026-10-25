@@ -1,19 +1,79 @@
-.app.fourth-model-active {
-  --model-inset-left: 350px;
-}
+/* The map area's outer rounded frame is the only viewport boundary.
+   Navigation floats above it; opening a drawer never resizes the canvas. */
 .scene.fourth-canteen-scene {
-  left: var(--model-inset-left);
-  right: 20px;
-  top: 105px;
-  bottom: 48px;
-  overflow: visible;
-  border-radius: 18px;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+.scene .model-loading {
+  z-index: 4;
+  left: var(--model-overlay-left, 16px);
+  right: 16px;
+  top: min(45%, calc(var(--model-overlay-top, 16px) + 90px));
+  bottom: var(--model-overlay-bottom, 32px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  pointer-events: none;
+}
+.app.floating-shell .map-area {
+  --model-overlay-left: 16px;
+  --model-overlay-top: 16px;
+  --model-overlay-width: calc(100% - 32px);
+}
+.app.floating-shell:is(.view-campus, .view-building, .view-floor) .map-area .breadcrumbs {
+  z-index: 6;
+  top: var(--model-overlay-top);
+  left: var(--model-overlay-left);
+  right: auto;
+  max-width: var(--model-overlay-width);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  /* The measured offsets already follow each frame of the drawer animation. */
+  transition: none;
+  translate: none;
+}
+.app.floating-shell.fourth-model-active .map-area .breadcrumbs {
+  max-width: max(0px, calc(var(--model-overlay-width) - 220px));
+}
+.app.floating-shell:is(.view-campus, .view-building, .view-floor) .map-area .breadcrumbs > * {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.app.floating-shell.view-campus .map-area .breadcrumbs {
+  padding: 11px 14px;
+  background: #fffefdf2;
+  color: #765b88;
+  border: 1px solid #ffffffd9;
+  border-radius: 12px;
+  font-size: 11px;
+  box-shadow: 0 3px 16px #3b224a08;
+}
+.app.floating-shell.view-campus[data-interface-theme='night'] .map-area .breadcrumbs {
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--purple);
+}
+@media (max-width: 1100px) {
+  .app.floating-shell.view-campus .map-area .breadcrumbs {
+    font-size: 10px;
+    padding: 10px;
+  }
+}
+@media (max-width: 700px) {
+  .app.floating-shell.view-campus .map-area .breadcrumbs {
+    font-size: 9px;
+    padding: 9px 10px;
+    border-radius: 9px;
+  }
 }
 .fourth-view-controls {
   position: absolute;
   z-index: 5;
-  top: 8px;
-  right: 10px;
+  top: var(--model-overlay-top, 16px);
+  right: 16px;
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -37,38 +97,25 @@
 .fourth-view-note {
   position: absolute;
   z-index: 3;
-  left: 15px;
-  top: 17px;
+  left: var(--model-overlay-left, 16px);
+  top: calc(var(--model-overlay-top, 16px) + 52px);
+  max-width: var(--model-overlay-width, calc(100% - 32px));
+  line-height: 1.6;
   font-size: 11px;
   color: var(--muted);
   pointer-events: none;
 }
 .fourth-canteen-scene canvas {
-  border-radius: 18px;
+  border-radius: 0;
 }
 .scene canvas[data-rotation-mode='true'] {
   cursor: move;
 }
 @media (min-width: 701px) {
-  .app.floating-shell.fourth-model-active .breadcrumbs {
-    left: calc(var(--model-inset-left) + 15px);
-    right: auto;
-    top: 113px;
-    max-width: calc(100% - var(--model-inset-left) - 220px);
-  }
-  .fourth-view-note {
-    top: 62px;
-  }
-  .fourth-view-controls {
-    top: 8px;
-  }
   .app.fourth-model-active .detail-panel {
     bottom: auto;
     height: auto;
     max-height: min(60vh, 320px);
-  }
-  .app.fourth-model-active:has(.sidebar-dock.is-collapsed) {
-    --model-inset-left: 20px;
   }
 }
 .app.fourth-model-active[data-interface-theme='night'] .map-area {
@@ -80,36 +127,20 @@
   background: #75568b;
   color: #fff9f2;
 }
-@media (max-width: 1050px) and (min-width: 701px) {
-  .app.fourth-model-active {
-    --model-inset-left: 340px;
-  }
-  .app.floating-shell.fourth-model-active .breadcrumbs {
-    max-width: calc(100% - var(--model-inset-left) - 50px);
-  }
-  .fourth-view-controls {
-    top: 62px;
-  }
-  .fourth-view-note {
-    top: 112px;
-    font-size: 10px;
-  }
+/* Stack based on the space actually left by the drawer, not viewport width. */
+.app.floating-shell.fourth-model-active .map-area[data-model-overlay-stacked='true'] .breadcrumbs {
+  max-width: var(--model-overlay-width);
+}
+.map-area[data-model-overlay-stacked='true'] .fourth-view-controls {
+  top: calc(var(--model-overlay-top, 16px) + 50px);
+  max-width: var(--model-overlay-width);
+}
+.map-area[data-model-overlay-stacked='true'] .fourth-view-note {
+  top: calc(var(--model-overlay-top, 16px) + 98px);
 }
 @media (max-width: 700px) {
-  .scene.fourth-canteen-scene {
-    left: 0;
-    right: 0;
-    top: 110px;
-    bottom: 65px;
-  }
   .fourth-view-note {
-    top: 54px;
-    left: 12px;
     font-size: 10px;
-  }
-  .fourth-view-controls {
-    right: 12px;
-    top: 7px;
   }
   .fourth-view-controls button {
     height: 30px;

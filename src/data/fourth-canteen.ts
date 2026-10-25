@@ -145,7 +145,7 @@ export const fourthCanteenStalls: Stall[] = fourthCanteenFaces.flatMap((face) =>
     return {
       id: `${face.faceId}-w${index + 1}`,
       floorId: FOURTH_CANTEEN_FLOOR_ID,
-      name: `${face.name} · ${index + 1}号窗口`,
+      name: `${face.name} · 售餐窗口`,
       category: face.kind,
       position: {
         x: face.x + localX * Math.cos(face.rotationY) + localZ * Math.sin(face.rotationY),

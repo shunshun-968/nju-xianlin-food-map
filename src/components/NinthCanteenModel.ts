@@ -111,21 +111,34 @@ export function createNinthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
     color = '#4d4740',
     bg = '',
     font = '"Microsoft YaHei", sans-serif',
+    vertical = false,
   ) {
     const c = document.createElement('canvas');
     c.width = Math.min(2048, Math.max(512, Math.round((256 * w) / h)));
     c.height = 256;
+    if (vertical) {
+      c.width = 256;
+      c.height = Math.min(2048, Math.round((256 * h) / w));
+    }
     const ctx = c.getContext('2d')!;
     if (bg) {
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, c.width, c.height);
     }
-    const size = Math.min(175, (c.width - 32) / Math.max(text.length, 1));
+    const characters = Array.from(text.replace(/\s/g, ''));
+    const size = vertical
+      ? Math.min(175, (c.height - 32) / Math.max(characters.length, 1))
+      : Math.min(175, (c.width - 32) / Math.max(text.length, 1));
     ctx.font = `600 ${size}px ${font}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = color;
-    ctx.fillText(text, c.width / 2, 130, c.width - 24);
+    if (vertical) {
+      const step = (c.height - 32) / Math.max(characters.length, 1);
+      characters.forEach((character, i) =>
+        ctx.fillText(character, c.width / 2, 16 + step * (i + 0.5), c.width - 24),
+      );
+    } else ctx.fillText(text, c.width / 2, 130, c.width - 24);
     const map = new THREE.CanvasTexture(c);
     map.colorSpace = THREE.SRGBColorSpace;
     map.anisotropy = 8;
@@ -143,8 +156,9 @@ export function createNinthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
     color = '#564b3c',
     y = 4.28,
     bg = '#fffaf0',
+    vertical = false,
   ) {
-    const m = textPlane(text, w, h, color, bg);
+    const m = textPlane(text, w, h, color, bg, undefined, vertical);
     m.rotation.x = -Math.PI / 2;
     m.position.set(x, y, z);
     plan.add(m);
@@ -543,11 +557,21 @@ export function createNinthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
       );
       menu.name = 'ninth-verified-food-label';
     }
-    // Plan labels remain north-up even on the opposite-facing row; they are separate from signs.
+    // Keep labels in the clear rear strip of each kitchen, away from service furniture.
     if (face.faceId.endsWith('-west') || face.role === 'feature-wall') continue;
     const side = Math.abs(Math.sin(face.rotationY)) > 0.5;
-    const labelX = side ? face.x + 1.2 : face.x + (face.serviceFrontages?.[0].x ?? 0);
-    const labelZ = side ? face.z : face.z + (Math.cos(face.rotationY) > 0 ? -2.4 : 2.8);
+    const area = ninthArea(face);
+    const rearOffset = 1 - face.depth + 1.05;
+    const labelX = side
+      ? face.x + rearOffset * Math.sin(face.rotationY)
+      : face.x + (face.serviceFrontages?.[0].x ?? 0);
+    const labelZ = side
+      ? face.z
+      : face.kitchenBounds
+        ? Math.cos(face.rotationY) > 0
+          ? face.kitchenBounds.minZ + 1.05
+          : face.kitchenBounds.maxZ - 1.05
+        : area.z + (1.05 - face.depth / 2) * Math.cos(face.rotationY);
     const labelWidth = side ? 3.2 : (face.serviceFrontages?.[0].width ?? face.width) - 0.24;
     const title =
       face.shopId === 'roujiamo'
@@ -557,9 +581,12 @@ export function createNinthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
           : face.shopId === 'seafood-hotpot'
             ? '渔船海鲜'
             : face.name;
-    const tag = flat(title, labelX, labelZ, labelWidth, 0.58);
+    const tag = side
+      ? flat(title, labelX, labelZ, 0.58, 3.2, '#564b3c', 4.28, '#fffaf0', true)
+      : flat(title, labelX, labelZ, labelWidth, 0.58);
     if (face.stallId) tag.userData = { kind: 'stall', id: face.stallId };
-    flat(face.food, labelX, labelZ + 0.5, labelWidth, 0.32, '#837559');
+    if (side) flat(face.food, labelX - 0.5, labelZ, 0.32, 3.6, '#837559', 4.28, '#fffaf0', true);
+    else flat(face.food, labelX, labelZ + 0.5, labelWidth, 0.32, '#837559');
     if (face.role === 'recessed')
       flat(
         '内凹点餐 · 柜台在此',

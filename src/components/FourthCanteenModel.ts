@@ -10,6 +10,8 @@ import { createSixthCanteenModel } from './SixthCanteenModel';
 import { createNinthCanteenModel } from './NinthCanteenModel';
 import { createEighthCanteenModel } from './EighthCanteenModel';
 import { createMinzuCanteenModel } from './MinzuCanteenModel';
+import { createTwelfthCanteenModel } from './TwelfthCanteenModel';
+import { createEleventhCanteenModel } from './EleventhCanteenModel';
 
 export type FourthViewMode = 'plan' | '3d';
 export type FourthCanteenModel = {
@@ -31,6 +33,8 @@ export function createFourthCanteenModel(): FourthCanteenModel {
 }
 
 export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel {
+  if (spec.style === 'eleventh') return createEleventhCanteenModel(spec);
+  if (spec.style === 'twelfth') return createTwelfthCanteenModel(spec);
   if (spec.style === 'ninth') return createNinthCanteenModel(spec);
   if (spec.style === 'minzu') return createMinzuCanteenModel(spec);
   if (spec.style === 'eighth') return createEighthCanteenModel(spec);
@@ -385,7 +389,7 @@ export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel 
       );
       glass.castShadow = false;
       mesh(window, new THREE.BoxGeometry(segment - 0.03, 0.055, 0.06), dark, x, 1.89, 1.0);
-      if (!isFifth) {
+      if (!isFifth && spec.showWindowNumbers !== false) {
         const number = print(`${i + 1}`, 0.13, 0.16, '#756d78', '#f6f3eb');
         number.position.set(x, 0.8, 1.014);
         window.add(number);
@@ -435,7 +439,7 @@ export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel 
     }
 
     // Top view: a real 3.5-deep footprint with openings on the OUTER side.
-    for (let i = 0; i < face.windowCount; i++) {
+    for (let i = 0; spec.showWindowNumbers !== false && i < face.windowCount; i++) {
       const id = `${face.faceId}-w${i + 1}`,
         x = -w / 2 + segment * (i + 0.5);
       const numberOffset = front + (isFifth ? 0.7 : 0.3);

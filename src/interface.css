@@ -636,10 +636,13 @@ input:focus-visible {
 .interaction-hint {
   position: absolute;
   bottom: 15px;
-  left: 22px;
-  color: #93849b;
-  font-size: 9px;
+  right: 22px;
+  color: var(--purple);
+  font-size: 11px;
   letter-spacing: 0.3px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 5;
 }
 .footer {
   display: flex;
@@ -762,6 +765,49 @@ input:focus-visible {
   border-radius: 19px;
   padding: 20px;
   box-shadow: 0 16px 60px #41235522;
+  transform-origin: center bottom;
+  animation: window-card-enter 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.detail-panel > :not(.detail-top) {
+  animation: window-card-content-enter 280ms ease-out 65ms both;
+}
+.detail-panel > .detail-location {
+  animation-delay: 100ms;
+}
+.detail-top button {
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.detail-top button:active {
+  transform: scale(0.92);
+}
+@keyframes window-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes window-card-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-panel,
+  .detail-panel > :not(.detail-top) {
+    animation: none;
+  }
+  .detail-top button:active {
+    transform: none;
+  }
 }
 .detail-top {
   display: flex;
@@ -1263,9 +1309,7 @@ input:focus-visible {
     height: 14px;
   }
   .interaction-hint {
-    left: 13px;
-    bottom: 10px;
-    font-size: 7px;
+    display: none;
   }
   .footer {
     height: 27px;

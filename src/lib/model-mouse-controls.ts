@@ -9,6 +9,7 @@ export function attachModelMouseControls(
   canvas: HTMLCanvasElement,
   controls: OrbitControls,
   onInteract: () => void,
+  onRotationModeChange?: (active: boolean) => void,
 ) {
   let active = false;
   let previous: [number, number] | null = null;
@@ -20,6 +21,7 @@ export function attachModelMouseControls(
     previous = null;
     rightDown = null;
     canvas.dataset.rotationMode = 'false';
+    onRotationModeChange?.(false);
   };
   reset();
 
@@ -43,6 +45,7 @@ export function attachModelMouseControls(
     active = !active;
     previous = active ? [event.clientX, event.clientY] : null;
     canvas.dataset.rotationMode = String(active);
+    onRotationModeChange?.(active);
     onInteract();
   };
   const move = (event: PointerEvent) => {

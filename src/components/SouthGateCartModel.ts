@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { createCart, createGround } from '../models/south-gate/cart-model.js';
 import { createFoodDisplay } from '../models/south-gate/food.js';
 import type { FourthCanteenModel } from './FourthCanteenModel';
+import { southGateCartStall } from '../data/south-gate-cart';
 
 /** Same open cart and food geometry as the approved standalone model. */
 export function createSouthGateCartModel(): FourthCanteenModel {
@@ -10,6 +11,11 @@ export function createSouthGateCartModel(): FourthCanteenModel {
     ground = createGround(),
     food = createFoodDisplay();
   cart.group.add(food.day, food.night);
+  // All visible parts share one identity; the surrounding ground is not a window.
+  cart.group.traverse((object: THREE.Object3D) => {
+    if (object instanceof THREE.Mesh)
+      object.userData = { ...object.userData, kind: 'stall', id: southGateCartStall.id };
+  });
   group.add(cart.group, ground.group);
   const hemi = new THREE.HemisphereLight('#fff9eb', '#c6cbbf', 2.3);
   const key = new THREE.DirectionalLight('#fff0d3', 3.1);

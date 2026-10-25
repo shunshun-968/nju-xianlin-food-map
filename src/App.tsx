@@ -4,12 +4,16 @@ import { CampusMap } from './components/CampusMap';
 import { UiIcon } from './components/UiIcon';
 import { CompassRose } from './components/CompassRose';
 import { FloatingSidebar } from './components/FloatingSidebar';
+import { DraggableDetailPanel } from './components/DraggableDetailPanel';
+import { southGateCartFoodNames, southGateCartStall } from './data/south-gate-cart';
 import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
+import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
 import { catalogRepository } from './services/catalog';
 import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
 import { eighthDumplingKiosk } from './data/eighth-canteen';
+import { eleventhDumplingKiosk } from './data/eleventh-canteen';
 import type { Catalog, MapTheme, View } from './domain';
 
 export default function App() {
@@ -32,6 +36,8 @@ export default function App() {
   const search = useRef<HTMLInputElement>(null);
   const aboutDialog = useRef<HTMLElement>(null);
   const header = useRef<HTMLElement>(null);
+  const mapArea = useRef<HTMLElement>(null);
+  useModelOverlayLayout(mapArea);
   const [headerOpen, setHeaderOpen] = useState(true);
   const initialHeader = useRef(true);
   const exploreMap = useCallback(() => {
@@ -166,8 +172,13 @@ export default function App() {
   const indoorCanteen = getIndoorCanteen(floor?.id);
   const isModeledFloor = !!indoorCanteen;
   const isEighthFloor = indoorCanteen?.style === 'eighth';
-  const hasOfferings = isEighthFloor || indoorCanteen?.style === 'minzu';
+  const hasOfferings =
+    isEighthFloor ||
+    indoorCanteen?.style === 'minzu' ||
+    indoorCanteen?.style === 'twelfth' ||
+    indoorCanteen?.style === 'eleventh';
   const isSouthCart = venue?.id === 'v-south';
+  const cartFoodNames = southGateCartFoodNames[interfaceTheme === 'night' ? 'night' : 'day'];
   const modelWindowCount = indoorCanteen?.faces.reduce(
     (total, face) => total + face.windowCount,
     0,
@@ -186,11 +197,14 @@ export default function App() {
   const offeringWindow =
     hasOfferings && stall ? getIndoorWindow(indoorCanteen, stall.id) : undefined;
   const sharedNumbers = offeringWindow
-    ? (data?.stalls ?? [])
-        .map((row) => getIndoorWindow(indoorCanteen, row.id))
-        .filter((row) => row?.shopId === offeringWindow.shopId)
-        .map((row) => row!.windowNumber)
-        .sort((a, b) => a - b)
+    ? [
+        ...new Set(
+          (data?.stalls ?? [])
+            .map((row) => getIndoorWindow(indoorCanteen, row.id))
+            .filter((row) => row?.shopId === offeringWindow.shopId)
+            .flatMap((row) => row!.windowNumbers),
+        ),
+      ].sort((a, b) => a - b)
     : [];
   const visible = data?.venues.filter(
     (v) => (filter === 'all' || v.kind === filter) && v.name.includes(query),
@@ -449,14 +463,19 @@ export default function App() {
                         : '汉堡、饭团与玉米，配上茶叶蛋和一杯咖啡。'}
                     </p>
                     <div className="cart-food-tags">
-                      {(interfaceTheme === 'night'
-                        ? ['肉串', '香肠', '蔬菜串', '豆制品', '玉米串']
-                        : ['早餐汉堡', '饭团', '玉米', '茶叶蛋', '咖啡']
-                      ).map((name) => (
+                      {cartFoodNames.map((name) => (
                         <span key={name}>{name}</span>
                       ))}
                     </div>
-                    <p>单机右键进入旋转模式</p>
+                    <button
+                      className={`stall-card ${stallId === southGateCartStall.id ? 'selected' : ''}`}
+                      onClick={() => setStallId(southGateCartStall.id)}
+                    >
+                      <span className="stall-number"><UiIcon name="cart" size={18} /></span>
+                      <span className="stall-copy"><strong>查看餐车窗口</strong></span>
+                      <UiIcon name="chevron-right" size={16} />
+                    </button>
+                    <p>点击餐车查看详情 · 单击右键进入旋转模式</p>
                   </div>
                 ) : (
                   <>
@@ -498,9 +517,12 @@ export default function App() {
                                     <small>
                                       {canteen?.style === 'ninth'
                                         ? '查看双排店面与就餐区'
-                                        : canteen
-                                          ? '查看窗口模型与 L 形布局'
-                                          : '查看窗口与布局'}
+                                        : canteen?.style === 'twelfth' ||
+                                            canteen?.style === 'eleventh'
+                                          ? '查看单排柜台 · 右侧为北'
+                                          : canteen
+                                            ? '查看窗口模型与 L 形布局'
+                                            : '查看窗口与布局'}
                                     </small>
                                   </span>
                                   <UiIcon name="arrow-right" size={19} />
@@ -516,7 +538,10 @@ export default function App() {
                                 onClick={() => setStallId(s.id)}
                               >
                                 <span className="stall-number">
-                                  {s.id === eighthDumplingKiosk.id ? (
+                                  {indoorCanteen?.style === 'fourth' ? (
+                                    <UiIcon name="pin" size={19} />
+                                  ) : s.id === eighthDumplingKiosk.id ||
+                                  s.id === eleventhDumplingKiosk.id ? (
                                     <UiIcon name="cart" size={19} />
                                   ) : (
                                     String(modelWindowNumber(s.id) ?? i + 1).padStart(2, '0')
@@ -557,6 +582,7 @@ export default function App() {
           </aside>
         </FloatingSidebar>
         <section
+          ref={mapArea}
           className="map-area"
           aria-label="交互地图"
           onPointerEnter={(e) => {
@@ -587,6 +613,7 @@ export default function App() {
                 theme={theme}
                 interfaceTheme={interfaceTheme}
                 selectedStall={stallId}
+                onExplore={mobile ? undefined : exploreMap}
                 onPick={pick}
               />
             )
@@ -662,18 +689,31 @@ export default function App() {
               </button>
             )}
           </div>
-          {view.level !== 'campus' && (
-            <div className="interaction-hint">3D 模式下，单击右键进入旋转模式</div>
-          )}
           {stall && (
-            <aside className="detail-panel" aria-label="窗口详情">
-              <div className="detail-top">
-                <span className="tiny-tag">{isModeledFloor ? '窗口信息' : '示例窗口'}</span>
+            <DraggableDetailPanel>
+            <aside key={stall.id} className="detail-panel" aria-label="窗口详情">
+              <div
+                className="detail-top"
+                tabIndex={0}
+                aria-label="窗口详情移动栏，可拖动或使用方向键移动"
+                title="拖动标题栏移动卡片，也可聚焦后用方向键移动"
+              >
+                <span className="tiny-tag">{isModeledFloor || isSouthCart ? '窗口信息' : '示例窗口'}</span>
+                <span className="detail-drag-hint" aria-hidden="true">拖动移位</span>
                 <button aria-label="关闭窗口详情" onClick={() => setStallId(null)}>
                   <UiIcon name="close" size={19} />
                 </button>
               </div>
               <h2>{hasOfferings ? stall.name : stallFace?.name || stall.name}</h2>
+              {isSouthCart && (
+                <>
+                  <p className="detail-location">南大门西侧 · 餐车售餐点</p>
+                  <h3>{interfaceTheme === 'night' ? '夜晚 · 炸串时间' : '白天 · 早餐时光'}</h3>
+                  <div className="cart-food-tags">
+                    {cartFoodNames.map((name) => <span key={name}>{name}</span>)}
+                  </div>
+                </>
+              )}
               {indoorCanteen && (
                 <p className="detail-location">
                   {indoorCanteen.name} ·{' '}
@@ -681,7 +721,7 @@ export default function App() {
                     ? '3F · 连续售餐区'
                     : hasOfferings
                       ? offeringWindow
-                        ? `${offeringWindow.windowNumber}号窗口 · 牌坊：${offeringWindow.signName}`
+                        ? `${offeringWindow.windowNumbers.join('、')}号窗口 · 牌坊：${offeringWindow.signName}`
                         : '独立水饺超市'
                       : indoorCanteen.showWindowNumbers === false
                         ? stallFace?.pickup
@@ -721,7 +761,7 @@ export default function App() {
                   )}
                 </>
               )}
-              {!isModeledFloor && (
+              {!isModeledFloor && !isSouthCart && (
                 <>
                   <p className="detail-location">
                     {venue?.name} · {floor?.name}
@@ -752,6 +792,7 @@ export default function App() {
                 </>
               )}
             </aside>
+            </DraggableDetailPanel>
           )}
         </section>
       </main>
@@ -798,7 +839,7 @@ export default function App() {
                   </li>
                   <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
                 </ul>
-                <p>单机右键进入旋转模式</p>
+                <p>单击右键进入旋转模式</p>
               </section>
               <p>下一步：现场采集 → 校准空间 → 完善菜单 → 开放真实评价。</p>
               <p className="source-credits">

@@ -273,15 +273,26 @@ export function createEighthCanteenModel(spec: IndoorCanteenSpec): FourthCanteen
     box(local, 0, 2.65, 1.01, face.width, 0.07, 0.08, '#a8b3a7', 0.55);
     const tube = box(local, 0, 2.7, 0.45, face.width - 0.17, 0.025, 0.065, '#fff8df');
     tube.material = new THREE.MeshStandardMaterial({
-      color: '#fff8dc',
-      emissive: '#ffeac0',
-      emissiveIntensity: 1.5,
+      color: '#ffe2a3',
+      emissive: '#ffc86e',
+      emissiveIntensity: 1.8,
     });
     tube.castShadow = false;
-    const light = new THREE.PointLight('#ffdfad', 5, 4, 2);
-    light.position.set(0, 2.4, 0.1);
-    light.userData.counterLight = true;
-    local.add(light);
+    const rearTube = box(local, 0, 2.55, -1.35, face.width - 0.2, 0.025, 0.065, '#ffe2a3');
+    rearTube.material = tube.material;
+    rearTube.castShadow = false;
+    // Light each physical window and its preparation area, rather than one dim point per sign.
+    for (let index = 0; index < face.windowCount; index++) {
+      const center = -face.width / 2 + (index + 0.5) * segment;
+      const servingLight = new THREE.PointLight('#ffce80', 13, 5.2, 2);
+      servingLight.position.set(center - segment * 0.18, 2.35, 0.05);
+      servingLight.userData = { counterLight: true, warmIntensity: 13 };
+      local.add(servingLight);
+      const preparationLight = new THREE.PointLight('#ffd494', 6, 4.2, 2);
+      preparationLight.position.set(center + segment * 0.18, 2.4, -1.35);
+      preparationLight.userData = { counterLight: true, warmIntensity: 6 };
+      local.add(preparationLight);
+    }
     if (side) {
       addEighthCanteenSignage(local, [face.name], face.width, 1);
       flat(face.name, 9.55, -0.03, 2.35, 0.5, '#71591e', '#fff3ce');
@@ -380,7 +391,7 @@ export function createEighthCanteenModel(spec: IndoorCanteenSpec): FourthCanteen
       spatial.traverse((object) => {
         if (object.userData.planHide) object.visible = mode === '3d';
         if (object instanceof THREE.PointLight && object.userData.counterLight)
-          object.intensity = mode === '3d' ? 5 : 3;
+          object.intensity = object.userData.warmIntensity ?? 12;
       });
     },
     setInterfaceTheme(night) {

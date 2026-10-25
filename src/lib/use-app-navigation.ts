@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { catalog } from '../data/catalog';
+import { SOUTH_GATE_CART_FLOOR_ID, SOUTH_GATE_CART_VENUE_ID } from '../data/south-gate-cart';
 import type { View } from '../domain';
 
 export type NavigationState = { view: View; stallId: string | null; showInfo: boolean };
@@ -11,8 +12,13 @@ export function readNavigation(url: URL): NavigationState {
     : venue
       ? { level: 'building', venueId: venue.id }
       : { level: 'campus' };
+  // The cart is directly selectable in its building view, without entering a floor.
+  const stallFloorId = floor?.id ??
+    (view.level === 'building' && view.venueId === SOUTH_GATE_CART_VENUE_ID
+      ? SOUTH_GATE_CART_FLOOR_ID
+      : undefined);
   const stall = catalog.stalls.find(
-    (s) => s.id === url.searchParams.get('stall') && s.floorId === floor?.id,
+    (s) => s.id === url.searchParams.get('stall') && s.floorId === stallFloorId,
   );
   return { view, stallId: stall?.id ?? null, showInfo: url.searchParams.get('info') === '1' };
 }

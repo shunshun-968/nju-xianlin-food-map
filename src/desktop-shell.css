@@ -115,7 +115,7 @@
     pointer-events: none;
   }
   .floating-shell:is(.view-campus, .view-building, .view-floor) .sidebar-dock {
-    top: 28px;
+    top: 20px;
     left: 20px;
     width: var(--desktop-sidebar-width);
     transition:
@@ -192,24 +192,7 @@
 
 /* Desktop hover navigation; mobile keeps its existing manual controls. */
 @media (min-width: 701px) {
-  /* Reserve the drawer's full width, including its pull tab, at every level. */
-  .floating-shell:is(.view-building, .view-floor) .breadcrumbs {
-    left: calc(var(--desktop-sidebar-width) + 32px);
-    right: auto;
-    max-width: calc(100% - var(--desktop-sidebar-width) - 60px);
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: thin;
-  }
-  .floating-shell:is(.view-building, .view-floor):not(.fourth-model-active):has(
-      .sidebar-dock.is-collapsed
-    )
-    .breadcrumbs {
-    left: 20px;
-  }
-  .floating-shell:is(.view-building, .view-floor) .breadcrumbs > * {
-    flex-shrink: 0;
-  }
+  /* Model breadcrumbs follow the live floating bars in fourth-canteen.css. */
   .floating-shell .desktop-header-hoverzone {
     position: absolute;
     z-index: 29;
@@ -250,16 +233,8 @@
     top: 82px;
     transition: translate 0.24s ease;
   }
-  .floating-shell.view-campus .breadcrumbs {
-    top: 84px;
-    transition: translate 0.24s ease;
-  }
   .floating-shell.view-campus.header-hidden .compass-rose {
     top: 82px;
-    translate: 0 -64px;
-  }
-  .floating-shell.view-campus.header-hidden .breadcrumbs {
-    top: 84px;
     translate: 0 -64px;
   }
 }

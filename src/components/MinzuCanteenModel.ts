@@ -329,15 +329,26 @@ export function createMinzuCanteenModel(
     box(local, 0, 2.69, 1.01, face.width, 0.07, 0.08, '#a7b2a6', 0.55);
     const tube = box(local, 0, 2.73, 0.45, face.width - 0.17, 0.025, 0.065, '#fff8df');
     tube.material = new THREE.MeshStandardMaterial({
-      color: '#fff8dc',
-      emissive: '#ffeac0',
-      emissiveIntensity: 1.5,
+      color: '#ffe2a3',
+      emissive: '#ffc86e',
+      emissiveIntensity: 1.8,
     });
     tube.castShadow = false;
-    const light = new THREE.PointLight('#ffdfad', 7, 5.5, 2);
-    light.position.set(0, 2.35, 0.1);
-    light.userData.counterLight = true;
-    local.add(light);
+    const rearTube = box(local, 0, 2.55, -1.35, face.width - 0.2, 0.025, 0.065, '#ffe2a3');
+    rearTube.material = tube.material;
+    rearTube.castShadow = false;
+    // Pair warm serving and preparation lights at each physical window for even coverage.
+    for (let index = 0; index < face.windowCount; index++) {
+      const center = -face.width / 2 + (index + 0.5) * segment;
+      const servingLight = new THREE.PointLight('#ffce80', 13, 5.2, 2);
+      servingLight.position.set(center - segment * 0.18, 2.35, 0.05);
+      servingLight.userData = { counterLight: true, warmIntensity: 13 };
+      local.add(servingLight);
+      const preparationLight = new THREE.PointLight('#ffd494', 6, 4.2, 2);
+      preparationLight.position.set(center + segment * 0.18, 2.4, -1.35);
+      preparationLight.userData = { counterLight: true, warmIntensity: 6 };
+      local.add(preparationLight);
+    }
   }
   // The sketch's two southern labels each span 1.5 physical windows, not a new window.
   for (const area of minzuSelfSelectAreas) {
@@ -345,6 +356,9 @@ export function createMinzuCanteenModel(
     label.name = area.id;
   }
 
+  // All physical signboards share one fascia band, regardless of source-photo crop ratios.
+  const signBottom = 2.79;
+  const signHeight = 1.6;
   for (const board of minzuSignBoards) {
     const frontage = new THREE.Group();
     frontage.name = `signboard-${board.id}`;
@@ -353,12 +367,13 @@ export function createMinzuCanteenModel(
     spatial.add(frontage);
     const imageWidth = board.width - 0.12;
     const photo = photograph(board.signKey, imageWidth);
-    const photoHeight = imageWidth / MINZU_SIGN_ASPECTS[board.signKey];
-    const signY = 2.79 + photoHeight / 2;
-    rounded(frontage, 0, signY, 0.97, board.width, photoHeight + 0.12, 0.2, '#b5c1b4', 0.015, 0.55);
+    const nativeHeight = imageWidth / MINZU_SIGN_ASPECTS[board.signKey];
+    photo.scale.y = signHeight / nativeHeight;
+    const signY = signBottom + signHeight / 2;
+    rounded(frontage, 0, signY, 0.97, board.width, signHeight + 0.12, 0.2, '#b5c1b4', 0.015, 0.55);
     photo.position.set(0, signY, 1.077);
     frontage.add(photo);
-    for (const yy of [2.745, 2.835 + photoHeight])
+    for (const yy of [signBottom - 0.045, signBottom + signHeight + 0.045])
       box(frontage, 0, yy, 1.1, board.width, 0.035, 0.035, '#d7dfd2', 0.58);
     const west = Math.abs(board.rotationY) > 0.1;
     const label = flat(
@@ -433,7 +448,7 @@ export function createMinzuCanteenModel(
       spatial.traverse((object) => {
         if (object.userData.planHide) object.visible = mode === '3d';
         if (object instanceof THREE.PointLight && object.userData.counterLight)
-          object.intensity = mode === '3d' ? 7 : 3.5;
+          object.intensity = object.userData.warmIntensity ?? 12;
       });
     },
     setInterfaceTheme(night) {

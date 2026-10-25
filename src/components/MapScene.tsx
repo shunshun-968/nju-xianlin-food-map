@@ -19,7 +19,10 @@ import { createSouthGateCartModel } from './SouthGateCartModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
 import { createStallPickTargets } from '../lib/stall-picking';
+import { createStallSelection } from '../lib/stall-selection';
 import { eighthDumplingKiosk } from '../data/eighth-canteen';
+import { eleventhDumplingKiosk } from '../data/eleventh-canteen';
+import { SOUTH_GATE_CART_HEIGHT, southGateCartStall } from '../data/south-gate-cart';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -27,6 +30,7 @@ type Props = {
   view: Exclude<View, { level: 'campus' }>;
   theme: MapTheme;
   onPick: (kind: string, id: string) => void;
+  onExplore?: () => void;
   selectedStall: string | null;
   interfaceTheme?: InterfaceTheme;
 };
@@ -37,11 +41,22 @@ type Engine = {
   controls: OrbitControls;
   mouse: ReturnType<typeof attachModelMouseControls>;
   stallTargets?: ReturnType<typeof createStallPickTargets>;
+  stallSelection?: ReturnType<typeof createStallSelection>;
   content: THREE.Group;
   goal: THREE.Vector3;
   focus: THREE.Vector3;
   animating: boolean;
   range: number;
+  followDefault: boolean;
+  frameGoal?: Engine['defaultFrame'];
+  defaultFrame?: {
+    range: number;
+    halfWidth: number;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
   fourth?: FourthCanteenModel;
   fourthMode?: FourthViewMode;
   indoorSpec?: IndoorCanteenSpec;
@@ -52,11 +67,73 @@ type Engine = {
   preparing?: boolean;
 };
 
+/** Fit the default view to the clear area; manual views keep their own framing. */
+function captureDefaultFrame(e: Engine, range: number, halfWidth: number) {
+  const canvas = e.renderer.domElement;
+  const map = canvas.closest<HTMLElement>('.map-area');
+  const width = Math.max(1, canvas.clientWidth);
+  const height = Math.max(1, canvas.clientHeight);
+  let left = 16;
+  let top = 32;
+  let bottom = 32;
+  if (map) {
+    const bounds = map.getBoundingClientRect();
+    const originY = bounds.top + map.clientTop;
+    left = parseFloat(getComputedStyle(map).getPropertyValue('--model-overlay-left')) || 16;
+    for (const selector of ['.breadcrumbs', '.fourth-view-controls', '.fourth-view-note']) {
+      const overlay = map.querySelector<HTMLElement>(selector);
+      if (overlay?.offsetHeight)
+        top = Math.max(top, overlay.getBoundingClientRect().bottom - originY + 20);
+    }
+    if (window.matchMedia('(max-width: 700px)').matches) {
+      const drawer = map.closest('.app')?.querySelector<HTMLElement>('.sidebar-dock');
+      if (drawer) bottom = Math.max(bottom, height - (drawer.getBoundingClientRect().top - originY) + 12);
+    }
+  }
+  left = Math.min(left, width * 0.6);
+  top = Math.min(top, height * 0.45);
+  bottom = Math.min(bottom, Math.max(32, height - top - Math.min(180, height * 0.35)));
+  const right = 16;
+  e.defaultFrame = {
+    range,
+    halfWidth,
+    left: left / width,
+    top: top / height,
+    width: Math.max(1, width - left - right) / width,
+    height: Math.max(1, height - top - bottom) / height,
+  };
+}
+
+function updateProjection(e: Engine, width = e.renderer.domElement.clientWidth, height = e.renderer.domElement.clientHeight) {
+  const aspect = Math.max(1, width) / Math.max(1, height);
+  const framing = e.defaultFrame;
+  let shiftX = 0;
+  let shiftY = 0;
+  if (framing) {
+    e.range = Math.max(
+      framing.range / framing.height,
+      framing.halfWidth / (aspect * framing.width),
+    );
+    // An off-center camera projection keeps the orbit target at the model's
+    // real center while placing its initial image clear of the floating bars.
+    shiftX = -(framing.left + framing.width / 2 - 0.5) * 2 * e.range * aspect;
+    shiftY = (framing.top + framing.height / 2 - 0.5) * 2 * e.range;
+  }
+  e.camera.left = -e.range * aspect + shiftX;
+  e.camera.right = e.range * aspect + shiftX;
+  e.camera.top = e.range + shiftY;
+  e.camera.bottom = -e.range + shiftY;
+  e.camera.updateProjectionMatrix();
+}
+
 function frameFourth(e: Engine, mode: FourthViewMode) {
+  e.followDefault = true;
+  e.frameGoal = undefined;
   e.mouse.reset();
   const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
   e.fourthMode = mode;
   e.stallTargets?.setMode(mode);
+  e.stallSelection?.setMode(mode);
   e.fourth?.setMode(mode);
   e.animating = false;
   e.controls.enableDamping = false;
@@ -80,17 +157,12 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.goal.copy(e.camera.position);
   e.focus.copy(e.controls.target);
   e.camera.zoom = 1;
-  const aspect =
-    e.renderer.domElement.clientWidth / Math.max(e.renderer.domElement.clientHeight, 1);
-  e.range = Math.max(
+  captureDefaultFrame(
+    e,
     mode === 'plan' ? framing.planRange : framing.spatialRange,
-    framing.halfWidth / aspect,
+    framing.halfWidth,
   );
-  e.camera.left = -e.range * aspect;
-  e.camera.right = e.range * aspect;
-  e.camera.top = e.range;
-  e.camera.bottom = -e.range;
-  e.camera.updateProjectionMatrix();
+  updateProjection(e);
   e.controls.update();
   e.controls.enableDamping = true;
   e.renderer.shadowMap.needsUpdate = true;
@@ -191,32 +263,41 @@ function dispose(group: THREE.Group) {
 }
 
 export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
-  { data, view, theme, onPick, selectedStall, interfaceTheme = 'day' },
+  { data, view, theme, onPick, onExplore, selectedStall, interfaceTheme = 'day' },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null),
     engine = useRef<Engine | null>(null),
     callback = useRef(onPick);
+  const explore = useRef(onExplore);
+  explore.current = onExplore;
   const [error, setError] = useState(false);
   const [loadingModel, setLoadingModel] = useState(false);
   const [fourthView, setFourthView] = useState<FourthViewMode>('plan');
   const [cartRotating, setCartRotating] = useState(false);
+  const [rotationMode, setRotationMode] = useState(false);
   const floorId = view.level === 'floor' ? view.floorId : undefined;
   const modeledCanteen = getIndoorCanteen(floorId);
   const isFourthFloor = !!modeledCanteen;
   const isCart = view.venueId === 'v-south';
   const interfaceThemeRef = useRef(interfaceTheme);
+  const selectedStallRef = useRef(selectedStall);
+  selectedStallRef.current = selectedStall;
   interfaceThemeRef.current = interfaceTheme;
   callback.current = onPick;
   useImperativeHandle(ref, () => ({
     zoom(factor) {
+      explore.current?.();
       const e = engine.current;
       if (e) {
+        e.followDefault = false;
+        e.frameGoal = undefined;
         e.camera.zoom = THREE.MathUtils.clamp(e.camera.zoom * factor, 0.55, e.fourth ? 14 : 4);
         e.camera.updateProjectionMatrix();
       }
     },
     reset() {
+      explore.current?.();
       const e = engine.current;
       if (e) {
         e.mouse.reset();
@@ -227,16 +308,22 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           return;
         }
         e.camera.zoom = 1;
-        e.camera.updateProjectionMatrix();
+        e.followDefault = true;
+        e.frameGoal = undefined;
+        captureDefaultFrame(e, e.defaultFrame?.range ?? e.range, e.defaultFrame?.halfWidth ?? e.range);
+        updateProjection(e);
         e.animating = true;
       }
     },
     rotate() {
+      explore.current?.();
       const e = engine.current;
       if (e) {
         if (e.fourth && e.fourthMode === 'plan') {
           return;
         }
+        e.followDefault = false;
+        e.frameGoal = undefined;
         e.animating = false;
         const offset = e.camera.position
           .clone()
@@ -282,11 +369,12 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     };
     controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
     const interact = () => {
+      explore.current?.();
       if (engine.current) engine.current.animating = false;
       controls.autoRotate = false;
       setCartRotating(false);
     };
-    const mouse = attachModelMouseControls(renderer.domElement, controls, interact);
+    const mouse = attachModelMouseControls(renderer.domElement, controls, interact, setRotationMode);
     const content = new THREE.Group();
     scene.add(content);
     const ambientLight = new THREE.HemisphereLight('#ffffff', '#9da495', 1.5);
@@ -309,27 +397,25 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       focus: new THREE.Vector3(),
       animating: true,
       range: 94,
+      followDefault: true,
       keyLight: light,
       ambientLight,
       models: new Map(),
     };
     engine.current = e;
+    const map = element.closest<HTMLElement>('.map-area');
+    const followOverlays = () => {
+      if (!e.followDefault || !e.defaultFrame) return;
+      const current = e.defaultFrame;
+      captureDefaultFrame(e, current.range, current.halfWidth);
+      e.frameGoal = e.defaultFrame;
+      e.defaultFrame = current;
+    };
+    map?.addEventListener('foodmap:model-layout', followOverlays);
     const resize = () => {
       const { width, height } = element.getBoundingClientRect();
       if (!height || !width) return;
-      const aspect = width / height;
-      if (e.fourth) {
-        const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
-        e.range = Math.max(
-          e.fourthMode === 'plan' ? framing.planRange : framing.spatialRange,
-          framing.halfWidth / aspect,
-        );
-      }
-      camera.left = -e.range * aspect;
-      camera.right = e.range * aspect;
-      camera.top = e.range;
-      camera.bottom = -e.range;
-      camera.updateProjectionMatrix();
+      updateProjection(e, width, height);
       renderer.setSize(width, height);
     };
     const observer = new ResizeObserver(resize);
@@ -340,6 +426,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       pointer = new THREE.Vector2();
     let start: [number, number] | null = null;
     const down = (event: PointerEvent) => {
+      explore.current?.();
       start = event.button === 0 && !mouse.isActive() ? [event.clientX, event.clientY] : null;
     };
     const up = (event: PointerEvent) => {
@@ -360,6 +447,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       raycaster.setFromCamera(pointer, camera);
       const stallId = e.stallTargets?.pick(raycaster);
       if (stallId) {
+        e.stallSelection?.select(stallId, true);
         callback.current('stall', stallId);
         return;
       }
@@ -372,7 +460,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         }
         return true;
       });
-      if (hit) callback.current(hit.object.userData.kind, hit.object.userData.id);
+      if (hit) {
+        if (hit.object.userData.kind === 'stall')
+          e.stallSelection?.select(hit.object.userData.id, true);
+        callback.current(hit.object.userData.kind, hit.object.userData.id);
+      }
     };
     renderer.domElement.addEventListener('pointerdown', down);
     renderer.domElement.addEventListener('pointerup', up);
@@ -389,18 +481,44 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         if (camera.position.distanceTo(e.goal) < 0.03) e.animating = false;
       }
       controls.update(delta);
+      // Ignore clicks that leave the camera unchanged. Only actual navigation
+      // releases the default framing, so opening a window card does not pin it.
+      if (e.followDefault && !e.animating && (
+        camera.position.distanceTo(e.goal) > 0.08 ||
+        controls.target.distanceTo(e.focus) > 0.08 ||
+        Math.abs(camera.zoom - 1) > 0.001 || controls.autoRotate
+      )) {
+        e.followDefault = false;
+        e.frameGoal = undefined;
+      }
+      if (e.followDefault && e.defaultFrame && e.frameGoal) {
+        const amount = reducedMotion.matches ? 1 : 1 - Math.exp(-delta * 14);
+        let remaining = 0;
+        for (const key of ['left', 'top', 'width', 'height'] as const) {
+          e.defaultFrame[key] = THREE.MathUtils.lerp(e.defaultFrame[key], e.frameGoal[key], amount);
+          remaining = Math.max(remaining, Math.abs(e.defaultFrame[key] - e.frameGoal[key]));
+        }
+        if (remaining < 0.0001) {
+          e.defaultFrame = e.frameGoal;
+          e.frameGoal = undefined;
+        }
+        updateProjection(e);
+      }
       if (!reducedMotion.matches) e.fourth?.tick(time / 1000);
+      e.stallSelection?.tick(delta, reducedMotion.matches);
       renderer.render(scene, camera);
       if (import.meta.env.DEV)
         renderer.domElement.dataset.drawCalls = String(renderer.info.render.calls);
     });
     return () => {
       observer.disconnect();
+      map?.removeEventListener('foodmap:model-layout', followOverlays);
       renderer.setAnimationLoop(null);
       renderer.domElement.removeEventListener('pointerdown', down);
       renderer.domElement.removeEventListener('pointerup', up);
       mouse.dispose();
       controls.dispose();
+      e.stallSelection?.dispose();
       e.fourth?.group.removeFromParent();
       dispose(content);
       for (const model of e.models.values()) dispose(model.group);
@@ -425,7 +543,12 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     if (e.fourth) e.fourth.group.removeFromParent();
     e.fourth = undefined;
     e.indoorSpec = undefined;
+    e.defaultFrame = undefined;
+    e.frameGoal = undefined;
+    e.followDefault = true;
     e.stallTargets = undefined;
+    e.stallSelection?.dispose();
+    e.stallSelection = undefined;
     scene.environment = null;
     scene.environmentIntensity = 1;
     controls.zoomToCursor = false;
@@ -470,7 +593,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           'aria-label',
           spec
             ? `${spec.name}窗口模型，可切换俯视与三维、拖动缩放`
-            : '南门小餐车模型，可拖动平移、单击右键进入旋转模式、滚轮缩放',
+            : '南门小餐车模型，点击餐车查看窗口信息，可拖动平移、单击右键进入旋转模式、滚轮缩放',
         );
         e.indoorSpec = spec ?? {
           ...fourthCanteenSpec,
@@ -496,18 +619,25 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.fourth = model;
         content.add(model.group);
         if (spec) {
-          e.stallTargets = createStallPickTargets(
-            data.stalls.filter((s) => s.floorId === spec.id),
-            {
-              ...Object.fromEntries(
-                data.stalls
-                  .filter((s) => s.floorId === spec.id)
-                  .map((s) => [s.id, spec.facadeHeight ?? 3.75]),
-              ),
-              [eighthDumplingKiosk.id]: 1.3,
-            },
+          const stalls = data.stalls.filter((s) => s.floorId === spec.id);
+          const heights = {
+            ...Object.fromEntries(stalls.map((s) => [s.id, spec.facadeHeight ?? 3.75])),
+            [eighthDumplingKiosk.id]: 1.3,
+            [eleventhDumplingKiosk.id]: 1.3,
+          };
+          e.stallTargets = createStallPickTargets(stalls, heights);
+          e.stallSelection = createStallSelection(stalls, heights);
+          e.stallSelection.select(selectedStallRef.current);
+          content.add(e.stallTargets.group, e.stallSelection.group);
+        } else {
+          // Pick the actual cart meshes from every angle, rather than a single
+          // front-facing plane. They all open the same catalog window.
+          e.stallSelection = createStallSelection(
+            data.stalls.filter((stall) => stall.id === southGateCartStall.id),
+            { [southGateCartStall.id]: SOUTH_GATE_CART_HEIGHT },
           );
-          content.add(e.stallTargets.group);
+          e.stallSelection.select(selectedStallRef.current);
+          content.add(e.stallSelection.group);
         }
         const night = interfaceThemeRef.current === 'night';
         scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
@@ -590,8 +720,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       );
     } else {
       const f = data.floors.find((f) => f.id === view.floorId)!;
-      e.stallTargets = createStallPickTargets(data.stalls.filter((s) => s.floorId === f.id));
-      content.add(e.stallTargets.group);
+      const stalls = data.stalls.filter((s) => s.floorId === f.id);
+      e.stallTargets = createStallPickTargets(stalls);
+      e.stallSelection = createStallSelection(stalls);
+      e.stallSelection.select(selectedStallRef.current);
+      content.add(e.stallTargets.group, e.stallSelection.group);
       e.range = 21;
       e.goal.set(22, 40, 32);
       e.focus.set(0, 0, 0);
@@ -629,13 +762,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       }
       label(content, '入 口  ↑', 0, 0.4, f.depth / 2 + 2, t.text, 1.2);
     }
-    const aspect =
-      e.renderer.domElement.clientWidth / Math.max(e.renderer.domElement.clientHeight, 1);
-    camera.left = -e.range * aspect;
-    camera.right = e.range * aspect;
-    camera.top = e.range;
-    camera.bottom = -e.range;
-    camera.updateProjectionMatrix();
+    captureDefaultFrame(e, e.range, e.range);
+    updateProjection(e);
     controls.enableRotate = true;
     e.animating = true;
     setLoadingModel(false);
@@ -652,10 +780,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     e.renderer.shadowMap.needsUpdate = true;
   }, [interfaceTheme, view]);
   useEffect(() => {
+    engine.current?.stallSelection?.select(selectedStall);
     engine.current?.content.traverse((obj) => {
       if (obj.userData.kind === 'stall' && obj.userData.baseColor) {
         ((obj as THREE.Mesh).material as THREE.MeshStandardMaterial).color.set(
-          obj.userData.id === selectedStall ? '#d99c46' : obj.userData.baseColor,
+          obj.userData.id === selectedStall ? '#f5dba3' : obj.userData.baseColor,
         );
       }
     });
@@ -671,7 +800,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             onClick={() => {
               const e = engine.current;
               if (!e?.fourth) return;
+              explore.current?.();
               e.animating = false;
+              e.followDefault = false;
+              e.frameGoal = undefined;
               e.controls.autoRotate = !e.controls.autoRotate;
               setCartRotating(e.controls.autoRotate);
             }}
@@ -681,7 +813,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         </div>
       )}
       {loadingModel && (
-        <div className="loading" role="status">
+        <div className="loading model-loading" role="status">
           正在展开模型…
         </div>
       )}
@@ -691,6 +823,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             <button
               aria-pressed={fourthView === 'plan'}
               onClick={() => {
+                explore.current?.();
                 if (engine.current) frameFourth(engine.current, 'plan');
                 setFourthView('plan');
               }}
@@ -700,6 +833,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             <button
               aria-pressed={fourthView === '3d'}
               onClick={() => {
+                explore.current?.();
                 if (engine.current) frameFourth(engine.current, '3d');
                 setFourthView('3d');
               }}
@@ -716,10 +850,18 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
                 {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
                 {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
                 {modeledCanteen?.style === 'eighth' ? ' · 独立水饺超市' : ''}
+                {modeledCanteen?.style === 'twelfth' || modeledCanteen?.style === 'eleventh'
+                  ? ' · 右侧为北'
+                  : ''}
               </>
             )}
           </div>
         </>
+      )}
+      {!error && !loadingModel && (!isFourthFloor || fourthView === '3d') && (
+        <div className="interaction-hint" role="status" aria-live="polite">
+          {rotationMode ? '旋转中·左键临时平移·右键/Esc退出' : '单击右键进入旋转模式'}
+        </div>
       )}
       {error && (
         <div className="scene-error">

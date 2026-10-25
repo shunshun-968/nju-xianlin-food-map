@@ -281,35 +281,42 @@ test('the real eleventh model retains photo-specific printed signs, physical cou
     );
 
     await t.test(
-      'adjacent counter tops, roofs and rear walls form one continuous row without spacing gaps',
+      'white columns fill every frontage joint and roof connectors close the row without removing the photographed pillars',
       () => {
         const ordered = eleventhCanteenFaces.toSorted((a, b) => a.x - b.x);
         for (let i = 0; i < ordered.length - 1; i++) {
-          const left = ordered[i],
-            right = ordered[i + 1];
+          const left = ordered[i], right = ordered[i + 1];
+          const column = root.getObjectByName(`eleventh-white-column-${left.photoNumber}`);
+          const connector = root.getObjectByName(`eleventh-column-roof-${left.photoNumber}`);
+          assert.ok(column instanceof THREE.Mesh, 'Each joint retains its white pillar');
+          assert.ok(connector instanceof THREE.Mesh, 'The roof bridges each pillar');
+          const columnBounds = new THREE.Box3().setFromObject(column);
+          const connectorBounds = new THREE.Box3().setFromObject(connector);
           for (const prefix of ['eleventh-counter-top-', 'roof-slab-']) {
             const a = root.getObjectByName(`${prefix}${left.photoNumber}`);
             const b = root.getObjectByName(`${prefix}${right.photoNumber}`);
             assert.ok(a && b, `Missing modeled ${prefix} section`);
-            const aBounds = new THREE.Box3().setFromObject(a),
-              bBounds = new THREE.Box3().setFromObject(b);
-            close(aBounds.max.x, bBounds.min.x, 1e-4);
+            const aBounds = new THREE.Box3().setFromObject(a);
+            const bBounds = new THREE.Box3().setFromObject(b);
+            const bridge = prefix === 'roof-slab-' ? connectorBounds : columnBounds;
+            assert.ok(bBounds.min.x > aBounds.max.x, 'Frontages leave space for the real pillar');
+            close(bridge.min.x, aBounds.max.x, 0.003);
+            close(bridge.max.x, bBounds.min.x, 0.003);
+            assert.ok(bridge.min.y <= aBounds.min.y + 0.001);
+            assert.ok(bridge.max.y >= aBounds.max.y - 0.001);
             close(aBounds.min.z, bBounds.min.z, 1e-4);
             close(aBounds.max.z, bBounds.max.z, 1e-4);
           }
-          const joint = (left.x + left.width / 2 + right.x - right.width / 2) / 2;
-          const rearHits = [-0.01, 0, 0.01].map(
-            (dx) =>
-              new THREE.Raycaster(
-                new THREE.Vector3(joint + dx, 3.2, -1),
-                new THREE.Vector3(0, 0, -1),
-              ).intersectObject(root, true)[0],
-          );
-          assert.ok(
-            rearHits.every((hit) => hit && hit.point.z < -4),
-            `No hole or internal thick column interrupts the rear wall at a section seam: ${JSON.stringify({joint,left:left.name,right:right.name,hits:rearHits.map(hit=>hit?{point:hit.point.toArray(),name:hit.object.name,parent:hit.object.parent?.name,local:hit.object.position.toArray()}:null)})}`,
-          );
-          close(rearHits[0].point.z, rearHits[2].point.z, 1e-4);
+          assert.ok(columnBounds.min.z < -4.2 && columnBounds.max.z >= 1);
+          assert.equal((column.material as THREE.MeshStandardMaterial).color.getHexString(), 'eeeadd');
+          const joint = (columnBounds.min.x + columnBounds.max.x) / 2;
+          // Stay inside the pillar face, clear of its 0.045-wide edge trims.
+          for (const x of [columnBounds.min.x + 0.05, joint, columnBounds.max.x - 0.05]) {
+            const hit = new THREE.Raycaster(
+              new THREE.Vector3(x, 3.2, 2), new THREE.Vector3(0, 0, -1),
+            ).intersectObject(root, true)[0];
+            assert.equal(hit?.object.name, column.name, 'The joint is closed by a solid column, not an empty gap');
+          }
         }
       },
     );

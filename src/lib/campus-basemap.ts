@@ -1,4 +1,5 @@
 import { overlaps, placeMapLabels, type PlacedLabel } from './map-labels';
+import { getCampusModelBounds } from './campus-model-artwork';
 
 export type XY = [number, number];
 export type MapFrame = { matrix: number[]; width: number; height: number };
@@ -113,6 +114,7 @@ export function mapLabels(
   viewport: { width: number; height: number },
   reserved: PlacedLabel['box'][],
   showDetails: boolean,
+  namePreview: { venueId?: string | null; touchHint?: boolean } = {},
 ) {
   const screen = ([x, y]: XY): XY => [x * t.scale + t.x, y * t.scale + t.y];
   const preferred: Record<string, XY> = {
@@ -121,27 +123,58 @@ export function mapLabels(
     'v-yifu': [64, -31],
     'v-south': [61, 28],
   };
-  // Primary food labels have no zoom threshold. Overlay avoidance follows the existing UI contract.
-  const food = placeMapLabels(
-    data.venues.map((v) => {
+  const modelBoxes = new Map(
+    data.venues.flatMap((venue) => {
+      const box = getCampusModelBounds(venue, t.scale);
+      return box
+        ? [
+            [
+              venue.id,
+              {
+                left: box.left * t.scale + t.x - 2,
+                top: box.top * t.scale + t.y - 2,
+                right: box.right * t.scale + t.x + 2,
+                bottom: box.bottom * t.scale + t.y + 2,
+              },
+            ] as const,
+          ]
+        : [];
+    }),
+  );
+  // Keep labels beside the raised model rather than laying opaque badges over its roof.
+  const foodRequests = data.venues
+    .filter((v) => !modelBoxes.has(v.id) || v.id === namePreview.venueId)
+    .map((v) => {
       const [x, y] = screen(v.point);
+      const model = modelBoxes.get(v.id);
+      const lines = venueLines(v);
+      if (model && namePreview.touchHint) lines.push('再点一次进入');
       return {
         id: v.id,
-        lines: venueLines(v),
+        lines,
         x,
-        y: y - v.height * t.scale,
-        priority: 0,
+        y: model ? model.top + (model.bottom - model.top) * 0.45 : y - v.height * t.scale,
+        priority: model ? -1 : 0,
         fontSize: 10.5,
         badge: true,
-        preferred: preferred[v.id],
+        preferred: model
+          ? ([0, -(model.bottom - model.top) * 0.45 - (lines.length * 14 + 10) / 2 - 10] as XY)
+          : preferred[v.id],
       };
-    }),
-    viewport,
-    reserved,
+    });
+  const food = placeMapLabels(foodRequests, viewport, [...reserved, ...modelBoxes.values()]);
+  // At very close zoom a model can fill the viewport: retain its accessible label when no exterior slot fits.
+  const placedIds = new Set(food.map((label) => label.id));
+  food.push(
+    ...placeMapLabels(
+      foodRequests.filter((request) => !placedIds.has(request.id)),
+      viewport,
+      [...reserved, ...food.map((label) => label.box)],
+    ),
   );
   const details: DetailLabel[] = [];
   if (!showDetails || t.zoom < landmarkZoomThreshold) return { food, details };
-  const occupied = [...reserved, ...food.map((label) => label.box)];
+  const occupied = [...reserved, ...food.map((label) => label.box), ...modelBoxes.values()];
   const venueBuildings = new Set(data.venues.map((v) => v.osmId));
   const envelopeArea = (f: MapFeature) => (f.bounds[2] - f.bounds[0]) * (f.bounds[3] - f.bounds[1]);
   const overviewBuildings = new Set(

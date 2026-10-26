@@ -3,13 +3,15 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { catalog } from '../src/data/catalog';
 import { tenthCanteenStalls, tenthStallId } from '../src/data/tenth-canteen';
-import { getIndoorCanteen, getIndoorWindow, tenthCanteenSpec } from '../src/data/indoor-canteens';
+import { getIndoorCanteen, getIndoorWindow, tenthCanteenSpec, facultyCanteenSpec } from '../src/data/indoor-canteens';
 import { windows } from '../src/models/tenth-canteen/layout.js';
 import { createStallPickTargets } from '../src/lib/stall-picking';
 
 test('tenth model belongs to floor 1; physical 16 and 17 share one selectable shop', () => {
   assert.equal(getIndoorCanteen('v-10-f1'), tenthCanteenSpec);
-  assert.equal(getIndoorCanteen('v-10-f2'), undefined);
+  assert.equal(getIndoorCanteen('v-10-f2'), facultyCanteenSpec);
+  assert.notEqual(getIndoorCanteen('v-10-f1'), getIndoorCanteen('v-10-f2'));
+  assert.equal(catalog.stalls.filter((s) => s.floorId === 'v-10-f2').length, 7);
   assert.equal(catalog.stalls.filter((s) => s.floorId === 'v-10-f1').length, 14);
   assert.equal(new Set(tenthCanteenStalls.map((s) => s.id)).size, 14);
   for (const n of [2,3,4]) assert.equal(tenthStallId(n), tenthStallId(1));

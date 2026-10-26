@@ -220,7 +220,6 @@ export function createTwelfthCanteenModel(spec: IndoorCanteenSpec): FourthCantee
       box(roof, x, 3.09, 1.45, 0.035, 0.18, 0.035, '#bf5c32');
     }
   }
-  label('南  ←                     →  北', 0, 7.8, 7.5, 0.4, '#736350', '');
   const model: FourthCanteenModel = {
     group,
     setMode(mode) {

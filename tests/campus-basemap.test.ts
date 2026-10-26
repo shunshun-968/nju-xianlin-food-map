@@ -152,7 +152,7 @@ test('the initial view is one wheel level larger and all building labels appear 
   assert.equal(initial.zoom, initialZoom);
   const initialLabels = mapLabels(map, initial, overview, [], true);
   assert.equal(initialLabels.details.length, 0);
-  assert.equal(initialLabels.food.length, 7);
+  assert.deepEqual(initialLabels.food.map((label) => label.id).sort(), ['v-hut', 'v-yifu']);
 
   const nextZoom = initialZoom * wheelZoomFactor(-120);
   assert.equal(nextZoom, landmarkZoomThreshold);
@@ -193,6 +193,35 @@ test('common mouse deltas represent one level while small trackpad deltas remain
   const small = wheelZoomFactor(-5);
   assert.ok(small > 1 && small < zoomStepFactor);
   assert.ok(Math.abs(small * wheelZoomFactor(5) - 1) < 1e-12);
+});
+
+test('modeled venue names are revealed one at a time and touch preview reserves its confirmation hint', () => {
+  for (const venueId of ['v-456', 'v-891', 'v-10', 'v-1112', 'v-south']) {
+    const hovered = mapLabels(map, fitted(), overview, [], true, { venueId });
+    assert.deepEqual(
+      hovered.food.map((label) => label.id).sort(),
+      [venueId, 'v-hut', 'v-yifu'].sort(),
+    );
+    const name = hovered.food.find((label) => label.id === venueId)!;
+    assert.ok(name && !name.lines.includes('再点一次进入'));
+    const tapped = mapLabels(map, fitted(), overview, [], true, { venueId, touchHint: true });
+    const preview = tapped.food.find((label) => label.id === venueId)!;
+    assert.equal(preview.lines.at(-1), '再点一次进入');
+    assert.equal(preview.height, name.height + 14);
+    assert.ok(
+      tapped.food.every((label, index) =>
+        tapped.food
+          .slice(index + 1)
+          .every(
+            (other) =>
+              label.box.right <= other.box.left ||
+              label.box.left >= other.box.right ||
+              label.box.bottom <= other.box.top ||
+              label.box.top >= other.box.bottom,
+          ),
+      ),
+    );
+  }
 });
 
 test('all building tiers respect their delayed gates while the road-name gate remains 2.3', () => {

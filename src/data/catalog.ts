@@ -1,3 +1,4 @@
+import { FACULTY_CANTEEN_FLOOR_ID, facultyCanteenStalls } from './faculty-canteen';
 import { TENTH_CANTEEN_FLOOR_ID, tenthCanteenStalls } from './tenth-canteen';
 import type { Catalog, Venue } from '../domain';
 import { venueAnchors } from './campus';
@@ -57,7 +58,7 @@ const venues: Venue[] = definitions.map((venue) => ({
   footprint: venueAnchors[venue.id].footprint,
   description:
     venue.id === 'v-10'
-      ? '第十食堂位于一层，已按现场照片建立 L 形窗口模型；二层教工食堂内部暂为示意布局。'
+      ? '第十食堂与二层教工食堂均已按现场照片建立内部窗口模型；教工食堂共 7 个编号窗口。模型尺寸为示意比例。'
       : venue.id === 'v-456'
         ? '第四、第五、第六食堂分处一至三层。选择楼层，查看按照片建立的窗口模型；模型尺寸为示意比例。'
         : venue.id === 'v-891'
@@ -87,6 +88,7 @@ const confirmedFloorNames: Record<string, string> = {
   [MINZU_CANTEEN_FLOOR_ID]: '民族食堂',
   [TWELFTH_CANTEEN_FLOOR_ID]: '第十二食堂',
   [TENTH_CANTEEN_FLOOR_ID]: '第十食堂',
+  [FACULTY_CANTEEN_FLOOR_ID]: '教工食堂',
   [ELEVENTH_CANTEEN_FLOOR_ID]: '第十一食堂',
 };
 const floors = venues.flatMap((v) =>
@@ -100,7 +102,9 @@ const floors = venues.flatMap((v) =>
         ? 52
         : `${v.id}-f${i + 1}` === ELEVENTH_CANTEEN_FLOOR_ID
           ? 58
-          : [NINTH_CANTEEN_FLOOR_ID, TWELFTH_CANTEEN_FLOOR_ID].includes(`${v.id}-f${i + 1}`)
+          : [NINTH_CANTEEN_FLOOR_ID, TWELFTH_CANTEEN_FLOOR_ID, FACULTY_CANTEEN_FLOOR_ID].includes(
+                `${v.id}-f${i + 1}`,
+              )
             ? 48
             : confirmedFloorNames[`${v.id}-f${i + 1}`]
               ? 44
@@ -126,54 +130,56 @@ export const catalog: Catalog = {
   venues,
   floors,
   stalls: floors.flatMap((f) =>
-    f.id === TENTH_CANTEEN_FLOOR_ID
-      ? tenthCanteenStalls
-      : f.id === SOUTH_GATE_CART_FLOOR_ID
-        ? [southGateCartStall]
-        : f.id === ELEVENTH_CANTEEN_FLOOR_ID
-          ? eleventhCanteenStalls
-          : f.id === TWELFTH_CANTEEN_FLOOR_ID
-            ? twelfthCanteenStalls
-            : f.id === FOURTH_CANTEEN_FLOOR_ID
-              ? fourthCanteenStalls
-              : f.id === FIFTH_CANTEEN_FLOOR_ID
-                ? fifthCanteenStalls
-                : f.id === SIXTH_CANTEEN_FLOOR_ID
-                  ? sixthCanteenStalls
-                  : f.id === NINTH_CANTEEN_FLOOR_ID
-                    ? ninthCanteenStalls
-                    : f.id === EIGHTH_CANTEEN_FLOOR_ID
-                      ? eighthCanteenStalls
-                      : f.id === MINZU_CANTEEN_FLOOR_ID
-                        ? minzuCanteenStalls
-                        : names.map((name, i) => ({
-                            id: `${f.id}-s${i + 1}`,
-                            floorId: f.id,
-                            name,
-                            category: ['面食', '家常菜', '米线', '轻食', '盖饭', '小吃'][i],
-                            position: {
-                              x: positions[i][0],
-                              z: positions[i][1],
-                              rotationY: positions[i][2],
-                              width: 6,
-                              depth: 4,
-                            },
-                            photoKey: null,
-                            dishes: [
-                              {
-                                name: [
-                                  '番茄鸡蛋面',
-                                  '时蔬小炒',
-                                  '鲜汤米线',
-                                  '缤纷蔬菜碗',
-                                  '香菇鸡肉饭',
-                                  '葱香薄饼',
-                                ][i],
-                                price: [12, 15, 13, 16, 14, 8][i],
-                                description: '演示菜品与参考价格，不代表实际在售商品。',
-                                photoKey: null,
+    f.id === FACULTY_CANTEEN_FLOOR_ID
+      ? facultyCanteenStalls
+      : f.id === TENTH_CANTEEN_FLOOR_ID
+        ? tenthCanteenStalls
+        : f.id === SOUTH_GATE_CART_FLOOR_ID
+          ? [southGateCartStall]
+          : f.id === ELEVENTH_CANTEEN_FLOOR_ID
+            ? eleventhCanteenStalls
+            : f.id === TWELFTH_CANTEEN_FLOOR_ID
+              ? twelfthCanteenStalls
+              : f.id === FOURTH_CANTEEN_FLOOR_ID
+                ? fourthCanteenStalls
+                : f.id === FIFTH_CANTEEN_FLOOR_ID
+                  ? fifthCanteenStalls
+                  : f.id === SIXTH_CANTEEN_FLOOR_ID
+                    ? sixthCanteenStalls
+                    : f.id === NINTH_CANTEEN_FLOOR_ID
+                      ? ninthCanteenStalls
+                      : f.id === EIGHTH_CANTEEN_FLOOR_ID
+                        ? eighthCanteenStalls
+                        : f.id === MINZU_CANTEEN_FLOOR_ID
+                          ? minzuCanteenStalls
+                          : names.map((name, i) => ({
+                              id: `${f.id}-s${i + 1}`,
+                              floorId: f.id,
+                              name,
+                              category: ['面食', '家常菜', '米线', '轻食', '盖饭', '小吃'][i],
+                              position: {
+                                x: positions[i][0],
+                                z: positions[i][1],
+                                rotationY: positions[i][2],
+                                width: 6,
+                                depth: 4,
                               },
-                            ],
-                          })),
+                              photoKey: null,
+                              dishes: [
+                                {
+                                  name: [
+                                    '番茄鸡蛋面',
+                                    '时蔬小炒',
+                                    '鲜汤米线',
+                                    '缤纷蔬菜碗',
+                                    '香菇鸡肉饭',
+                                    '葱香薄饼',
+                                  ][i],
+                                  price: [12, 15, 13, 16, 14, 8][i],
+                                  description: '演示菜品与参考价格，不代表实际在售商品。',
+                                  photoKey: null,
+                                },
+                              ],
+                            })),
   ),
 };

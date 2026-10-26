@@ -30,6 +30,9 @@ import { exteriorBuildings, exteriorFrame, loadExteriorModel, pickExteriorFloor 
 import type { ExteriorModel } from '../models/exteriors/types';
 import { createExteriorEntranceMarkers } from '../lib/exterior-entrance-markers';
 import './exterior-entrance-markers.css';
+import { ModelCompass } from './ModelCompass';
+import { getModelNorth } from '../data/model-orientation';
+import { modelCompassPose, compassLetterPosition } from '../lib/model-compass';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -294,6 +297,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     engine = useRef<Engine | null>(null),
     callback = useRef(onPick);
   const explore = useRef(onExplore);
+  const compass = useRef<HTMLDivElement>(null);
+  const north = getModelNorth(view);
+  const compassNorth = useRef(north);
+  compassNorth.current = north;
   explore.current = onExplore;
   const [error, setError] = useState(false);
   const [loadingModel, setLoadingModel] = useState(false);
@@ -538,6 +545,25 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       e.stallSelection?.tick(delta, reducedMotion.matches);
       renderer.render(scene, camera);
       e.entranceMarkers?.update(camera);
+      if (compass.current) {
+        const pose = modelCompassPose(camera, compassNorth.current ?? { x: 0, z: -1 });
+        const degrees = pose.bearing.toFixed(2), scale = pose.scale.toFixed(4);
+        const signature = `${degrees}/${scale}/${pose.groundScale.toFixed(4)}/${!!compassNorth.current}`;
+        if (compass.current.dataset.pose !== signature) {
+          compass.current.style.setProperty('--model-bearing', `${degrees}deg`);
+          compass.current.style.setProperty('--model-plane-scale', scale);
+          compass.current.style.setProperty('--model-edge-mix', pose.edgeMix.toFixed(4));
+          compass.current.dataset.bearing = degrees;
+          compass.current.dataset.pose = signature;
+          compass.current.dataset.groundScale = pose.groundScale.toFixed(4);
+          compass.current.dataset.presentation = pose.edgeMix > 0.01 ? 'horizon' : 'roof-plane';
+          for (const letter of compass.current.querySelectorAll<SVGTextElement>('[data-direction]')) {
+            const point = compassLetterPosition(pose.bearing, pose.scale, Number(letter.dataset.direction));
+            letter.setAttribute('x', point.x.toFixed(3));
+            letter.setAttribute('y', point.y.toFixed(3));
+          }
+        }
+      }
       if (import.meta.env.DEV)
         renderer.domElement.dataset.drawCalls = String(renderer.info.render.calls);
     });
@@ -914,6 +940,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   }, [selectedStall, data, view, theme]);
   return (
     <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host}>
+      <ModelCompass ref={compass} knownNorth={!!north} hidden={error || loadingModel} />
       {isCart && (
         <div className="fourth-view-controls" role="group" aria-label="餐车模型控制">
           <button
@@ -973,10 +1000,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             ) : (
               <>
                 {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
-                {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
+                {modeledCanteen?.style === 'sixth' || modeledCanteen?.style === 'faculty' ? '窗口区' : '牌坊面'} ·{' '}
                 {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
                 {['eighth','eleventh','tenth'].includes(modeledCanteen?.style ?? '') ? ' · 独立水饺超市' : ''}
-                {modeledCanteen?.style === 'tenth' ? ' · 左侧为北' : ''}
+                {['tenth', 'faculty'].includes(modeledCanteen?.style ?? '') ? ' · 左侧为北' : ''}
                 {modeledCanteen?.style === 'twelfth' || modeledCanteen?.style === 'eleventh'
                   ? ' · 右侧为北'
                   : ''}

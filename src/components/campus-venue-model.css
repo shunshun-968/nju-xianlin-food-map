@@ -1,0 +1,65 @@
+.campus-venue-model {
+  --campus-model-halo: #fff3c9;
+  --campus-model-accent: #9a77b2;
+  --campus-model-soft-highlight: #fff8df35;
+}
+.campus-model-ground-shadow {
+  fill: #4b4b3f;
+  opacity: 0.15;
+}
+.campus-model-glow-core {
+  stop-color: var(--campus-model-halo);
+  stop-opacity: 0.45;
+}
+.campus-model-glow-edge {
+  stop-color: var(--campus-model-halo);
+  stop-opacity: 0.16;
+}
+.campus-model-glow-clear {
+  stop-color: var(--campus-model-halo);
+  stop-opacity: 0;
+}
+.campus-model-aura {
+  opacity: 0.55;
+  transition: opacity 150ms ease;
+}
+.campus-venue-image {
+  transform: translateY(0);
+  transition: transform 150ms ease;
+}
+.campus-venue-model-image {
+  filter: drop-shadow(0 0 var(--campus-model-glow-size) var(--campus-model-soft-highlight));
+}
+.geo-venue:hover .campus-venue-image,
+.geo-venue:focus-visible .campus-venue-image,
+.geo-venue.is-highlighted .campus-venue-image,
+.campus-venue-model.is-highlighted .campus-venue-image {
+  transform: translateY(var(--campus-model-lift));
+}
+.geo-venue:hover .campus-model-aura,
+.geo-venue:focus-visible .campus-model-aura,
+.geo-venue.is-highlighted .campus-model-aura,
+.campus-venue-model.is-highlighted .campus-model-aura {
+  opacity: 1;
+}
+.geo-venue:hover .campus-venue-model-image,
+.geo-venue:focus-visible .campus-venue-model-image,
+.geo-venue.is-highlighted .campus-venue-model-image,
+.campus-venue-model.is-highlighted .campus-venue-model-image {
+  filter: drop-shadow(0 0 var(--campus-model-glow-size) var(--campus-model-accent));
+}
+.campus-venue-model[data-model-theme='night'] {
+  --campus-model-halo: #e6b56e;
+  --campus-model-accent: #e6c499;
+  --campus-model-soft-highlight: #e4bc7a55;
+}
+.campus-venue-model[data-model-theme='night'] .campus-model-ground-shadow {
+  fill: #090e19;
+  opacity: 0.28;
+}
+@media (prefers-reduced-motion: reduce) {
+  .campus-venue-image,
+  .campus-model-aura {
+    transition: none;
+  }
+}

@@ -1,3 +1,4 @@
+import { createFacultyCanteenModel } from './FacultyCanteenModel';
 import { createTenthCanteenModel } from './TenthCanteenModel';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -34,6 +35,7 @@ export function createFourthCanteenModel(loadSignTexture?: (url: string) => THRE
 }
 
 export function createCanteenModel(spec: IndoorCanteenSpec, loadFourthSignTexture?: (url: string) => THREE.Texture): FourthCanteenModel {
+  if (spec.style === 'faculty') return createFacultyCanteenModel(spec);
   if (spec.style === 'tenth') return createTenthCanteenModel();
   if (spec.style === 'eleventh') return createEleventhCanteenModel(spec);
   if (spec.style === 'twelfth') return createTwelfthCanteenModel(spec);
@@ -503,16 +505,6 @@ export function createCanteenModel(spec: IndoorCanteenSpec, loadFourthSignTextur
     isFifth ? 0.08 : 0.3,
     isFifth ? '#302b28' : '#e5bd48',
     0.025,
-  );
-  flat(
-    group,
-    '南  ←',
-    stage.x - stage.width / 2 + 3,
-    0.061,
-    stage.z - stage.depth / 2 + 1.3,
-    3,
-    0.8,
-    '#83778b',
   );
   const steam: THREE.Mesh[] = [];
   group.traverse((object) => {

@@ -266,10 +266,6 @@ export function createTenthModel() {
   exit.position.set(-18.32, 3.84, -8.7);
   exit.rotation.y = -Math.PI / 2;
   architecture.add(exit);
-  const northArrow = textPanel('← 北 N', 1.9, 0.42, { bg: '#f2eddd', ink: '#777763' });
-  northArrow.rotation.x = -Math.PI / 2;
-  northArrow.position.set(-23, 0.035, -15.5);
-  group.add(northArrow);
   const fixtures = addFixtures(architecture);
   batchStatic(group);
   const hidden = [];

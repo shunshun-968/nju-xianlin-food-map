@@ -1,0 +1,195 @@
+.model-compass {
+  --model-bearing: 0deg;
+  --model-plane-scale: 1;
+  --model-edge-mix: 0;
+  --model-compass-highlight: #b59357;
+  --model-compass-soft: #d9c9e2;
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--model-overlay-top, 16px) + 92px);
+  right: 16px;
+  width: 96px;
+  height: 112px;
+  pointer-events: none;
+  user-select: none;
+  color: var(--purple);
+  filter: drop-shadow(0 3px 8px #3a264817);
+}
+.model-compass[hidden] {
+  display: none;
+}
+.model-compass-handle {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  color: inherit;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+.model-compass.is-dragging .model-compass-handle {
+  cursor: grabbing;
+}
+.model-compass-handle:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 3px;
+}
+.model-compass-surface {
+  transform-origin: 50px 50px;
+  transform: scaleY(var(--model-plane-scale));
+}
+.model-compass svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+.model-compass-paper {
+  fill: var(--paper);
+  fill-opacity: 0.96;
+  stroke: var(--line);
+  stroke-width: 1.1;
+}
+.model-compass-rim {
+  fill: none;
+  stroke: var(--purple);
+  stroke-width: 0.5;
+  opacity: 0.3;
+}
+.model-compass-index {
+  fill: none;
+  stroke: var(--model-compass-highlight);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.model-compass-dial {
+  transform-origin: 50px 50px;
+  transform: rotate(var(--model-bearing));
+}
+/* Letters follow projected anchors, but are not squeezed by the plane's tilt. */
+.model-compass-letters text {
+  fill: var(--muted);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.model-compass-horizon {
+  display: block;
+  font-size: 9px;
+  line-height: 16px;
+  color: var(--muted);
+  opacity: var(--model-edge-mix);
+}
+.model-compass-drag-tip {
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  transform: translateX(-50%);
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 9px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.model-compass-handle:is(:hover, :focus-visible) .model-compass-drag-tip {
+  opacity: 1;
+}
+.model-compass.is-dragging .model-compass-drag-tip {
+  opacity: 0;
+}
+.model-compass-letters .model-compass-north-letter {
+  fill: var(--purple);
+  font-size: 12px;
+  font-weight: 700;
+}
+.model-compass-tick,
+.model-compass-tick-major {
+  stroke: var(--muted);
+  stroke-width: 0.65;
+  opacity: 0.45;
+}
+.model-compass-tick-major {
+  stroke: var(--purple);
+  stroke-width: 0.95;
+  opacity: 0.62;
+}
+.model-compass-inner-ring {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.7;
+}
+.model-compass-needle-north {
+  fill: var(--purple);
+  stroke: var(--purple);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+.model-compass-needle-light {
+  fill: var(--model-compass-highlight);
+  opacity: 0.8;
+}
+.model-compass-needle-south {
+  fill: var(--model-compass-soft);
+  stroke: var(--muted);
+  stroke-width: 0.55;
+  stroke-linejoin: round;
+}
+.model-compass-pivot {
+  fill: var(--paper);
+  stroke: var(--purple);
+  stroke-width: 0.8;
+}
+.model-compass-pivot-dot {
+  fill: var(--model-compass-highlight);
+}
+.model-compass-reference {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.65;
+}
+.model-compass-reference-dot {
+  fill: var(--muted);
+  opacity: 0.65;
+}
+.model-compass-status {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+  text-align: center;
+  white-space: nowrap;
+}
+.app[data-interface-theme='night'] .model-compass {
+  --model-compass-highlight: #d3b97c;
+  --model-compass-soft: #63536f;
+  filter: drop-shadow(0 3px 10px #08071155);
+}
+.map-area[data-model-overlay-stacked='true'] .model-compass {
+  top: calc(var(--model-overlay-top, 16px) + 138px);
+}
+@media (max-width: 700px) {
+  .model-compass,
+  .map-area[data-model-overlay-stacked='true'] .model-compass {
+    top: calc(var(--model-overlay-top, 16px) + 84px);
+    right: 16px;
+    width: 76px;
+    height: 92px;
+  }
+  .model-compass-status {
+    margin-left: -5px;
+    margin-right: -5px;
+    font-size: 8px;
+  }
+}

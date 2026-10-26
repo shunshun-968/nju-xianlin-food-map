@@ -349,7 +349,6 @@ export function createEleventhCanteenModel(spec: IndoorCanteenSpec): FourthCante
     if (object instanceof THREE.Mesh && object.name === 'subtle-pot-steam')
       steam.push({ mesh: object, y: object.userData.baseY, phase: object.userData.phase });
   });
-  label('南 ←               → 北', 0, 6.6, 5, 0.42);
   const model: FourthCanteenModel = {
     group,
     setMode(mode) {

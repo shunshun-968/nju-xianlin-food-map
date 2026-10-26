@@ -177,6 +177,7 @@ export default function App() {
     isEighthFloor ||
     indoorCanteen?.style === 'minzu' ||
     indoorCanteen?.style === 'twelfth' ||
+    indoorCanteen?.style === 'faculty' ||
     indoorCanteen?.style === 'eleventh' || indoorCanteen?.style === 'tenth';
   const isSouthCart = venue?.id === 'v-south';
   const cartFoodNames = southGateCartFoodNames[interfaceTheme === 'night' ? 'night' : 'day'];
@@ -518,6 +519,8 @@ export default function App() {
                                     <small>
                                       {canteen?.style === 'ninth'
                                         ? '查看双排店面与就餐区'
+                                        : canteen?.style === 'faculty'
+                                          ? '查看单排柜台 · 左侧为北'
                                         : canteen?.style === 'twelfth' ||
                                             canteen?.style === 'eleventh'
                                           ? '查看单排柜台 · 右侧为北'

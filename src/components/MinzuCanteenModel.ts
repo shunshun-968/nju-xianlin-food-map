@@ -426,16 +426,6 @@ export function createMinzuCanteenModel(
       box(lantern, (i - 4) * 0.022, -0.42, 0, 0.012, 0.28, 0.018, '#b52036');
     box(lantern, 0, 0.39, 0, 0.018, 0.2, 0.018, '#c6ae79', 0.15);
   }
-  flat(
-    '↑ 北 N',
-    stage.x + stage.width / 2 - 2.0,
-    stage.z - stage.depth / 2 + 1.3,
-    2.1,
-    0.65,
-    '#7e718a',
-    '',
-    0.065,
-  );
   const steam: THREE.Mesh[] = [];
   group.traverse((object) => {
     if (object instanceof THREE.Mesh && object.userData.steam) steam.push(object);

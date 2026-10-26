@@ -368,16 +368,6 @@ export function createEighthCanteenModel(spec: IndoorCanteenSpec): FourthCanteen
   const kioskLabel = flat('水饺超市', kp.x, kp.z, kp.width - 0.1, 0.56, '#fff8ee', '#64406c', 1.34);
   kioskLabel.rotation.z = kp.rotationY;
   kioskLabel.userData = { kind: 'stall', id: eighthDumplingKiosk.id };
-  flat(
-    '↑ 北 N',
-    stage.x + stage.width / 2 - 2.4,
-    stage.z - stage.depth / 2 + 1.5,
-    2.2,
-    0.65,
-    '#82768b',
-    '',
-    0.065,
-  );
 
   const steam: THREE.Mesh[] = [];
   group.traverse((object) => {

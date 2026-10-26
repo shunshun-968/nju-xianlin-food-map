@@ -607,7 +607,6 @@ export function createNinthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
   doorGlass.castShadow = false;
   for (const x of [-0.15, 0.15]) box(entrance, x, 1.55, -0.08, 0.025, 0.65, 0.03, '#baac7e', 0.8);
   flat('出入口', 7.8, 10.6, 3.4, 0.55, '#446d66');
-  flat('↑ 北 N', -21.4, -17.4, 2.5, 0.75, '#756950', 0.13, '');
   flat('中央就餐区', -0.5, 3, 4.8, 0.62, '#a69b86', 0.115, '');
   const atmosphere = new THREE.Group();
   atmosphere.name = 'ninth-dining-room';

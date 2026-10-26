@@ -352,10 +352,6 @@ export function createSixthCanteenModel(spec: IndoorCanteenSpec): FourthCanteenM
       if (distinct.length) flat(distinct.join(' · '), face.x, face.z - 1.65, w - 0.2, 0.27);
     }
   }
-  const south = label('南  ←', 2.3, 0.6, '#827c83', '');
-  south.rotation.x = -Math.PI / 2;
-  south.position.set(-20, 0.061, -8.5);
-  group.add(south);
   const steam: THREE.Mesh[] = [];
   spatial.traverse((obj) => {
     if (obj instanceof THREE.Mesh && obj.userData.steam) steam.push(obj);

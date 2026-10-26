@@ -1,0 +1,67 @@
+{
+  "v-456": {
+    "width": 87.62124018271075,
+    "height": 113.26908785904695,
+    "offsetX": -38.43358478782062,
+    "offsetY": -67.00923314181559,
+    "referenceWidth": 53.49866112084475,
+    "referenceDepth": 56.38920176852933,
+    "angle": 22.786993588690223,
+    "alignmentAngle": -22.786993588690223,
+    "modelScale": 0.8916443520140792,
+    "pixelWidth": 792,
+    "pixelHeight": 1024
+  },
+  "v-10": {
+    "width": 80.7619316419819,
+    "height": 89.05607933672327,
+    "offsetX": -40.980285385725225,
+    "offsetY": -51.44296145733478,
+    "referenceWidth": 43.261213159643994,
+    "referenceDepth": 68.2624680514254,
+    "angle": 17.085864157985398,
+    "alignmentAngle": -17.085864157985398,
+    "modelScale": 0.8652242631928799,
+    "pixelWidth": 929,
+    "pixelHeight": 1024
+  },
+  "v-891": {
+    "width": 68.25966288462087,
+    "height": 97.08708246186939,
+    "offsetX": -33.773745182241115,
+    "offsetY": -54.51656083502378,
+    "referenceWidth": 48.780491379311336,
+    "referenceDepth": 60.37000247512768,
+    "angle": 21.671903269231528,
+    "alignmentAngle": -21.671903269231528,
+    "modelScale": 0.8384722565989955,
+    "pixelWidth": 720,
+    "pixelHeight": 1024
+  },
+  "v-1112": {
+    "width": 80.93205642934953,
+    "height": 82.36546393836534,
+    "offsetX": -31.269719288072455,
+    "offsetY": -54.86048061356798,
+    "referenceWidth": 49.092633806735236,
+    "referenceDepth": 56.463486569546006,
+    "angle": -1.915090125518219,
+    "alignmentAngle": 1.915090125518219,
+    "modelScale": 0.8303453907286178,
+    "pixelWidth": 1006,
+    "pixelHeight": 1024
+  },
+  "v-south": {
+    "width": 10.354545636610553,
+    "height": 10.422727322795176,
+    "offsetX": -5.177272818305276,
+    "offsetY": -8.073636406551708,
+    "referenceWidth": 9,
+    "referenceDepth": 5,
+    "angle": 0,
+    "alignmentAngle": 0,
+    "modelScale": 1.3636363636363638,
+    "pixelWidth": 1017,
+    "pixelHeight": 1024
+  }
+}

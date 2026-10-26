@@ -1,3 +1,4 @@
+import { FACULTY_CANTEEN_FLOOR_ID, FACULTY_LAYOUT, facultyCanteenFaces } from './faculty-canteen';
 import {
   FOURTH_CANTEEN_FLOOR_ID,
   FOURTH_LAYOUT,
@@ -34,7 +35,16 @@ export type IndoorCanteenSpec = {
   name: string;
   faces: IndoorCanteenFace[];
   style:
-    'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth' | 'twelfth' | 'eleventh' | 'tenth';
+    | 'fourth'
+    | 'fifth'
+    | 'sixth'
+    | 'eighth'
+    | 'minzu'
+    | 'ninth'
+    | 'twelfth'
+    | 'eleventh'
+    | 'tenth'
+    | 'faculty';
   showWindowNumbers?: boolean;
   facadeHeight?: number;
   layout: { frontOffset: number; kitchenDepth: number; corner: { x: number; z: number } };
@@ -236,6 +246,29 @@ export const tenthCanteenSpec: IndoorCanteenSpec = {
   },
 };
 
+export const facultyCanteenSpec: IndoorCanteenSpec = {
+  id: FACULTY_CANTEEN_FLOOR_ID,
+  name: '教工食堂',
+  faces: facultyCanteenFaces,
+  style: 'faculty',
+  facadeHeight: 4.1,
+  layout: FACULTY_LAYOUT,
+  cornerShopId: '',
+  cornerTitle: '',
+  cornerSubtitle: '',
+  description:
+    '按现场照片建立的单排柜台，共 7 个编号窗口。俯视左侧为北，窗口从左到右为 7—1 号；1、2 号之间保留通道。牌匾和实际售卖分别记录，尺寸为示意比例。',
+  stage: { width: 46, depth: 16, x: 0, z: 0 },
+  frame: {
+    x: 0,
+    z: 0,
+    planRange: 9.5,
+    spatialRange: 14,
+    halfWidth: 23.5,
+    spatialOffset: { x: -26, y: 25, z: 38 },
+  },
+};
+
 /** Sign labels and operating groups are independent from the physical opening number. */
 export function getIndoorWindow(spec: IndoorCanteenSpec | undefined, stallId: string) {
   const face = spec?.faces.find((row) => row.faceId === stallId.replace(/-w\d+$/, ''));
@@ -257,6 +290,7 @@ export function getIndoorWindow(spec: IndoorCanteenSpec | undefined, stallId: st
 }
 
 export function getIndoorCanteen(floorId: string | undefined): IndoorCanteenSpec | undefined {
+  if (floorId === FACULTY_CANTEEN_FLOOR_ID) return facultyCanteenSpec;
   if (floorId === TENTH_CANTEEN_FLOOR_ID) return tenthCanteenSpec;
   if (floorId === ELEVENTH_CANTEEN_FLOOR_ID) return eleventhCanteenSpec;
   if (floorId === TWELFTH_CANTEEN_FLOOR_ID) return twelfthCanteenSpec;

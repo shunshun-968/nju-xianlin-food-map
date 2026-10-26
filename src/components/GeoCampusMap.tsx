@@ -28,6 +28,14 @@ import { CampusNightLights } from './CampusNightLights';
 import { useCampusData } from '../lib/use-campus-data';
 import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
 import { batchRoads, batchBuildings } from '../lib/map-batches';
+import { CampusVenueModel } from './CampusVenueModel';
+import { getCampusModelPlacement } from '../lib/campus-model-artwork';
+import { CampusVenueName } from './CampusVenueName';
+import {
+  isModeledCampusVenue,
+  nextCampusVenueTap,
+  nearestCampusVenue,
+} from '../lib/campus-venue-interaction';
 import './geo-campus-map.css';
 
 type Props = {
@@ -73,7 +81,16 @@ function cuboid(venue: MapVenue) {
 
 /** The outer map only: venue IDs still enter the existing building/floor scenes. */
 const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
-  { data, onPick, showLabels, highlightedVenueId, onHighlightVenue, onExplore, nightMode = false },
+  {
+    data,
+    onPick,
+    showLabels,
+    highlightedVenueId,
+    onHighlightVenue,
+    onExplore,
+    nightMode = false,
+    legacyMobile = false,
+  },
   ref,
 ) {
   const [priorityBounds, setPriorityBounds] = useState<Bounds | null>(null);
@@ -87,6 +104,21 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   const [overlayVersion, setOverlayVersion] = useState(0);
   const settleTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [transform, setTransform] = useState(transformRef.current);
+  const [hoveredModelId, setHoveredModelId] = useState<string | null>(null);
+  const [focusedModelId, setFocusedModelId] = useState<string | null>(null);
+  const [touchPreviewId, setTouchPreviewId] = useState<string | null>(null);
+  const touchPreview = useRef<string | null>(null);
+  const revealedVenueId = touchPreviewId ?? hoveredModelId ?? focusedModelId;
+  const touchNameHint = touchPreviewId !== null;
+  function previewTouch(id: string | null) {
+    touchPreview.current = id;
+    setTouchPreviewId(id);
+  }
+  function clearNamePreview() {
+    previewTouch(null);
+    setHoveredModelId(null);
+    setFocusedModelId(null);
+  }
   const reserved = useRef<PlacedLabel['box'][]>([]);
   const pointers = useRef(new Map<number, XY>());
   const overview = useRef(true);
@@ -295,9 +327,9 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                 <path
                   key={`shadow-${f.id}`}
                   d={f.path}
-                  transform="translate(2.5 3.3)"
+                  transform="translate(1.2 1.6)"
                   fill="var(--map-shadow, #6f7b6e)"
-                  fillOpacity=".16"
+                  fillOpacity=".09"
                   fillRule="evenodd"
                 />
               ))}
@@ -306,9 +338,9 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               <path
                 key={`shadow-${f.id}`}
                 d={f.path}
-                transform="translate(2.5 3.3)"
+                transform="translate(1.2 1.6)"
                 fill="var(--map-shadow, #6f7b6e)"
-                fillOpacity=".16"
+                fillOpacity=".09"
                 fillRule="evenodd"
               />
             ))}
@@ -437,6 +469,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     };
   }
   function zoomAt(factor: number, x = size.current.width / 2, y = size.current.height / 2) {
+    clearNamePreview();
     overview.current = false;
     const old = transformRef.current,
       zoom = Math.max(0.75, Math.min(24, old.zoom * factor)),
@@ -455,6 +488,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     rotate: () => {},
   }));
   function reset() {
+    clearNamePreview();
     overview.current = true;
     const next = fitted();
     if (baseMap)
@@ -535,9 +569,12 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   const placedLabels = useMemo(
     () =>
       map
-        ? mapLabels(map, transform, size.current, reserved.current, showLabels)
+        ? mapLabels(map, transform, size.current, reserved.current, showLabels, {
+            venueId: revealedVenueId,
+            touchHint: touchNameHint,
+          })
         : { food: [], details: [] },
-    [map, transform, showLabels, overlayVersion],
+    [map, transform, showLabels, overlayVersion, revealedVenueId, touchNameHint],
   );
   const labels = { ...placedLabels };
   // Labels are in screen coordinates, outside the clipped world group. Keep
@@ -561,6 +598,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       event.stopPropagation();
+      clearNamePreview();
       onPick('venue', id);
     }
   }
@@ -595,8 +633,19 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         height="100%"
         role="group"
         tabIndex={0}
-        aria-label="南京大学仙林校区地图，北向上；可拖动缩放，点击彩色食堂和餐车进入"
+        aria-label="南京大学仙林校区地图，北向上；可拖动缩放，点击食堂建筑和餐车进入"
         onKeyDown={(event) => {
+          const targetId = (event.target as Element)
+            .closest('[data-venue]')
+            ?.getAttribute('data-venue');
+          if (
+            targetId &&
+            validVenueIds.has(targetId) &&
+            (event.key === 'Enter' || event.key === ' ')
+          ) {
+            pickKey(event, targetId);
+            return;
+          }
           if (event.target !== event.currentTarget) return;
           host.current!.dataset.mapInput = 'keyboard';
           if (event.key === '+' || event.key === '=') {
@@ -619,6 +668,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
           };
           if (offsets[event.key]) {
             event.preventDefault();
+            clearNamePreview();
             overview.current = false;
             exploreCallback.current?.();
             const [x, y] = offsets[event.key],
@@ -629,7 +679,22 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           host.current!.dataset.mapInput = 'pointer';
+          if (event.pointerType !== 'mouse' || legacyMobile) {
+            setHoveredModelId(null);
+            setFocusedModelId(null);
+          }
           const [x, y] = point(event);
+          const target = event.target as Element;
+          let tappedVenue = target.closest('[data-venue]')?.getAttribute('data-venue') || null;
+          if (tappedVenue && target.closest('.geo-venue') && map) {
+            const pose = transformRef.current;
+            tappedVenue =
+              nearestCampusVenue(
+                map.venues.filter((v) => validVenueIds.has(v.id)),
+                [(x - pose.x) / pose.scale, (y - pose.y) / pose.scale],
+                pose.scale,
+              ) ?? tappedVenue;
+          }
           pointers.current.set(event.pointerId, [x, y]);
           if (pointers.current.size === 1)
             gesture.current = {
@@ -637,11 +702,12 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               y,
               moved: false,
               multiple: false,
-              venue:
-                (event.target as Element).closest('[data-venue]')?.getAttribute('data-venue') ||
-                null,
+              venue: tappedVenue,
             };
-          else gesture.current.multiple = true;
+          else {
+            gesture.current.multiple = true;
+            clearNamePreview();
+          }
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onBlur={(event) => {
@@ -657,7 +723,10 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
             Math.hypot(current[0] - gesture.current.x, current[1] - gesture.current.y) > 5
           ) {
             overview.current = false;
-            if (!gesture.current.moved) exploreCallback.current?.();
+            if (!gesture.current.moved) {
+              clearNamePreview();
+              exploreCallback.current?.();
+            }
           }
           if (other) {
             const before = Math.hypot(previous[0] - other[0], previous[1] - other[1]);
@@ -681,17 +750,28 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         }}
         onPointerUp={(event) => {
           const g = gesture.current;
-          if (
-            pointers.current.has(event.pointerId) &&
-            !g.moved &&
-            !g.multiple &&
-            g.venue &&
-            validVenueIds.has(g.venue)
-          )
-            onPick('venue', g.venue);
+          if (pointers.current.has(event.pointerId) && !g.moved && !g.multiple) {
+            const venueId = g.venue && validVenueIds.has(g.venue) ? g.venue : null;
+            const next = nextCampusVenueTap(
+              touchPreview.current,
+              venueId,
+              (legacyMobile || event.pointerType !== 'mouse') && isModeledCampusVenue(venueId),
+            );
+            previewTouch(next.preview);
+            if (next.preview) onHighlightVenue?.(next.preview);
+            if (!venueId) {
+              clearNamePreview();
+              onHighlightVenue?.(null);
+            }
+            if (next.enter) {
+              clearNamePreview();
+              onPick('venue', next.enter);
+            }
+          }
           pointers.current.delete(event.pointerId);
         }}
         onPointerCancel={(event) => {
+          clearNamePreview();
           pointers.current.delete(event.pointerId);
           gesture.current.multiple = true;
         }}
@@ -755,64 +835,96 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                           aria-label={`进入${venue.name}${venue.indoor ? '（室内）' : ''}`}
                           onKeyDown={(e) => pickKey(e, venue.id)}
                           onPointerEnter={(e) => {
-                            if (e.pointerType === 'mouse') onHighlightVenue?.(venue.id);
+                            if (
+                              e.pointerType === 'mouse' &&
+                              !legacyMobile &&
+                              pointers.current.size === 0
+                            ) {
+                              previewTouch(null);
+                              setHoveredModelId(isModeledCampusVenue(venue.id) ? venue.id : null);
+                              onHighlightVenue?.(venue.id);
+                            }
                           }}
                           onPointerLeave={(e) => {
-                            if (e.pointerType === 'mouse') onHighlightVenue?.(null);
-                          }}
-                          onFocus={() => onHighlightVenue?.(venue.id)}
-                          onBlur={() => onHighlightVenue?.(null)}
-                        >
-                          <title>
-                            {venue.name}
-                            {venue.indoor ? ' · 室内' : ''} · 点击进入
-                          </title>
-                          <polygon
-                            points={polygon(base.map(([x, y]) => [x + 3, y + 4]))}
-                            fill="var(--map-shadow, #72816f)"
-                            fillOpacity=".17"
-                          />
-                          {base.map((point, i) => (
-                            <polygon
-                              key={i}
-                              className="geo-venue-wall"
-                              points={polygon([
-                                point,
-                                base[(i + 1) % 4],
-                                roof[(i + 1) % 4],
-                                roof[i],
-                              ])}
-                              fill={venue.color}
-                              stroke="var(--map-venue-edge, #989f8e)"
-                              strokeWidth=".45"
-                            />
-                          ))}
-                          <polygon
-                            className="geo-venue-roof"
-                            points={polygon(roof)}
-                            fill={venue.color}
-                            stroke="var(--map-venue-edge, #969f8d)"
-                            strokeWidth=".8"
-                          />
-                          <path
-                            className="geo-venue-rim"
-                            d={`M${roof[0].join(' ')}L${roof[1].join(' ')}L${roof[2].join(' ')}`}
-                            fill="none"
-                            stroke="var(--map-venue-rim, #fffdf3)"
-                            strokeWidth=".7"
-                            strokeOpacity=".65"
-                          />
-                          <rect
-                            x={venue.point[0] - Math.max(venue.width, 24 / transform.scale) / 2}
-                            y={
-                              venue.point[1] -
-                              venue.height -
-                              Math.max(venue.depth, 24 / transform.scale) / 2
+                            if (e.pointerType === 'mouse') {
+                              setHoveredModelId(null);
+                              onHighlightVenue?.(null);
                             }
-                            width={Math.max(venue.width, 24 / transform.scale)}
-                            height={Math.max(venue.depth, 24 / transform.scale)}
-                            fill="transparent"
-                          />
+                          }}
+                          onFocus={(e) => {
+                            if (e.currentTarget.matches(':focus-visible')) {
+                              setFocusedModelId(isModeledCampusVenue(venue.id) ? venue.id : null);
+                            }
+                            onHighlightVenue?.(venue.id);
+                          }}
+                          onBlur={() => {
+                            setFocusedModelId(null);
+                            onHighlightVenue?.(null);
+                          }}
+                        >
+                          {!isModeledCampusVenue(venue.id) && (
+                            <title>
+                              {venue.name}
+                              {venue.indoor ? ' · 室内' : ''} · 点击进入
+                            </title>
+                          )}
+                          {getCampusModelPlacement(venue, transform.scale) ? (
+                            <CampusVenueModel
+                              venue={venue}
+                              scale={transform.scale}
+                              nightMode={nightMode}
+                              highlighted={highlightedVenueId === venue.id}
+                            />
+                          ) : (
+                            <>
+                              <polygon
+                                points={polygon(base.map(([x, y]) => [x + 3, y + 4]))}
+                                fill="var(--map-shadow, #72816f)"
+                                fillOpacity=".17"
+                              />
+                              {base.map((point, i) => (
+                                <polygon
+                                  key={i}
+                                  className="geo-venue-wall"
+                                  points={polygon([
+                                    point,
+                                    base[(i + 1) % 4],
+                                    roof[(i + 1) % 4],
+                                    roof[i],
+                                  ])}
+                                  fill={venue.color}
+                                  stroke="var(--map-venue-edge, #989f8e)"
+                                  strokeWidth=".45"
+                                />
+                              ))}
+                              <polygon
+                                className="geo-venue-roof"
+                                points={polygon(roof)}
+                                fill={venue.color}
+                                stroke="var(--map-venue-edge, #969f8d)"
+                                strokeWidth=".8"
+                              />
+                              <path
+                                className="geo-venue-rim"
+                                d={`M${roof[0].join(' ')}L${roof[1].join(' ')}L${roof[2].join(' ')}`}
+                                fill="none"
+                                stroke="var(--map-venue-rim, #fffdf3)"
+                                strokeWidth=".7"
+                                strokeOpacity=".65"
+                              />
+                              <rect
+                                x={venue.point[0] - Math.max(venue.width, 24 / transform.scale) / 2}
+                                y={
+                                  venue.point[1] -
+                                  venue.height -
+                                  Math.max(venue.depth, 24 / transform.scale) / 2
+                                }
+                                width={Math.max(venue.width, 24 / transform.scale)}
+                                height={Math.max(venue.depth, 24 / transform.scale)}
+                                fill="transparent"
+                              />
+                            </>
+                          )}
                         </g>
                       );
                     })}
@@ -849,75 +961,85 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
               ))}
             </g>
             <g className="geo-food-labels">
-              {labels.food.map((label) => {
-                const venue = venueById.get(label.id)!;
-                if (!validVenueIds.has(venue.id)) return null;
-                return (
-                  <g
-                    key={label.id}
-                    data-venue={label.id}
-                    className={`geo-food-label${highlightedVenueId === venue.id ? ' is-highlighted' : ''}`}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`进入${venue.name}${venue.indoor ? '（室内）' : ''}`}
-                    onKeyDown={(e) => pickKey(e, venue.id)}
-                    onPointerEnter={(e) => {
-                      if (e.pointerType === 'mouse') onHighlightVenue?.(venue.id);
-                    }}
-                    onPointerLeave={(e) => {
-                      if (e.pointerType === 'mouse') onHighlightVenue?.(null);
-                    }}
-                    onFocus={() => onHighlightVenue?.(venue.id)}
-                    onBlur={() => onHighlightVenue?.(null)}
-                  >
-                    <path
-                      d={`M${label.anchorX} ${label.anchorY}L${label.x} ${label.y}`}
-                      fill="none"
-                      stroke="var(--map-label-leader, #929e89)"
-                      strokeWidth=".8"
-                      pointerEvents="none"
-                    />
-                    <g transform={`translate(${label.x} ${label.y})`}>
-                      <rect
-                        x={-label.width / 2}
-                        y={-label.height / 2}
-                        width={label.width}
-                        height={label.height}
-                        rx="5"
-                        fill="var(--map-label-paper, #fffdf7)"
-                        fillOpacity=".97"
-                        stroke="var(--map-label-border, #c7cfbd)"
+              {labels.food
+                .filter((label) => !isModeledCampusVenue(label.id))
+                .map((label) => {
+                  const venue = venueById.get(label.id)!;
+                  if (!validVenueIds.has(venue.id)) return null;
+                  return (
+                    <g
+                      key={label.id}
+                      data-venue={label.id}
+                      className={`geo-food-label${highlightedVenueId === venue.id ? ' is-highlighted' : ''}`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`进入${venue.name}${venue.indoor ? '（室内）' : ''}`}
+                      onKeyDown={(e) => pickKey(e, venue.id)}
+                      onPointerEnter={(e) => {
+                        if (e.pointerType === 'mouse') onHighlightVenue?.(venue.id);
+                      }}
+                      onPointerLeave={(e) => {
+                        if (e.pointerType === 'mouse') onHighlightVenue?.(null);
+                      }}
+                      onFocus={() => onHighlightVenue?.(venue.id)}
+                      onBlur={() => onHighlightVenue?.(null)}
+                    >
+                      <path
+                        d={`M${label.anchorX} ${label.anchorY}L${label.x} ${label.y}`}
+                        fill="none"
+                        stroke="var(--map-label-leader, #929e89)"
                         strokeWidth=".8"
+                        pointerEvents="none"
                       />
-                      <circle
-                        cx={-label.width / 2 + 8}
-                        r="2.8"
-                        fill={`var(--map-label-dot, ${venue.color})`}
-                        stroke="var(--map-label-border, #9fa88f)"
-                        strokeWidth=".5"
-                      />
-                      {label.lines.map((line, i) => (
-                        <text
-                          key={line}
-                          x="4"
-                          y={(i - (label.lines.length - 1) / 2) * 14 + 0.5}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fontSize={line === '室内' ? 9 : 10.5}
-                          fill={
-                            line === '室内'
-                              ? 'var(--map-label-muted, #7b8271)'
-                              : 'var(--map-label-ink, #4d594b)'
-                          }
-                        >
-                          {line}
-                        </text>
-                      ))}
+                      <g transform={`translate(${label.x} ${label.y})`}>
+                        <rect
+                          x={-label.width / 2}
+                          y={-label.height / 2}
+                          width={label.width}
+                          height={label.height}
+                          rx="5"
+                          fill="var(--map-label-paper, #fffdf7)"
+                          fillOpacity=".97"
+                          stroke="var(--map-label-border, #c7cfbd)"
+                          strokeWidth=".8"
+                        />
+                        <circle
+                          cx={-label.width / 2 + 8}
+                          r="2.8"
+                          fill={`var(--map-label-dot, ${venue.color})`}
+                          stroke="var(--map-label-border, #9fa88f)"
+                          strokeWidth=".5"
+                        />
+                        {label.lines.map((line, i) => (
+                          <text
+                            key={line}
+                            x="4"
+                            y={(i - (label.lines.length - 1) / 2) * 14 + 0.5}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fontSize={line === '室内' ? 9 : 10.5}
+                            fill={
+                              line === '室内'
+                                ? 'var(--map-label-muted, #7b8271)'
+                                : 'var(--map-label-ink, #4d594b)'
+                            }
+                          >
+                            {line}
+                          </text>
+                        ))}
+                      </g>
                     </g>
-                  </g>
-                );
-              })}
+                  );
+                })}
             </g>
+            <CampusVenueName
+              label={
+                labels.food.find(
+                  (label) => label.id === revealedVenueId && isModeledCampusVenue(label.id),
+                ) ?? null
+              }
+              touchHint={touchNameHint}
+            />
           </>
         )}
       </svg>

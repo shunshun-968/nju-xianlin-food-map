@@ -23,6 +23,10 @@ import { createStallSelection } from '../lib/stall-selection';
 import { eighthDumplingKiosk } from '../data/eighth-canteen';
 import { eleventhDumplingKiosk } from '../data/eleventh-canteen';
 import { SOUTH_GATE_CART_HEIGHT, southGateCartStall } from '../data/south-gate-cart';
+import { exteriorBuildings, exteriorFrame, loadExteriorModel, pickExteriorFloor } from '../data/exterior-buildings';
+import type { ExteriorModel } from '../models/exteriors/types';
+import { createExteriorEntranceMarkers } from '../lib/exterior-entrance-markers';
+import './exterior-entrance-markers.css';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -58,6 +62,8 @@ type Engine = {
     height: number;
   };
   fourth?: FourthCanteenModel;
+  exterior?: ExteriorModel;
+  entranceMarkers?: ReturnType<typeof createExteriorEntranceMarkers>;
   fourthMode?: FourthViewMode;
   indoorSpec?: IndoorCanteenSpec;
   indoorEnvironment?: THREE.WebGLRenderTarget;
@@ -66,6 +72,15 @@ type Engine = {
   models: Map<string, FourthCanteenModel>;
   preparing?: boolean;
 };
+
+function lightExterior(e: Engine, night: boolean) {
+  e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
+  e.ambientLight.intensity = night ? 1.0 : 1.5;
+  e.ambientLight.color.set(night ? '#d8dff4' : '#ffffff');
+  e.keyLight.intensity = night ? 1.4 : 1.7;
+  e.keyLight.color.set(night ? '#e2e8ff' : '#ffffff');
+  e.renderer.shadowMap.needsUpdate = true;
+}
 
 /** Fit the default view to the clear area; manual views keep their own framing. */
 function captureDefaultFrame(e: Engine, range: number, halfWidth: number) {
@@ -281,6 +296,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   const modeledCanteen = getIndoorCanteen(floorId);
   const isFourthFloor = !!modeledCanteen;
   const isCart = view.venueId === 'v-south';
+  const isExterior = view.level === 'building' && !!exteriorBuildings[view.venueId];
   const interfaceThemeRef = useRef(interfaceTheme);
   const selectedStallRef = useRef(selectedStall);
   selectedStallRef.current = selectedStall;
@@ -446,6 +462,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         (-(event.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
+      if (e.exterior) {
+        const floorId = pickExteriorFloor(e.exterior, raycaster);
+        if (floorId) callback.current('floor', floorId);
+        return;
+      }
       const stallId = e.stallTargets?.pick(raycaster);
       if (stallId) {
         e.stallSelection?.select(stallId, true);
@@ -508,6 +529,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       if (!reducedMotion.matches) e.fourth?.tick(time / 1000);
       e.stallSelection?.tick(delta, reducedMotion.matches);
       renderer.render(scene, camera);
+      e.entranceMarkers?.update(camera);
       if (import.meta.env.DEV)
         renderer.domElement.dataset.drawCalls = String(renderer.info.render.calls);
     });
@@ -521,6 +543,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       controls.dispose();
       e.stallSelection?.dispose();
       e.fourth?.group.removeFromParent();
+      e.entranceMarkers?.dispose();
+      e.exterior?.group.removeFromParent();
+      e.exterior?.dispose();
       dispose(content);
       for (const model of e.models.values()) dispose(model.group);
       e.models.clear();
@@ -541,6 +566,14 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     controls.autoRotateSpeed = 0.65;
     setCartRotating(false);
     e.preparing = false;
+    setError(false);
+    e.entranceMarkers?.dispose();
+    e.entranceMarkers = undefined;
+    if (e.exterior) {
+      e.exterior.group.removeFromParent();
+      e.exterior.dispose();
+      e.exterior = undefined;
+    }
     if (e.fourth) e.fourth.group.removeFromParent();
     e.fourth = undefined;
     e.indoorSpec = undefined;
@@ -563,6 +596,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     e.keyLight.intensity = 1.7;
     e.keyLight.color.set('#ffffff');
     e.keyLight.shadow.normalBias = 0;
+    e.keyLight.shadow.bias = -0.002;
     Object.assign(e.keyLight.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120 });
     e.keyLight.shadow.camera.updateProjectionMatrix();
     dispose(content);
@@ -683,6 +717,70 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         cancelled = true;
         cancelAnimationFrame(frame);
       };
+    } else if (view.level === 'building' && exteriorBuildings[view.venueId]) {
+      const exteriorSpec = exteriorBuildings[view.venueId];
+      let cancelled = false;
+      let frame = 0;
+      setLoadingModel(true);
+      const activate = async () => {
+        e.preparing = true;
+        const model = await loadExteriorModel(view.venueId, data);
+        if (cancelled) {
+          model?.dispose();
+          return;
+        }
+        if (!model) throw new Error('外观模型未找到');
+        e.exterior = model;
+        content.add(model.group);
+        e.entranceMarkers = createExteriorEntranceMarkers(
+          e.renderer.domElement.parentElement!, model, exteriorSpec.floors,
+          floorId => { explore.current?.(); callback.current('floor', floorId); },
+        );
+        e.renderer.domElement.setAttribute('aria-label',
+          `${data.venues.find(venue => venue.id === view.venueId)?.name ?? '食堂'}建筑外观，点击入口或使用左侧列表进入食堂，可拖动缩放`);
+        if (!e.indoorEnvironment) {
+          const room = new RoomEnvironment();
+          const pmrem = new THREE.PMREMGenerator(e.renderer);
+          e.indoorEnvironment = pmrem.fromScene(room, 0.04);
+          room.dispose();
+          pmrem.dispose();
+        }
+        scene.environment = e.indoorEnvironment.texture;
+        scene.environmentIntensity = 0.28;
+        e.keyLight.shadow.normalBias = 0.035;
+        e.keyLight.shadow.bias = -0.0002;
+        controls.enableRotate = true;
+        controls.zoomToCursor = true;
+        e.goal.fromArray(exteriorSpec.camera);
+        e.focus.fromArray(exteriorSpec.target);
+        const framing = exteriorFrame(model, view.venueId);
+        captureDefaultFrame(e, framing.range, framing.halfWidth);
+        updateProjection(e);
+        lightExterior(e, interfaceThemeRef.current === 'night');
+        e.animating = true;
+        await e.renderer.compileAsync(scene, camera);
+        if (!cancelled) {
+          e.preparing = false;
+          e.renderer.shadowMap.needsUpdate = true;
+          setLoadingModel(false);
+        }
+      };
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
+          void activate().catch((error: unknown) => {
+            if (!cancelled) {
+              console.error(error);
+              setError(true);
+              e.preparing = false;
+              setLoadingModel(false);
+            }
+          });
+        });
+      });
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(frame);
+      };
     } else if (view.level === 'building') {
       const v = data.venues.find((v) => v.id === view.venueId)!;
       e.range = 28;
@@ -777,6 +875,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   }, [data, view.level, view.venueId, floorId, theme]);
   useEffect(() => {
     const e = engine.current;
+    if (e?.exterior) {
+      lightExterior(e, interfaceTheme === 'night');
+      return;
+    }
     if (!e?.fourth) return;
     const night = interfaceTheme === 'night';
     e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
@@ -822,6 +924,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         <div className="loading model-loading" role="status">
           正在展开模型…
         </div>
+      )}
+      {isExterior && (
+        <div className="fourth-view-note">建筑外观 · 点击入口标记或选择楼层进入</div>
       )}
       {isFourthFloor && (
         <>

@@ -1,0 +1,75 @@
+.exterior-entrance-markers {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.exterior-entrance-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--paper, #fffaf5);
+  border-radius: 50%;
+  color: var(--paper, #fffaf5);
+  background: var(--purple, #654778);
+  box-shadow: 0 2px 9px #30203d38;
+  pointer-events: auto;
+  cursor: pointer;
+  font:
+    700 12px/1 system-ui,
+    sans-serif;
+}
+.exterior-entrance-marker[hidden] {
+  display: none;
+}
+.exterior-entrance-marker::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  width: 2px;
+  height: 9px;
+  background: var(--purple, #654778);
+  pointer-events: none;
+}
+.exterior-entrance-marker:hover,
+.exterior-entrance-marker:focus-visible {
+  z-index: 1;
+  outline: 3px solid var(--purple-soft, #dbcbe7);
+}
+.exterior-entrance-caption {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 10px;
+  border: 1px solid var(--line, #e5ddeb);
+  border-radius: 8px;
+  white-space: nowrap;
+  color: var(--purple, #654778);
+  background: var(--paper, #fffaf5);
+  box-shadow: 0 3px 12px #30203d16;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.exterior-entrance-marker:hover .exterior-entrance-caption,
+.exterior-entrance-marker:focus-visible .exterior-entrance-caption {
+  display: block;
+}
+@media (max-width: 700px) {
+  .exterior-entrance-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+  .exterior-entrance-caption {
+    font-size: 10px;
+  }
+}

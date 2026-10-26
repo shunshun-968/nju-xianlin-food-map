@@ -298,7 +298,7 @@ test('the built model has one kitchen per shop, outward counters, and stable geo
   });
   let model: ReturnType<typeof createFourthCanteenModel> | undefined;
   try {
-    model = createFourthCanteenModel();
+    model = createFourthCanteenModel(() => new THREE.Texture());
     const group = model.group;
     const spatial = group.getObjectByName('spatial-frontages');
     const plan = group.getObjectByName('plan-labels');

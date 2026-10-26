@@ -44,7 +44,7 @@ test('all three canteens retain triangles, bounds, lights, picking and view boun
   });
   try {
     for (const spec of [fourthCanteenSpec, fifthCanteenSpec, sixthCanteenSpec]) {
-      const model = createCanteenModel(spec);
+      const model = createCanteenModel(spec, () => new THREE.Texture());
       const before = metrics(model.group);
       const bounds = new THREE.Box3().setFromObject(model.group);
       const roofs: THREE.Object3D[] = [];

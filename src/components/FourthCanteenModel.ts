@@ -29,11 +29,11 @@ export const FOURTH_HEIGHTS = {
   signTop: 3.65,
 };
 
-export function createFourthCanteenModel(): FourthCanteenModel {
-  return createCanteenModel(fourthCanteenSpec);
+export function createFourthCanteenModel(loadSignTexture?: (url: string) => THREE.Texture): FourthCanteenModel {
+  return createCanteenModel(fourthCanteenSpec, loadSignTexture);
 }
 
-export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel {
+export function createCanteenModel(spec: IndoorCanteenSpec, loadFourthSignTexture?: (url: string) => THREE.Texture): FourthCanteenModel {
   if (spec.style === 'tenth') return createTenthCanteenModel();
   if (spec.style === 'eleventh') return createEleventhCanteenModel(spec);
   if (spec.style === 'twelfth') return createTwelfthCanteenModel(spec);
@@ -322,7 +322,7 @@ export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel 
       index,
     };
     if (isFifth) addFifthCanteenSignage(local, { ...signage, windowNumbers: face.windowNumbers! });
-    else addCanteenSignage(local, signage);
+    else addCanteenSignage(local, signage, loadFourthSignTexture);
     const steel = material('#bcc4bf', 0.28, 0.52),
       dark = material('#697570', 0.3, 0.45);
     const segment = w / face.windowCount;
@@ -466,6 +466,17 @@ export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel 
     const labelDepth = back + 0.32;
     const signX = face.x + labelDepth * Math.sin(face.rotationY),
       signZ = face.z + labelDepth * Math.cos(face.rotationY);
+    if (!isFifth) {
+      // Reuse the same photographed artwork in the default plan view. The shared
+      // corner keeps its single badge above, avoiding two crossed signboards.
+      const source = local.getObjectByName(`main-sign-${face.name}`) as THREE.Mesh;
+      const planSign = new THREE.Mesh(source.geometry.clone(), source.material);
+      planSign.name = `plan-sign-${face.name}`;
+      planSign.position.set(signX, 4.15, signZ);
+      planSign.rotation.set(-Math.PI / 2, 0, side ? Math.PI / 2 : 0);
+      plan.add(planSign);
+      continue;
+    }
     flat(
       plan,
       face.name,

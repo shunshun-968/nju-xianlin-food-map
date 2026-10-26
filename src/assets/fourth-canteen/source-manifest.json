@@ -1,0 +1,990 @@
+[
+  {
+    "key": "maijindi",
+    "name": "优品麦选",
+    "band": "sign",
+    "source": "5.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        123,
+        529
+      ],
+      [
+        793,
+        500
+      ],
+      [
+        795,
+        628
+      ],
+      [
+        123,
+        644
+      ]
+    ],
+    "output": "maijindi-sign.webp",
+    "size": [
+      1536,
+      312
+    ],
+    "bytes": 35814
+  },
+  {
+    "key": "maijindi",
+    "name": "优品麦选",
+    "band": "menu",
+    "source": "5.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        147,
+        653
+      ],
+      [
+        795,
+        641
+      ],
+      [
+        799,
+        692
+      ],
+      [
+        162,
+        700
+      ]
+    ],
+    "output": "maijindi-menu.webp",
+    "size": [
+      1536,
+      128
+    ],
+    "bytes": 30060
+  },
+  {
+    "key": "zhongyuan",
+    "name": "中原风味",
+    "band": "sign",
+    "source": "5.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        858,
+        506
+      ],
+      [
+        1623,
+        475
+      ],
+      [
+        1627,
+        598
+      ],
+      [
+        859,
+        623
+      ]
+    ],
+    "output": "zhongyuan-sign.webp",
+    "size": [
+      1536,
+      312
+    ],
+    "bytes": 36592
+  },
+  {
+    "key": "zhongyuan",
+    "name": "中原风味",
+    "band": "menu",
+    "source": "5.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        857,
+        638
+      ],
+      [
+        1624,
+        616
+      ],
+      [
+        1630,
+        681
+      ],
+      [
+        858,
+        692
+      ]
+    ],
+    "output": "zhongyuan-menu.webp",
+    "size": [
+      1536,
+      128
+    ],
+    "bytes": 41720
+  },
+  {
+    "key": "fujian",
+    "name": "福建风味",
+    "band": "sign",
+    "source": "4.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        104,
+        487
+      ],
+      [
+        811,
+        476
+      ],
+      [
+        814,
+        605
+      ],
+      [
+        104,
+        608
+      ]
+    ],
+    "output": "fujian-sign.webp",
+    "size": [
+      1536,
+      312
+    ],
+    "bytes": 62080
+  },
+  {
+    "key": "fujian",
+    "name": "福建风味",
+    "band": "menu",
+    "source": "4.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        105,
+        631
+      ],
+      [
+        818,
+        630
+      ],
+      [
+        819,
+        678
+      ],
+      [
+        106,
+        678
+      ]
+    ],
+    "output": "fujian-menu.webp",
+    "size": [
+      1536,
+      128
+    ],
+    "bytes": 63552
+  },
+  {
+    "key": "xiang-egang",
+    "name": "湘鄂赣风味",
+    "band": "sign",
+    "source": "4.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        887,
+        477
+      ],
+      [
+        1711,
+        469
+      ],
+      [
+        1711,
+        603
+      ],
+      [
+        887,
+        603
+      ]
+    ],
+    "output": "xiang-egang-sign.webp",
+    "size": [
+      1536,
+      312
+    ],
+    "bytes": 45074
+  },
+  {
+    "key": "xiang-egang",
+    "name": "湘鄂赣风味",
+    "band": "menu",
+    "source": "4.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        886,
+        624
+      ],
+      [
+        1706,
+        621
+      ],
+      [
+        1703,
+        689
+      ],
+      [
+        886,
+        689
+      ]
+    ],
+    "output": "xiang-egang-menu.webp",
+    "size": [
+      1536,
+      128
+    ],
+    "bytes": 43344
+  },
+  {
+    "key": "chuanyu",
+    "name": "川渝风味",
+    "band": "sign",
+    "source": "3.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        215,
+        648
+      ],
+      [
+        742,
+        621
+      ],
+      [
+        749,
+        716
+      ],
+      [
+        216,
+        737
+      ]
+    ],
+    "output": "chuanyu-sign.webp",
+    "size": [
+      1280,
+      260
+    ],
+    "bytes": 45960
+  },
+  {
+    "key": "chuanyu",
+    "name": "川渝风味",
+    "band": "menu",
+    "source": "3.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        219,
+        749
+      ],
+      [
+        748,
+        728
+      ],
+      [
+        750,
+        778
+      ],
+      [
+        221,
+        795
+      ]
+    ],
+    "output": "chuanyu-menu.webp",
+    "size": [
+      1280,
+      128
+    ],
+    "bytes": 36582
+  },
+  {
+    "key": "xibei",
+    "name": "西北风味",
+    "band": "sign",
+    "source": "3.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        809,
+        620
+      ],
+      [
+        1385,
+        594
+      ],
+      [
+        1390,
+        684
+      ],
+      [
+        812,
+        713
+      ]
+    ],
+    "output": "xibei-sign.webp",
+    "size": [
+      1280,
+      260
+    ],
+    "bytes": 33342
+  },
+  {
+    "key": "xibei",
+    "name": "西北风味",
+    "band": "menu",
+    "source": "3.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        809,
+        727
+      ],
+      [
+        1391,
+        698
+      ],
+      [
+        1393,
+        746
+      ],
+      [
+        812,
+        774
+      ]
+    ],
+    "output": "xibei-menu.webp",
+    "size": [
+      1280,
+      128
+    ],
+    "bytes": 52706
+  },
+  {
+    "key": "guangshi",
+    "name": "广式风味",
+    "band": "sign",
+    "source": "2.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        310,
+        582
+      ],
+      [
+        737,
+        583
+      ],
+      [
+        736,
+        652
+      ],
+      [
+        310,
+        648
+      ]
+    ],
+    "output": "guangshi-sign.webp",
+    "size": [
+      1024,
+      208
+    ],
+    "bytes": 14394
+  },
+  {
+    "key": "guangshi",
+    "name": "广式风味",
+    "band": "menu",
+    "source": "2.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        310,
+        665
+      ],
+      [
+        739,
+        667
+      ],
+      [
+        738,
+        697
+      ],
+      [
+        309,
+        696
+      ]
+    ],
+    "output": "guangshi-menu.webp",
+    "size": [
+      1024,
+      128
+    ],
+    "bytes": 25892
+  },
+  {
+    "key": "dongbei",
+    "name": "东北风味",
+    "band": "sign",
+    "source": "2.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        783,
+        576
+      ],
+      [
+        1236,
+        574
+      ],
+      [
+        1237,
+        659
+      ],
+      [
+        783,
+        656
+      ]
+    ],
+    "output": "dongbei-sign.webp",
+    "size": [
+      1024,
+      208
+    ],
+    "bytes": 34356
+  },
+  {
+    "key": "dongbei",
+    "name": "东北风味",
+    "band": "menu",
+    "source": "2.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        783,
+        664
+      ],
+      [
+        1237,
+        664
+      ],
+      [
+        1238,
+        703
+      ],
+      [
+        783,
+        700
+      ]
+    ],
+    "output": "dongbei-menu.webp",
+    "size": [
+      1024,
+      128
+    ],
+    "bytes": 35700
+  },
+  {
+    "key": "chuangyi",
+    "name": "创意融合",
+    "band": "sign",
+    "source": "1.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        736,
+        538
+      ],
+      [
+        984,
+        526
+      ],
+      [
+        987,
+        622
+      ],
+      [
+        736,
+        627
+      ]
+    ],
+    "output": "chuangyi-sign.webp",
+    "size": [
+      768,
+      260
+    ],
+    "bytes": 34978
+  },
+  {
+    "key": "chuangyi",
+    "name": "创意融合",
+    "band": "menu",
+    "source": "1.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        743,
+        635
+      ],
+      [
+        986,
+        628
+      ],
+      [
+        987,
+        672
+      ],
+      [
+        744,
+        674
+      ]
+    ],
+    "output": "chuangyi-menu.webp",
+    "size": [
+      768,
+      128
+    ],
+    "bytes": 25010
+  },
+  {
+    "key": "jitang-mixian",
+    "name": "蒙自源鸡汤米线",
+    "band": "sign",
+    "source": "1.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        993,
+        524
+      ],
+      [
+        1341,
+        506
+      ],
+      [
+        1343,
+        610
+      ],
+      [
+        994,
+        622
+      ]
+    ],
+    "output": "jitang-mixian-sign.webp",
+    "size": [
+      1024,
+      246
+    ],
+    "bytes": 25658
+  },
+  {
+    "key": "jitang-mixian",
+    "name": "蒙自源鸡汤米线",
+    "band": "menu",
+    "source": "1.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        1003,
+        631
+      ],
+      [
+        1342,
+        618
+      ],
+      [
+        1345,
+        666
+      ],
+      [
+        1004,
+        674
+      ]
+    ],
+    "output": "jitang-mixian-menu.webp",
+    "size": [
+      1024,
+      128
+    ],
+    "bytes": 49764
+  },
+  {
+    "key": "maijindi-side",
+    "name": "酱香醇厚",
+    "band": "sign",
+    "source": "6.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        600,
+        413
+      ],
+      [
+        1124,
+        222
+      ],
+      [
+        1129,
+        516
+      ],
+      [
+        601,
+        599
+      ]
+    ],
+    "output": "maijindi-side-sign.webp",
+    "size": [
+      1536,
+      312
+    ],
+    "bytes": 34116
+  },
+  {
+    "key": "maijindi-side",
+    "name": "酱香醇厚",
+    "band": "menu",
+    "source": "6.jpg",
+    "sourceSize": [
+      4096,
+      3072
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        609,
+        613
+      ],
+      [
+        1096,
+        545
+      ],
+      [
+        1121,
+        669
+      ],
+      [
+        631,
+        696
+      ]
+    ],
+    "output": "maijindi-side-menu.webp",
+    "size": [
+      1536,
+      128
+    ],
+    "bytes": 34728
+  },
+  {
+    "key": "jinling",
+    "name": "金陵风味",
+    "band": "sign",
+    "source": "7.jpg",
+    "sourceSize": [
+      4000,
+      3000
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        772,
+        654
+      ],
+      [
+        1197,
+        645
+      ],
+      [
+        1206,
+        737
+      ],
+      [
+        773,
+        749
+      ]
+    ],
+    "output": "jinling-sign.webp",
+    "size": [
+      1024,
+      208
+    ],
+    "bytes": 28524
+  },
+  {
+    "key": "jinling",
+    "name": "金陵风味",
+    "band": "menu",
+    "source": "7.jpg",
+    "sourceSize": [
+      4000,
+      3000
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        777,
+        763
+      ],
+      [
+        1204,
+        755
+      ],
+      [
+        1205,
+        798
+      ],
+      [
+        776,
+        804
+      ]
+    ],
+    "output": "jinling-menu.webp",
+    "size": [
+      1024,
+      128
+    ],
+    "bytes": 19630
+  },
+  {
+    "key": "shuijiao-huntun",
+    "name": "京兜水饺馄饨",
+    "band": "sign",
+    "source": "7.jpg",
+    "sourceSize": [
+      4000,
+      3000
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        319,
+        651
+      ],
+      [
+        756,
+        648
+      ],
+      [
+        757,
+        748
+      ],
+      [
+        319,
+        755
+      ]
+    ],
+    "output": "shuijiao-huntun-sign.webp",
+    "size": [
+      1024,
+      208
+    ],
+    "bytes": 19738
+  },
+  {
+    "key": "shuijiao-huntun",
+    "name": "京兜水饺馄饨",
+    "band": "menu",
+    "source": "7.jpg",
+    "sourceSize": [
+      4000,
+      3000
+    ],
+    "reviewSize": [
+      1824,
+      1368
+    ],
+    "quad": [
+      [
+        328,
+        767
+      ],
+      [
+        757,
+        759
+      ],
+      [
+        759,
+        802
+      ],
+      [
+        336,
+        810
+      ]
+    ],
+    "output": "shuijiao-huntun-menu.webp",
+    "size": [
+      1024,
+      128
+    ],
+    "bytes": 21258
+  }
+]

@@ -400,7 +400,7 @@ test('the actual fifth-canteen scene preserves its shared kitchens and service g
     await t.test(
       'the shared factory still builds the fourth canteen with its original 24 service openings',
       () => {
-        const fourth = createFourthCanteenModel();
+        const fourth = createFourthCanteenModel(() => new THREE.Texture());
         models.push(fourth);
         const openings: THREE.Object3D[] = [];
         fourth.group.traverse((object) => {

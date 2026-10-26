@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { prepareTenthCanteenModel } from './TenthCanteenModel';
+import { prepareFourthSignageAssets } from '../lib/fourth-signage-textures';
 import { tenthDumplingKiosk } from '../data/tenth-canteen';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -626,6 +627,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         const cached = !!model;
         if (!model) {
           if (spec?.style === 'tenth') await prepareTenthCanteenModel();
+          if (spec?.style === 'fourth') await prepareFourthSignageAssets();
           if (cancelled) return;
           model = spec ? createCanteenModel(spec) : createSouthGateCartModel();
           if (spec && spec.style !== 'tenth') batchModel(model.group);

@@ -27,6 +27,7 @@ import { ForestTexture } from './ForestTexture';
 import { CampusNightLights } from './CampusNightLights';
 import { useCampusData } from '../lib/use-campus-data';
 import { unionBounds, viewportBounds, type Bounds } from '../lib/basemap-loading';
+import { campusViewArea } from '../lib/campus-view-area';
 import { batchRoads, batchBuildings } from '../lib/map-batches';
 import { CampusVenueModel } from './CampusVenueModel';
 import { getCampusModelPlacement } from '../lib/campus-model-artwork';
@@ -443,17 +444,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   );
   function fitted(): MapTransform {
     if (!baseMap) return transformRef.current;
-    const { width, height } = size.current,
-      rect = host.current!.getBoundingClientRect();
-    const app = host.current!.closest('.app');
-    const drawer = app?.querySelector('.sidebar-dock:not(.is-collapsed)')?.getBoundingClientRect();
-    const crumbs = app?.querySelector('.breadcrumbs')?.getBoundingClientRect();
-    const left = drawer && width > 700 ? Math.max(20, drawer.right - rect.left + 28) : 20;
-    const top = Math.max(35, (crumbs?.bottom || rect.top) - rect.top + 20);
-    const bottom =
-      drawer && width <= 700
-        ? Math.max(top + 180, Math.min(height - 35, drawer.top - rect.top - 20))
-        : height - 45;
+    const { width, height } = size.current;
+    const { left, top, bottom, centerX, centerY } = campusViewArea(host.current!, width, height);
     const [minX, minY, maxX, maxY] = baseMap.bounds;
     const scale =
       initialZoom *
@@ -462,8 +454,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
         Math.min((width - left - 30) / (maxX - minX + 90), (bottom - top) / (maxY - minY + 90)),
       );
     return {
-      x: left + (width - left) / 2 - ((minX + maxX) / 2) * scale,
-      y: top + (bottom - top) / 2 - ((minY + maxY) / 2) * scale,
+      x: centerX - ((minX + maxX) / 2) * scale,
+      y: centerY - ((minY + maxY) / 2) * scale,
       scale,
       zoom: initialZoom,
     };

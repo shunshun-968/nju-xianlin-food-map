@@ -1,4 +1,5 @@
 import { useLayoutEffect, type RefObject } from 'react';
+import { campusViewArea } from './campus-view-area';
 
 /** Share live navigation offsets across campus, building and floor views. */
 export function useModelOverlayLayout(host: RefObject<HTMLElement | null>) {
@@ -9,6 +10,7 @@ export function useModelOverlayLayout(host: RefObject<HTMLElement | null>) {
     const header = app.querySelector<HTMLElement>('.header');
     const drawer = app.querySelector<HTMLElement>('.sidebar-dock');
     const handle = drawer?.querySelector<HTMLElement>('.sidebar-handle');
+    const breadcrumbs = map.querySelector<HTMLElement>('.breadcrumbs');
     const mobile = window.matchMedia('(max-width: 700px)');
     const transitions = new Set<string>();
     let frame = 0;
@@ -54,7 +56,24 @@ export function useModelOverlayLayout(host: RefObject<HTMLElement | null>) {
       writePixel('--model-overlay-bottom', Math.min(bottom, map.clientHeight * 0.65));
       const stacked = String(width < 560);
       if (map.dataset.modelOverlayStacked !== stacked) map.dataset.modelOverlayStacked = stacked;
-      const layout = [left, top, width, bottom, map.clientHeight].map((value) => value.toFixed(2)).join('/');
+      // 用真实导航／视图按钮的底边定位说明和罗盘，不为不存在的按钮预留空行。
+      let navigationBottom = top;
+      for (const element of [breadcrumbs, map.querySelector<HTMLElement>('.fourth-view-controls')]) {
+        if (element?.offsetHeight)
+          navigationBottom = Math.max(navigationBottom, element.getBoundingClientRect().bottom - originY);
+      }
+      const infoTop = navigationBottom + 8;
+      writePixel('--model-info-top', infoTop);
+      // 提示本身锚定中心点，栏位拖动／展开时重新居中，而非只改变边距。
+      const center = app.classList.contains('view-campus')
+        ? campusViewArea(map)
+        : {
+            centerX: left + width / 2,
+            centerY: (infoTop + 32 + map.clientHeight - Math.min(bottom, map.clientHeight * 0.65)) / 2,
+          };
+      writePixel('--loading-center-x', center.centerX);
+      writePixel('--loading-center-y', center.centerY);
+      const layout = [left, top, width, bottom, infoTop, map.clientHeight].map((value) => value.toFixed(2)).join('/');
       if (layout !== previousLayout) {
         previousLayout = layout;
         map.dispatchEvent(new Event('foodmap:model-layout'));
@@ -104,9 +123,10 @@ export function useModelOverlayLayout(host: RefObject<HTMLElement | null>) {
       element.addEventListener('transitioncancel', endTransition);
     }
     const resize = new ResizeObserver(requestMeasure);
-    for (const element of [map, header, drawer, handle]) if (element) resize.observe(element);
+    for (const element of [map, header, drawer, handle, breadcrumbs]) if (element) resize.observe(element);
     window.addEventListener('resize', requestMeasure);
     window.addEventListener('foodmap:overlays', requestMeasure);
+    window.addEventListener('foodmap:drawer', requestMeasure);
     mobile.addEventListener('change', requestMeasure);
     measure();
     requestMeasure();
@@ -118,13 +138,14 @@ export function useModelOverlayLayout(host: RefObject<HTMLElement | null>) {
       resize.disconnect();
       window.removeEventListener('resize', requestMeasure);
       window.removeEventListener('foodmap:overlays', requestMeasure);
+      window.removeEventListener('foodmap:drawer', requestMeasure);
       mobile.removeEventListener('change', requestMeasure);
       for (const element of [header, drawer]) {
         element?.removeEventListener('transitionrun', startTransition);
         element?.removeEventListener('transitionend', endTransition);
         element?.removeEventListener('transitioncancel', endTransition);
       }
-      for (const name of ['--model-overlay-left', '--model-overlay-top', '--model-overlay-width', '--model-overlay-bottom'])
+      for (const name of ['--model-overlay-left', '--model-overlay-top', '--model-overlay-width', '--model-overlay-bottom', '--model-info-top', '--loading-center-x', '--loading-center-y'])
         map.style.removeProperty(name);
       delete map.dataset.modelOverlayStacked;
     };

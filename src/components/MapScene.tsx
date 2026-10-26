@@ -939,7 +939,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     });
   }, [selectedStall, data, view, theme]);
   return (
-    <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host}>
+    <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host} data-loading={loadingModel || undefined}>
       <ModelCompass ref={compass} knownNorth={!!north} hidden={error || loadingModel} />
       {isCart && (
         <div className="fourth-view-controls" role="group" aria-label="餐车模型控制">

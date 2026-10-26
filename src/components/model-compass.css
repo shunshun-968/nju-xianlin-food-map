@@ -6,7 +6,7 @@
   --model-compass-soft: #d9c9e2;
   position: absolute;
   z-index: 4;
-  top: calc(var(--model-overlay-top, 16px) + 92px);
+  top: var(--model-info-top, calc(var(--model-overlay-top, 16px) + 46px));
   right: 16px;
   width: 96px;
   height: 112px;
@@ -176,13 +176,8 @@
   --model-compass-soft: #63536f;
   filter: drop-shadow(0 3px 10px #08071155);
 }
-.map-area[data-model-overlay-stacked='true'] .model-compass {
-  top: calc(var(--model-overlay-top, 16px) + 138px);
-}
 @media (max-width: 700px) {
-  .model-compass,
-  .map-area[data-model-overlay-stacked='true'] .model-compass {
-    top: calc(var(--model-overlay-top, 16px) + 84px);
+  .model-compass {
     right: 16px;
     width: 76px;
     height: 92px;

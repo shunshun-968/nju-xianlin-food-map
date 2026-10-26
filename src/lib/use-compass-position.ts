@@ -24,7 +24,7 @@ export function useCompassPosition(hidden: boolean) {
       parent.clientHeight - element.offsetHeight - read('--model-overlay-bottom', 16),
     );
     const minX = Math.min(maxX, read('--model-overlay-left', 16));
-    const minY = Math.min(maxY, read('--model-overlay-top', 16) + 82);
+    const minY = Math.min(maxY, read('--model-info-top', read('--model-overlay-top', 16) + 46));
     const bounded = {
       x: Math.max(minX, Math.min(next.x, maxX)),
       y: Math.max(minY, Math.min(next.y, maxY)),

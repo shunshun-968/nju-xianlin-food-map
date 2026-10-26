@@ -425,13 +425,12 @@
 .app.floating-shell[data-interface-theme='night'].view-campus .breadcrumbs button:hover {
   color: #5b3d70;
 }
-.app.floating-shell[data-interface-theme='night'] :is(.scene-error, .loading) {
+.app.floating-shell[data-interface-theme='night'] .scene-error {
   background: var(--paper);
   color: var(--muted);
 }
 .app.floating-shell[data-interface-theme='night'] .loading {
-  padding: 12px;
-  border-radius: 12px;
+  color: var(--muted);
 }
 .app.floating-shell[data-interface-theme='night'] .scene-error p {
   color: var(--muted);

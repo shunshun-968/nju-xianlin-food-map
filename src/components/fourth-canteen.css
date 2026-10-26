@@ -5,17 +5,49 @@
   overflow: hidden;
   border-radius: 0;
 }
-.scene .model-loading {
+/* 加载提示随侧栏、顶栏及手机抽屉变化，居中于当前可见区域。 */
+.app.floating-shell .map-area :is(.loading, .geo-map-status) {
+  position: absolute;
   z-index: 4;
-  left: var(--model-overlay-left, 16px);
-  right: 16px;
-  top: min(45%, calc(var(--model-overlay-top, 16px) + 90px));
-  bottom: var(--model-overlay-bottom, 32px);
+  left: var(--loading-center-x, 50%);
+  right: auto;
+  top: var(--loading-center-y, 50%);
+  bottom: auto;
+  width: max-content;
+  max-width: var(--model-overlay-width, calc(100% - 32px));
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   align-items: center;
   justify-content: center;
+  margin: 0;
   padding: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+  text-align: center;
   pointer-events: none;
+}
+.app.floating-shell .map-area .geo-map-status button {
+  pointer-events: auto;
+}
+.app.floating-shell .scene[data-loading='true'] canvas {
+  visibility: hidden;
+}
+.app.floating-shell:is(.view-building, .view-floor) .map-area {
+  background: #f4f1ec;
+}
+.app.floating-shell[data-interface-theme='night']:is(.view-building, .view-floor) .map-area {
+  background: #252735;
+}
+.app.floating-shell.view-campus .map-area {
+  background: #e3e8de;
+}
+.app.floating-shell[data-interface-theme='night'].view-campus .map-area {
+  background: #202b34;
 }
 .app.floating-shell .map-area {
   --model-overlay-left: 16px;
@@ -98,8 +130,8 @@
   position: absolute;
   z-index: 3;
   left: var(--model-overlay-left, 16px);
-  top: calc(var(--model-overlay-top, 16px) + 52px);
-  max-width: var(--model-overlay-width, calc(100% - 32px));
+  top: var(--model-info-top, calc(var(--model-overlay-top, 16px) + 46px));
+  max-width: max(0px, calc(var(--model-overlay-width, calc(100% - 32px)) - 108px));
   line-height: 1.6;
   font-size: 11px;
   color: var(--muted);
@@ -135,9 +167,6 @@
   top: calc(var(--model-overlay-top, 16px) + 50px);
   max-width: var(--model-overlay-width);
 }
-.map-area[data-model-overlay-stacked='true'] .fourth-view-note {
-  top: calc(var(--model-overlay-top, 16px) + 98px);
-}
 @media (max-width: 700px) {
   /* A single mobile toolbar follows the header: compact breadcrumbs on the
      left, equally sized view/cart controls on the right, with no stagger. */
@@ -170,8 +199,8 @@
   .app.fourth-model-active .map-area .breadcrumbs:has(> strong) > svg:first-of-type {
     display: none;
   }
-  .app.fourth-model-active .map-area .fourth-view-note {
-    top: calc(var(--model-overlay-top, 16px) + 48px);
+  .app.floating-shell .map-area .fourth-view-note {
+    max-width: max(0px, calc(var(--model-overlay-width, calc(100% - 32px)) - 88px));
     font-size: 10px;
   }
   .app.fourth-model-active .map-area .fourth-view-controls button {

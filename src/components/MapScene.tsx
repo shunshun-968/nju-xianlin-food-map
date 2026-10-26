@@ -1,4 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { prepareTenthCanteenModel } from './TenthCanteenModel';
+import { tenthDumplingKiosk } from '../data/tenth-canteen';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -74,11 +76,15 @@ type Engine = {
 };
 
 function lightExterior(e: Engine, night: boolean) {
-  e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
-  e.ambientLight.intensity = night ? 1.0 : 1.5;
-  e.ambientLight.color.set(night ? '#d8dff4' : '#ffffff');
-  e.keyLight.intensity = night ? 1.4 : 1.7;
-  e.keyLight.color.set(night ? '#e2e8ff' : '#ffffff');
+  e.exterior?.setNight(night);
+  e.scene.background = new THREE.Color(night ? '#111b2d' : '#f4f1ec');
+  e.scene.environmentIntensity = night ? 0.09 : 0.28;
+  e.ambientLight.intensity = night ? 0.48 : 1.5;
+  e.ambientLight.color.set(night ? '#adc7ed' : '#ffffff');
+  e.ambientLight.groundColor.set(night ? '#25324a' : '#9da495');
+  e.keyLight.intensity = night ? 0.65 : 1.7;
+  e.keyLight.color.set(night ? '#b2cbf5' : '#ffffff');
+  e.renderer.toneMappingExposure = night ? 0.95 : 1;
   e.renderer.shadowMap.needsUpdate = true;
 }
 
@@ -158,7 +164,8 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.controls.zoomToCursor = true;
   e.controls.maxZoom = 14;
   e.controls.minPolarAngle = 0;
-  e.controls.maxPolarAngle = Math.PI / 2.05;
+  // 餐车可降到顾客平视高度；室内保留微俯视，方便看清柜台与布局。
+  e.controls.maxPolarAngle = e.indoorSpec?.id === 'v-south' ? Math.PI / 2 : Math.PI / 2.05;
   e.controls.target.set(framing.x, 0.7, framing.z);
   if (mode === 'plan') {
     e.controls.target.set(framing.x, 0, framing.z);
@@ -587,12 +594,15 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     scene.environmentIntensity = 1;
     controls.zoomToCursor = false;
     controls.maxZoom = 4;
-    controls.maxPolarAngle = Math.PI / 2.15;
+    // 建筑外观允许降至平视，便于看进第九食堂等深门廊；不绕到建筑底面。
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = view.level === 'building' ? Math.PI / 2 : Math.PI / 2.15;
     e.ambientLight.intensity = 1.5;
     e.ambientLight.visible = true;
     e.keyLight.visible = true;
     e.renderer.toneMappingExposure = 1;
     e.ambientLight.color.set('#ffffff');
+    e.ambientLight.groundColor.set('#9da495');
     e.keyLight.intensity = 1.7;
     e.keyLight.color.set('#ffffff');
     e.keyLight.shadow.normalBias = 0;
@@ -615,8 +625,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         let model = e.models.get(id);
         const cached = !!model;
         if (!model) {
+          if (spec?.style === 'tenth') await prepareTenthCanteenModel();
+          if (cancelled) return;
           model = spec ? createCanteenModel(spec) : createSouthGateCartModel();
-          if (spec) batchModel(model.group);
+          if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
         }
         if (cancelled) return;
@@ -659,6 +671,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             ...Object.fromEntries(stalls.map((s) => [s.id, spec.facadeHeight ?? 3.75])),
             [eighthDumplingKiosk.id]: 1.3,
             [eleventhDumplingKiosk.id]: 1.3,
+            [tenthDumplingKiosk.id]: 1.1,
           };
           e.stallTargets = createStallPickTargets(stalls, heights);
           e.stallSelection = createStallSelection(stalls, heights, {
@@ -960,7 +973,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
                 {modeledCanteen?.name} · {modeledCanteen?.faces.length} 个
                 {modeledCanteen?.style === 'sixth' ? '窗口区' : '牌坊面'} ·{' '}
                 {modeledCanteen?.faces.reduce((total, face) => total + face.windowCount, 0)} 个窗口
-                {modeledCanteen?.style === 'eighth' ? ' · 独立水饺超市' : ''}
+                {['eighth','eleventh','tenth'].includes(modeledCanteen?.style ?? '') ? ' · 独立水饺超市' : ''}
+                {modeledCanteen?.style === 'tenth' ? ' · 左侧为北' : ''}
                 {modeledCanteen?.style === 'twelfth' || modeledCanteen?.style === 'eleventh'
                   ? ' · 右侧为北'
                   : ''}

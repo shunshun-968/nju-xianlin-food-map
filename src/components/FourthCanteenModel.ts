@@ -1,3 +1,4 @@
+import { createTenthCanteenModel } from './TenthCanteenModel';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { fourthKitchenBounds } from '../data/fourth-canteen';
@@ -33,6 +34,7 @@ export function createFourthCanteenModel(): FourthCanteenModel {
 }
 
 export function createCanteenModel(spec: IndoorCanteenSpec): FourthCanteenModel {
+  if (spec.style === 'tenth') return createTenthCanteenModel();
   if (spec.style === 'eleventh') return createEleventhCanteenModel(spec);
   if (spec.style === 'twelfth') return createTwelfthCanteenModel(spec);
   if (spec.style === 'ninth') return createNinthCanteenModel(spec);

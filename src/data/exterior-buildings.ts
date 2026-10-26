@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Catalog } from '../domain';
-import type { ExteriorModel } from '../models/exteriors/types';
+import type { ExteriorGeometryModel, ExteriorModel } from '../models/exteriors/types';
+import { createExteriorLighting } from '../lib/exterior-lighting';
 
 type ExteriorSpec = {
   camera: [number, number, number];
@@ -8,7 +9,7 @@ type ExteriorSpec = {
   range: number;
   halfWidth: number;
   floors: Readonly<Record<string, string>>;
-  load: () => Promise<{ createBuilding(): ExteriorModel }>;
+  load: () => Promise<{ createBuilding(): ExteriorGeometryModel }>;
 };
 
 // These are navigation IDs in the current catalog, not physical storey numbers.
@@ -86,7 +87,15 @@ export async function loadExteriorModel(venueId: string, data: Catalog) {
       mesh.userData.id = floorId;
     }
   }
-  return model;
+  const lighting = createExteriorLighting(model);
+  return {
+    ...model,
+    setNight: lighting.setNight,
+    dispose() {
+      lighting.dispose();
+      model.dispose();
+    },
+  } satisfies ExteriorModel;
 }
 
 /** Fit the architecture and its access routes to the site's available viewport. */

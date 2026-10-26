@@ -20,11 +20,16 @@ export type ExteriorEntrance = {
 };
 
 /** Geometry-only factory imported from the independently reviewed exterior study. */
-export type ExteriorModel = {
+export type ExteriorGeometryModel = {
   group: THREE.Group;
   entrances: ExteriorEntrance[];
   entryMeshes: THREE.Mesh[];
   layers: { roof: THREE.Group; context: THREE.Group; labels: THREE.Group };
   setSelected(id: string | null): void;
   dispose(): void;
+};
+
+/** 场景使用的外观模型：窗光和入口灯随界面主题一起切换。 */
+export type ExteriorModel = ExteriorGeometryModel & {
+  setNight(night: boolean): void;
 };

@@ -13,6 +13,7 @@ import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
 import { catalogRepository } from './services/catalog';
 import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
 import { eighthDumplingKiosk } from './data/eighth-canteen';
+import { tenthDumplingKiosk } from './data/tenth-canteen';
 import { eleventhDumplingKiosk } from './data/eleventh-canteen';
 import type { Catalog, MapTheme, View } from './domain';
 
@@ -176,7 +177,7 @@ export default function App() {
     isEighthFloor ||
     indoorCanteen?.style === 'minzu' ||
     indoorCanteen?.style === 'twelfth' ||
-    indoorCanteen?.style === 'eleventh';
+    indoorCanteen?.style === 'eleventh' || indoorCanteen?.style === 'tenth';
   const isSouthCart = venue?.id === 'v-south';
   const cartFoodNames = southGateCartFoodNames[interfaceTheme === 'night' ? 'night' : 'day'];
   const modelWindowCount = indoorCanteen?.faces.reduce(
@@ -493,7 +494,7 @@ export default function App() {
                           : indoorCanteen?.style === 'ninth'
                             ? '双排店面 · 11 家店铺'
                             : indoorCanteen
-                              ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口${isEighthFloor ? ' · 独立水饺超市' : ''}`
+                              ? `${indoorCanteen.faces.length} 个${indoorCanteen.style === 'sixth' ? '窗口区' : '牌坊'} · ${modelWindowCount} 个窗口${['eighth', 'eleventh', 'tenth'].includes(indoorCanteen.style) ? ' · 独立水饺超市' : ''}`
                               : `${floor?.name} · 示例布局`}
                       </span>
                     </div>
@@ -541,7 +542,7 @@ export default function App() {
                                   {indoorCanteen?.style === 'fourth' ? (
                                     <UiIcon name="pin" size={19} />
                                   ) : s.id === eighthDumplingKiosk.id ||
-                                  s.id === eleventhDumplingKiosk.id ? (
+                                  s.id === eleventhDumplingKiosk.id || s.id === tenthDumplingKiosk.id ? (
                                     <UiIcon name="cart" size={19} />
                                   ) : (
                                     String(modelWindowNumber(s.id) ?? i + 1).padStart(2, '0')

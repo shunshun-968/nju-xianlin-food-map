@@ -9,7 +9,36 @@ import {
   pickExteriorFloor,
 } from '../src/data/exterior-buildings';
 
-test('all reviewed exterior entrances lead to the current catalog and respect facade occlusion', async () => {
+function renderedResources(group: THREE.Group) {
+  const resources = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>();
+  group.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    resources.add(object.geometry);
+    for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+      resources.add(material);
+      for (const value of Object.values(material))
+        if (value instanceof THREE.Texture) resources.add(value);
+    }
+  });
+  return resources;
+}
+
+function materialAppearance(material: THREE.MeshStandardMaterial) {
+  return {
+    color: material.color.toArray(),
+    emissive: material.emissive.toArray(),
+    emissiveIntensity: material.emissiveIntensity,
+    emissiveMap: material.emissiveMap,
+    roughness: material.roughness,
+    metalness: material.metalness,
+    opacity: material.opacity,
+    transparent: material.transparent,
+    map: material.map,
+    envMapIntensity: material.envMapIntensity,
+  };
+}
+
+test('exterior night lighting preserves entrances, daytime appearance and resource ownership', async () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', {
     configurable: true,
@@ -38,6 +67,54 @@ test('all reviewed exterior entrances lead to the current catalog and respect fa
       const model = (await loadExteriorModel(venueId, catalog))!;
       try {
         assert.equal(model.entrances.length, counts[venueId]);
+        const lighting = model.group.getObjectByName('exterior-night-lighting');
+        assert.ok(lighting, `${venueId}: exterior has night lighting`);
+        assert.equal(lighting.visible, false, `${venueId}: starts in daytime`);
+        const dayResources = renderedResources(model.group);
+        const windows = [...dayResources].filter(
+          (resource): resource is THREE.MeshStandardMaterial =>
+            resource instanceof THREE.MeshStandardMaterial &&
+            resource.userData.exteriorLighting === 'window',
+        );
+        assert.ok(windows.length > 0, `${venueId}: facade windows are explicitly identified`);
+        const dayMaterials = new Map(
+          [...dayResources]
+            .filter(
+              (resource): resource is THREE.MeshStandardMaterial =>
+                resource instanceof THREE.MeshStandardMaterial,
+            )
+            .map((material) => [material, materialAppearance(material)]),
+        );
+        const dayFrame = exteriorFrame(model, venueId);
+        const objects = new Set<THREE.Object3D>();
+        model.group.traverse((object) => objects.add(object));
+
+        model.setNight(true);
+        const resources = renderedResources(model.group);
+        assert.equal(lighting.visible, true, `${venueId}: night lighting is visible`);
+        const litWindows = windows.filter(
+          (material) => material.emissiveIntensity > 0 && material.emissive.r > 0,
+        );
+        assert.ok(litWindows.length > 0, `${venueId}: windows emit interior light at night`);
+        assert.ok(
+          litWindows.filter(
+            (material) =>
+              material.emissive.r > material.emissive.b &&
+              material.emissive.g > material.emissive.b,
+          ).length >
+            litWindows.length / 2,
+          `${venueId}: warm interior light dominates the window palette`,
+        );
+        const lights: THREE.Light[] = [];
+        lighting.traverse((object) => {
+          if (object instanceof THREE.Light) lights.push(object);
+        });
+        assert.ok(
+          lights.some((light) => light.intensity > 0),
+          `${venueId}: local lighting illuminates entrances and nearby surfaces`,
+        );
+
+        // 夜景补光和光晕不能截住入口点击，也不能穿透实体外墙。
         model.group.updateMatrixWorld(true);
         for (const entrance of model.entrances) {
           const floorId = spec.floors[entrance.id];
@@ -77,19 +154,36 @@ test('all reviewed exterior entrances lead to the current catalog and respect fa
         const framing = exteriorFrame(model, venueId);
         assert.ok(Number.isFinite(framing.range) && framing.range > 10);
         assert.ok(Number.isFinite(framing.halfWidth) && framing.halfWidth > 20);
+        assert.deepEqual(framing, dayFrame, `${venueId}: lighting does not change model framing`);
+
+        for (let i = 0; i < 3; i++) {
+          model.setNight(false);
+          assert.equal(lighting.visible, false, `${venueId}: daytime hides night accents`);
+          assert.ok(
+            lights.every((light) => light.intensity === 0),
+            `${venueId}: daytime switches off local lights`,
+          );
+          for (const [material, appearance] of dayMaterials)
+            assert.deepEqual(
+              materialAppearance(material),
+              appearance,
+              `${venueId}: daytime restores the original material`,
+            );
+          model.setNight(true);
+        }
+        const objectsAfterSwitches = new Set<THREE.Object3D>();
+        model.group.traverse((object) => objectsAfterSwitches.add(object));
+        assert.deepEqual(
+          objectsAfterSwitches,
+          objects,
+          `${venueId}: repeated switching reuses scene objects`,
+        );
+        assert.deepEqual(
+          renderedResources(model.group),
+          resources,
+          `${venueId}: repeated switching reuses geometry, materials and textures`,
+        );
         // Every rendered resource must be released when leaving the exterior.
-        const resources = new Set<THREE.BufferGeometry | THREE.Material | THREE.Texture>();
-        model.group.traverse((object) => {
-          if (!(object instanceof THREE.Mesh)) return;
-          resources.add(object.geometry);
-          for (const material of Array.isArray(object.material)
-            ? object.material
-            : [object.material]) {
-            resources.add(material);
-            for (const value of Object.values(material))
-              if (value instanceof THREE.Texture) resources.add(value);
-          }
-        });
         const released = new Set();
         resources.forEach((resource) =>
           resource.addEventListener('dispose', () => released.add(resource)),

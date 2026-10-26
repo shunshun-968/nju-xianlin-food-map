@@ -16,6 +16,8 @@ import {
   eleventhCanteenFaces,
 } from './eleventh-canteen';
 
+import { TENTH_CANTEEN_FLOOR_ID, TENTH_LAYOUT, tenthCanteenFaces } from './tenth-canteen';
+
 export type IndoorCanteenFace = FourthCanteenFace & {
   windowNumbers?: number[];
   windowLabels?: string[];
@@ -31,7 +33,8 @@ export type IndoorCanteenSpec = {
   id: string;
   name: string;
   faces: IndoorCanteenFace[];
-  style: 'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth' | 'twelfth' | 'eleventh';
+  style:
+    'fourth' | 'fifth' | 'sixth' | 'eighth' | 'minzu' | 'ninth' | 'twelfth' | 'eleventh' | 'tenth';
   showWindowNumbers?: boolean;
   facadeHeight?: number;
   layout: { frontOffset: number; kitchenDepth: number; corner: { x: number; z: number } };
@@ -210,6 +213,29 @@ export const eleventhCanteenSpec: IndoorCanteenSpec = {
   },
 };
 
+export const tenthCanteenSpec: IndoorCanteenSpec = {
+  id: TENTH_CANTEEN_FLOOR_ID,
+  name: '第十食堂',
+  style: 'tenth',
+  faces: tenthCanteenFaces,
+  layout: TENTH_LAYOUT,
+  facadeHeight: 3.86,
+  cornerShopId: '',
+  cornerTitle: '',
+  cornerSubtitle: '',
+  description:
+    'L 形柜台，左侧为北。保留 1—17 号实际窗口；1—4 号合为一个售餐区，16、17 号属于同一家店，分别点餐和取餐；水饺超市独立点选。尺寸按照片比例示意。',
+  stage: { width: 50, depth: 29.4, x: -1.5, z: -2.4 },
+  frame: {
+    x: -2,
+    z: -2.5,
+    planRange: 18.3,
+    spatialRange: 20,
+    halfWidth: 27,
+    spatialOffset: { x: -32, y: 31, z: 41.5 },
+  },
+};
+
 /** Sign labels and operating groups are independent from the physical opening number. */
 export function getIndoorWindow(spec: IndoorCanteenSpec | undefined, stallId: string) {
   const face = spec?.faces.find((row) => row.faceId === stallId.replace(/-w\d+$/, ''));
@@ -231,6 +257,7 @@ export function getIndoorWindow(spec: IndoorCanteenSpec | undefined, stallId: st
 }
 
 export function getIndoorCanteen(floorId: string | undefined): IndoorCanteenSpec | undefined {
+  if (floorId === TENTH_CANTEEN_FLOOR_ID) return tenthCanteenSpec;
   if (floorId === ELEVENTH_CANTEEN_FLOOR_ID) return eleventhCanteenSpec;
   if (floorId === TWELFTH_CANTEEN_FLOOR_ID) return twelfthCanteenSpec;
   if (floorId === FOURTH_CANTEEN_FLOOR_ID) return fourthCanteenSpec;

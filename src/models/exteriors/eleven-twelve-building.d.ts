@@ -1,2 +1,2 @@
-import type { ExteriorModel } from './types';
-export function createBuilding(): ExteriorModel;
+import type { ExteriorGeometryModel } from './types';
+export function createBuilding(): ExteriorGeometryModel;

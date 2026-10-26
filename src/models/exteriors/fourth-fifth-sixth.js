@@ -129,16 +129,24 @@ export function createBuilding() {
     "#95aaa6",
     "#758f90",
   ];
+  // 只标记真正连接室内的玻璃；栏杆、屋顶采光顶沿用独立材质。
   const glasses = glassColors.map(
-    (color) =>
-      new THREE.MeshPhysicalMaterial({
+    (color, variant) => {
+      const glass = new THREE.MeshPhysicalMaterial({
         color,
         metalness: 0.22,
         roughness: 0.25,
         clearcoat: 0.55,
         clearcoatRoughness: 0.15,
-      }),
+      });
+      glass.userData.exteriorLighting = "window";
+      glass.userData.exteriorLightVariant = variant;
+      return glass;
+    },
   );
+  const eastDoorGlass = material("#32423a", 0.4, 0.12);
+  eastDoorGlass.userData.exteriorLighting = "window";
+  eastDoorGlass.userData.exteriorLightVariant = 3;
   const curtain = material("#c6d1c9", 0.9);
   function curtainWall(
     parent,
@@ -749,9 +757,7 @@ export function createBuilding() {
         doorWidth / 2 - 0.07,
         2.75,
         0.055,
-        entry.id === "fourth-east"
-          ? material("#32423a", 0.4, 0.12)
-          : glasses[0],
+        entry.id === "fourth-east" ? eastDoorGlass : glasses[0],
       );
       glass.userData = pick;
       box(e, x - doorWidth / 4, 1.43, -0.86, 0.055, 2.8, 0.06, steel);

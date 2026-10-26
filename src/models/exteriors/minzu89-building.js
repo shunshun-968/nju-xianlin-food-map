@@ -43,13 +43,16 @@ export function createBuilding() {
   const dark = mat("#24332e");
   const brickEdge = mat("#aa665a");
   const glass = ["#829f9e", "#718e91", "#8ba7a5", "#617e81", "#8fa9a7"].map(
-    (color) => {
+    (color, variant) => {
       const m = new THREE.MeshPhysicalMaterial({
         color,
         roughness: 0.25,
         metalness: 0.2,
         clearcoat: 0.4,
       });
+      // 独立窗玻璃调色板保留亮暗节奏，不改变栏杆和屋顶玻璃。
+      m.userData.exteriorLighting = "window";
+      m.userData.exteriorLightVariant = variant;
       materials.add(m);
       return m;
     },

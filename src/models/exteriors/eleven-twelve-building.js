@@ -56,7 +56,13 @@ export function createBuilding() {
   const steel = mat("#aab7b4", 0.3, 0.6),
     doorFrame = mat("#394c48", 0.5, 0.2);
   const glass = ["#8fa9a6", "#729393", "#a1b6b0", "#617e80", "#b3c4b9"].map(
-    (color) => mat(color, 0.3, 0.22),
+    (color, variant) => {
+      const m = mat(color, 0.3, 0.22);
+      // 窗和门上的玻璃透出室内光，窗框、门帘、雨棚保持原材质。
+      m.userData.exteriorLighting = "window";
+      m.userData.exteriorLightVariant = variant;
+      return m;
+    },
   );
   function mesh(parent, geometry, material, x = 0, y = 0, z = 0) {
     const m = new THREE.Mesh(geometry, material);

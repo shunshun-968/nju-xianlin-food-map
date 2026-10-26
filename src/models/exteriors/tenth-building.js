@@ -42,17 +42,23 @@ export function createBuilding() {
   const dark = mat("#24332e");
   const brickEdge = mat("#aa665a");
   const glass = ["#829f9e", "#718e91", "#8ba7a5", "#617e81", "#8fa9a7"].map(
-    (color) => {
+    (color, variant) => {
       const m = new THREE.MeshPhysicalMaterial({
         color,
         roughness: 0.25,
         metalness: 0.2,
         clearcoat: 0.4,
       });
+      m.userData.exteriorLighting = "window";
+      m.userData.exteriorLightVariant = variant;
       materials.add(m);
       return m;
     },
   );
+  // 雨棚与室内玻璃同色，但不接受窗户透光，避免水平面整片发亮。
+  const entranceCanopyGlass = glass[2].clone();
+  entranceCanopyGlass.userData = {};
+  materials.add(entranceCanopyGlass);
   function mesh(parent, geometry, material, x = 0, y = 0, z = 0) {
     const o = new THREE.Mesh(geometry, material);
     o.position.set(x, y, z);
@@ -642,7 +648,7 @@ export function createBuilding() {
       for (let i = 0; i < 14; i++)
         box(e, 0, 3.0 + i * 0.09, 0.105, w + 0.7, 0.022, 0.025, mat("#826a3b"));
       sign(e, "教工餐厅", "Faculty & Staff Cafeteria", 4.6, 1.2, 0, 3.61, 0.14);
-      box(e, 0, 2.88, 0.6, w + 0.6, 0.055, 1.5, glass[2]);
+      box(e, 0, 2.88, 0.6, w + 0.6, 0.055, 1.5, entranceCanopyGlass);
       for (const x of [-w / 2, w / 2])
         bar(e, [x, 2.9, 0], [x, 2.9, 1.35], 0.025);
     } else {
@@ -690,7 +696,7 @@ export function createBuilding() {
   for (const x of [-1.8, 0, 1.8])
     box(vestibule, x, 2.0, 2.55, 1.72, 1.35, 0.05, glass[2]);
   box(vestibule, 0, 2.8, 1.3, 5.7, 0.11, 2.8, mat("#bfc7c0", 0.65, 0.2));
-  box(vestibule, 0, 3.78, 0.5, 5.2, 0.06, 1.3, glass[2]);
+  box(vestibule, 0, 3.78, 0.5, 5.2, 0.06, 1.3, entranceCanopyGlass);
   vestibule.traverse((o) => {
     if (o.isMesh) {
       o.userData.entryId = "tenth-south";

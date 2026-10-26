@@ -53,7 +53,7 @@
         51,
         31
       ],
-      "description": "位置按“第十食堂.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "第十食堂位于一层，已按现场照片建立 L 形窗口模型；二层教工食堂内部暂为示意布局。",
       "verified": false
     },
     {
@@ -194,11 +194,11 @@
       "id": "v-10-f1",
       "venueId": "v-10",
       "level": 1,
-      "name": "1F",
-      "width": 32,
-      "depth": 22,
+      "name": "第十食堂",
+      "width": 52,
+      "depth": 36,
       "elevation": 0,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-10-f2",
@@ -1800,136 +1800,214 @@
       "dishes": []
     },
     {
-      "id": "v-10-f1-s1",
+      "id": "v-10-f1-photo-1-w1",
       "floorId": "v-10-f1",
-      "name": "面食小站",
-      "category": "面食",
+      "name": "1—4号 · 售餐窗口",
+      "category": "待补充",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -16.150000000000002,
+        "z": -9,
+        "width": 10.4,
+        "depth": 4.3,
+        "rotationY": -1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-10-f1-s2",
+      "id": "v-10-f1-photo-1-w5",
       "floorId": "v-10-f1",
-      "name": "家常小炒",
-      "category": "家常菜",
+      "name": "5号 · 售餐窗口",
+      "category": "待补充",
       "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -16.150000000000002,
+        "z": -1.7250000000000003,
+        "width": 2.75,
+        "depth": 4.3,
+        "rotationY": -1.5707963267948966
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-10-f1-s3",
+      "id": "v-10-f1-photo-4-w1",
       "floorId": "v-10-f1",
-      "name": "热汤米线",
-      "category": "米线",
+      "name": "6号 · 老卤面",
+      "category": "老卤面",
       "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": -16.2,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-10-f1-s4",
+      "id": "v-10-f1-photo-4-w2",
       "floorId": "v-10-f1",
-      "name": "轻食时刻",
-      "category": "轻食",
+      "name": "7号 · 砂锅",
+      "category": "砂锅",
       "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -13.399999999999999,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-10-f1-s5",
+      "id": "v-10-f1-photo-5-w1",
       "floorId": "v-10-f1",
-      "name": "香香盖饭",
-      "category": "盖饭",
+      "name": "8号 · 售餐窗口",
+      "category": "待补充",
       "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -9.9,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
-      "id": "v-10-f1-s6",
+      "id": "v-10-f1-photo-5-w2",
       "floorId": "v-10-f1",
-      "name": "现做饼铺",
-      "category": "小吃",
+      "name": "9号 · 售餐窗口",
+      "category": "待补充",
       "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
+        "x": -7.1000000000000005,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
       },
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-6-w1",
+      "floorId": "v-10-f1",
+      "name": "10号 · 售餐窗口",
+      "category": "待补充",
+      "position": {
+        "x": -4.3,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-6-w2",
+      "floorId": "v-10-f1",
+      "name": "11号 · 学子特价套餐",
+      "category": "学子特价套餐",
+      "position": {
+        "x": -1.5,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-7-w1",
+      "floorId": "v-10-f1",
+      "name": "12号 · 售餐窗口",
+      "category": "待补充",
+      "position": {
+        "x": 2,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-7-w2",
+      "floorId": "v-10-f1",
+      "name": "13号 · 售餐窗口",
+      "category": "待补充",
+      "position": {
+        "x": 4.8,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-8-w1",
+      "floorId": "v-10-f1",
+      "name": "14号 · 售餐窗口",
+      "category": "待补充",
+      "position": {
+        "x": 7.6,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-8-w2",
+      "floorId": "v-10-f1",
+      "name": "15号 · 售餐窗口",
+      "category": "待补充",
+      "position": {
+        "x": 10.399999999999999,
+        "z": -2.15,
+        "width": 2.8,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-photo-9-w1",
+      "floorId": "v-10-f1",
+      "name": "16—17号 · 米线／套餐",
+      "category": "米线／套餐",
+      "position": {
+        "x": 15.4,
+        "z": -2.15,
+        "width": 5.6,
+        "depth": 4.3,
+        "rotationY": 0
+      },
+      "photoKey": null,
+      "dishes": []
+    },
+    {
+      "id": "v-10-f1-dumpling-kiosk",
+      "floorId": "v-10-f1",
+      "name": "水饺超市",
+      "category": "水饺",
+      "position": {
+        "x": -20.1,
+        "z": -1.7,
+        "width": 2.3,
+        "depth": 1.1,
+        "rotationY": -1.5707963267948966
+      },
+      "photoKey": null,
+      "dishes": []
     },
     {
       "id": "v-10-f2-s1",

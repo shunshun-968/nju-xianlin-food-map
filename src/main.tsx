@@ -8,6 +8,7 @@ import './campus.css';
 import './desktop-shell.css';
 import './desktop-sidebar.css';
 import './interface-theme.css';
+import './interface-shapes.css';
 import './night-campus.css';
 const OsmPreview = lazy(() => import('./components/OsmPreview'));
 const osmPreview = new URLSearchParams(window.location.search).get('basemap') === 'osm';

@@ -1,0 +1,107 @@
+/* Shared geometry after desktop/mobile and palette rules so each theme keeps
+   the same flat navigation. */
+.app.floating-shell .map-area {
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.app.floating-shell .header {
+  top: 0;
+  left: 0;
+  right: 0;
+  border-width: 0 0 1px;
+  border-radius: 0;
+}
+.app.floating-shell .desktop-header-hoverzone {
+  left: 0;
+  right: 0;
+}
+
+.app.floating-shell.view-campus .filters {
+  padding: 0;
+  gap: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+.app.floating-shell.view-campus .filters button {
+  position: relative;
+  min-height: 38px;
+  padding: 8px 5px 11px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+.app.floating-shell.view-campus .filters button:is(:hover, .active) {
+  background: transparent;
+  color: var(--purple-dark);
+  box-shadow: none;
+}
+.app.floating-shell.view-campus .filters button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 24px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: currentColor;
+}
+
+.app.floating-shell.view-campus .venue-card {
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.app.floating-shell.view-campus .venue-card:last-child {
+  border-bottom-color: transparent;
+}
+.app.floating-shell.view-campus .venue-card:is(:hover, :focus-visible, .is-highlighted) {
+  border-color: var(--line);
+  border-radius: 0;
+  background: var(--purple-soft);
+  box-shadow: none;
+  transform: none;
+}
+.app.floating-shell.view-campus .venue-card.is-highlighted::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 24px;
+  transform: translateY(-50%);
+  background: var(--purple);
+}
+.app.floating-shell.view-campus .venue-card:focus-visible {
+  outline-offset: -3px;
+}
+.app.floating-shell.view-campus .venue-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+}
+
+.app.floating-shell:is(.view-building, .view-floor) .sidebar .back-button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--purple);
+  box-shadow: none;
+}
+.app.floating-shell:is(.view-building, .view-floor) .sidebar .back-button:hover {
+  background: var(--purple-soft);
+  color: var(--purple-dark);
+}
+
+.app.floating-shell .detail-panel,
+.app.floating-shell .detail-panel :is(.photo-placeholder, .review-placeholder, .detail-top button) {
+  border-radius: 6px;
+}

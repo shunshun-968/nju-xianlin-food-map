@@ -9,6 +9,7 @@ import { southGateCartFoodNames, southGateCartStall } from './data/south-gate-ca
 import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
+import { useCampusGreeting } from './lib/use-campus-greeting';
 import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
 import { catalogRepository } from './services/catalog';
 import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
@@ -29,6 +30,7 @@ export default function App() {
     setShowInfo,
     navigate: changeView,
   } = useAppNavigation();
+  const alternateCampusGreeting = useCampusGreeting(view.level);
   const [theme] = useState<MapTheme>('garden');
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState('all');
@@ -313,9 +315,9 @@ export default function App() {
               <h1>
                 {view.level === 'campus' ? (
                   <>
-                    今天
+                    {alternateCampusGreeting ? '是啊' : '今天'}
                     <br />
-                    <span>去哪里吃？</span>
+                    <span>{alternateCampusGreeting ? '吃什么？' : '去哪里吃？'}</span>
                   </>
                 ) : indoorCanteen ? (
                   indoorCanteen.name
@@ -329,7 +331,7 @@ export default function App() {
                     ? '开棚营业的小餐车，早餐与夜宵各有滋味。'
                     : view.level === 'building'
                       ? '转一转这栋建筑，选一层开始探索。'
-                      : '走近窗口，看看今天想吃些什么。'}
+                      : '走近窗口，看看本大王想吃些什么(๑•̀ㅂ•́)و✧'}
                 </p>
               )}
               {view.level === 'campus' && (
@@ -481,12 +483,6 @@ export default function App() {
                   </div>
                 ) : (
                   <>
-                    <div className="venue-description">
-                      <span className="tiny-tag">
-                        {isModeledFloor ? '窗口模型 · 空间示意' : '空间示意 · 未经测量'}
-                      </span>
-                      <p>{indoorCanteen?.description || venue?.description}</p>
-                    </div>
                     <div className="list-heading">
                       <strong>{view.level === 'building' ? '选择楼层' : '本层窗口'}</strong>
                       <span>
@@ -516,18 +512,6 @@ export default function App() {
                                   <b>{canteen ? `${f.level}F` : f.name}</b>
                                   <span>
                                     {canteen?.name || '示例餐饮空间'}
-                                    <small>
-                                      {canteen?.style === 'ninth'
-                                        ? '查看双排店面与就餐区'
-                                        : canteen?.style === 'faculty'
-                                          ? '查看单排柜台 · 左侧为北'
-                                        : canteen?.style === 'twelfth' ||
-                                            canteen?.style === 'eleventh'
-                                          ? '查看单排柜台 · 右侧为北'
-                                          : canteen
-                                            ? '查看窗口模型与 L 形布局'
-                                            : '查看窗口与布局'}
-                                    </small>
                                   </span>
                                   <UiIcon name="arrow-right" size={19} />
                                 </button>
@@ -553,19 +537,6 @@ export default function App() {
                                 </span>
                                 <span>
                                   <strong>{s.name}</strong>
-                                  <small>
-                                    {indoorCanteen?.style === 'ninth'
-                                      ? s.category
-                                      : hasOfferings
-                                        ? getIndoorWindow(indoorCanteen, s.id)
-                                          ? `牌坊：${getIndoorWindow(indoorCanteen, s.id)!.signName}${s.breakfast ? ' · 供应早餐' : ''}`
-                                          : '独立冰柜 · 水饺售卖点'
-                                        : isModeledFloor
-                                          ? indoorCanteen?.style === 'sixth'
-                                            ? '电子屏 · 售餐窗口'
-                                            : '牌坊模型 · 独立窗口'
-                                          : `${s.category} · 示例窗口`}
-                                  </small>
                                 </span>
                                 <UiIcon name="arrow-right" size={19} />
                               </button>

@@ -101,6 +101,45 @@
   color: var(--purple-dark);
 }
 
+.app.floating-shell:is(.view-building, .view-floor) .sidebar > .list-heading {
+  margin-top: 12px;
+}
+.app.floating-shell.view-floor .sidebar-top p {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+.app.floating-shell .sidebar :is(.floor-card, .stall-card) {
+  min-height: 80px;
+}
+.app.floating-shell .sidebar :is(.floor-card > b, .stall-number) {
+  flex-shrink: 0;
+  width: 45px;
+  display: grid;
+  place-items: center;
+}
+.app.floating-shell .sidebar :is(.floor-card > span, .stall-card > span:nth-child(2)) {
+  min-width: 0;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.app.floating-shell .sidebar :is(.floor-card > span, .stall-card strong) {
+  font-size: 20px;
+  line-height: 1.45;
+}
+.app.floating-shell .sidebar .stall-card strong {
+  font-size: 18px;
+}
+@media (max-width: 700px) {
+  .app.floating-shell .sidebar :is(.floor-card, .stall-card) {
+    min-height: 72px;
+  }
+  .app.floating-shell .sidebar :is(.floor-card > b, .stall-number) {
+    width: 36px;
+  }
+}
+
 .app.floating-shell .detail-panel,
 .app.floating-shell .detail-panel :is(.photo-placeholder, .review-placeholder, .detail-top button) {
   border-radius: 6px;

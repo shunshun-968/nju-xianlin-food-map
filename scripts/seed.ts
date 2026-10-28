@@ -26,9 +26,12 @@ try {
       'INSERT INTO app.floors(id,venue_id,level,name,width,depth,elevation,layout_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
       [f.id, f.venueId, f.level, f.name, f.width, f.depth, f.elevation, f.layoutVersion],
     );
+  const floorsById = new Map(catalog.floors.map((floor) => [floor.id, floor]));
   for (const s of catalog.stalls) {
+    const floor = floorsById.get(s.floorId);
+    if (!floor) throw new Error(`Stall ${s.id} references missing floor ${s.floorId}`);
     await c.query(
-      'INSERT INTO app.stalls(id,floor_id,name,category,x,z,rotation_y,width,depth) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      'INSERT INTO app.stalls(id,floor_id,name,category,x,z,rotation_y,width,depth,layout_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
       [
         s.id,
         s.floorId,
@@ -39,6 +42,7 @@ try {
         s.position.rotationY,
         s.position.width,
         s.position.depth,
+        floor.layoutVersion,
       ],
     );
     for (const d of s.dishes)

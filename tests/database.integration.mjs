@@ -1,11 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import pg from 'pg';
+import { readFile } from 'node:fs/promises';
 assert.equal(
   process.env.FOODMAP_TEST_DATABASE,
   '1',
   'Set FOODMAP_TEST_DATABASE=1 only for an isolated disposable test database.',
 );
+
+test('seeded windows use their floor layout versions, including versions above one', async () => {
+  const expected = JSON.parse(
+    await readFile(new URL('../data/demo-catalog.json', import.meta.url), 'utf8'),
+  );
+  assert(expected.floors.some((floor) => floor.layoutVersion > 1));
+  const versions = new Map(expected.floors.map((floor) => [floor.id, floor.layoutVersion]));
+  const c = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await c.connect();
+  try {
+    const { rows } = await c.query(
+      'SELECT id, floor_id, layout_version FROM app.stalls ORDER BY id',
+    );
+    assert.deepEqual(
+      rows.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+      expected.stalls
+        .map((stall) => ({
+          id: stall.id,
+          floor_id: stall.floorId,
+          layout_version: versions.get(stall.floorId),
+        }))
+        .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+    );
+  } finally {
+    await c.end();
+  }
+});
 test('PostgreSQL privacy, referential integrity, uniqueness and maintenance guard', async () => {
   assert(process.env.DATABASE_URL, 'Use an isolated database, migrate and seed it first.');
   const c = new pg.Client({ connectionString: process.env.DATABASE_URL });

@@ -39,9 +39,9 @@
         ]
       },
       "properties": {
-        "name": "四五六食堂东侧美食小&小餐车",
+        "name": "呢喃小屋",
         "venue_id": "v-hut",
-        "catalog_name": "四五六食堂东侧美食小屋／小餐车",
+        "catalog_name": "呢喃小屋",
         "reference_osm_id": "way/99814434",
         "source_image": "name=学生第四、五、六餐厅_四五六食堂东侧美食小&小餐车.png",
         "source_sha256": "121730ade660c3772ec0ebd9edd0187c276127615ee026d830881530c27606e7",

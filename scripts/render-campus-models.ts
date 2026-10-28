@@ -10,8 +10,9 @@ import { createBuilding as createEleven } from '../src/models/exteriors/eleven-t
 import { createExteriorLighting } from '../src/lib/exterior-lighting';
 import { createSouthGateCartModel } from '../src/components/SouthGateCartModel';
 import { createYifuMapHouse } from '../src/models/exteriors/yifu-map-house';
+import { createNinanHutModel, prepareNinanHutAssets } from '../src/components/NinanHutModel';
 
-type VenueId = 'v-456' | 'v-10' | 'v-891' | 'v-1112' | 'v-south' | 'v-yifu';
+type VenueId = 'v-456' | 'v-10' | 'v-891' | 'v-1112' | 'v-south' | 'v-yifu' | 'v-hut';
 type Source = {
   core: [number, number];
   turn: number;
@@ -25,6 +26,7 @@ const sources: Record<VenueId, Source> = {
   'v-1112': { core: [68, 58], turn: 90, swap: true, factory: createEleven },
   'v-south': { core: [6.6, 2.7], turn: 0, swap: false },
   'v-yifu': { core: [6.2, 4.4], turn: 0, swap: false },
+  'v-hut': { core: [3, 9.6], turn: 0, swap: false },
 };
 type SpriteMetadata = {
   width: number;
@@ -147,7 +149,8 @@ export async function renderCampusSprite(
     const scale = Math.min(target[0] / source.core[0], target[1] / source.core[1]);
     // B102 uses a compact white-house symbol, separate from its detailed indoor
     // model and the footprint of the whole Yifu building.
-    const alignmentAngle = id === 'v-yifu' ? 28 : id === 'v-south' ? 0 : venue.angle + source.turn;
+    const alignmentAngle =
+      id === 'v-yifu' ? 28 : id === 'v-hut' ? -90 : id === 'v-south' ? 0 : venue.angle + source.turn;
     // SVG positive rotation is clockwise in (x,z); THREE yaw has the opposite sign.
     wrapper.rotation.y = -THREE.MathUtils.degToRad(alignmentAngle);
     wrapper.scale.set(scale, scale * 1.2, scale);
@@ -168,6 +171,14 @@ export async function renderCampusSprite(
       model.setSelected(null);
       lighting = createExteriorLighting(model);
       lighting.setNight(night);
+    } else if (id === 'v-hut') {
+      await prepareNinanHutAssets();
+      const hut = createNinanHutModel();
+      cart = hut;
+      wrapper.add(hut.group);
+      exclude(hut.group.getObjectByName('ninan-ground'));
+      hut.setMealMode(night ? 'dinner' : 'breakfast');
+      hut.setInterfaceTheme(night);
     } else if (id === 'v-yifu') {
       cart = createYifuMapHouse();
       wrapper.add(cart.group);
@@ -209,7 +220,7 @@ export async function renderCampusSprite(
       scene.add(ambient, sun);
     }
     const projected = projectedBounds(wrapper, excluded);
-    const margin = id === 'v-south' || id === 'v-yifu' ? 0.5 : 2;
+    const margin = id === 'v-south' || id === 'v-yifu' || id === 'v-hut' ? 0.5 : 2;
     const left = projected.left - margin,
       right = projected.right + margin;
     const top = projected.top - margin,
@@ -294,7 +305,8 @@ const status = document.querySelector<HTMLOutputElement>('#export-status');
 const download = document.querySelector<HTMLAnchorElement>('#download-sprite');
 const metadataOutput = document.querySelector<HTMLPreElement>('#sprite-metadata');
 async function exportSelected() {
-  if (!exportButton || !modelSelect || !themeSelect || !status || !download || !metadataOutput) return;
+  if (!exportButton || !modelSelect || !themeSelect || !status || !download || !metadataOutput)
+    return;
   exportButton.disabled = true;
   status.textContent = '正在渲染…';
   download.hidden = true;
@@ -313,7 +325,9 @@ async function exportSelected() {
     exportButton.disabled = false;
   }
 }
-exportButton?.addEventListener('click', () => { void exportSelected(); });
+exportButton?.addEventListener('click', () => {
+  void exportSelected();
+});
 const exportQuery = new URLSearchParams(window.location.search);
 if (modelSelect && exportQuery.has('venue') && exportQuery.get('venue')! in sources) {
   modelSelect.value = exportQuery.get('venue')!;

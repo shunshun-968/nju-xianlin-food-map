@@ -8,6 +8,8 @@ import { DraggableDetailPanel } from './components/DraggableDetailPanel';
 import { AboutLetter } from './components/AboutLetter';
 import { southGateCartFoodNames, southGateCartStall } from './data/south-gate-cart';
 import { yifuKioskFoodNames, yifuKioskOfferings, yifuKioskServiceNote, yifuKioskStall } from './data/yifu-kiosk';
+import { defaultNinanMealMode, ninanHutStall, type NinanMealMode } from './data/ninan-hut';
+import { NinanHutDetails } from './components/NinanHutDetails';
 import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
@@ -34,6 +36,11 @@ export default function App() {
   } = useAppNavigation();
   const alternateCampusGreeting = useCampusGreeting(view.level);
   const [theme] = useState<MapTheme>('garden');
+  const [ninanMeal, setNinanMeal] = useState<NinanMealMode>(() => defaultNinanMealMode(interfaceTheme === 'night'));
+  const visitingNinan = view.level !== 'campus' && view.venueId === 'v-hut';
+  useEffect(() => {
+    if (visitingNinan) setNinanMeal(defaultNinanMealMode(interfaceTheme === 'night'));
+  }, [visitingNinan, interfaceTheme]);
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState('all');
   const [showMapLabels, setShowMapLabels] = useState(true);
@@ -197,7 +204,8 @@ export default function App() {
     indoorCanteen?.style === 'eleventh' || indoorCanteen?.style === 'tenth';
   const isSouthCart = venue?.id === 'v-south';
   const isYifuKiosk = venue?.id === 'v-yifu';
-  const isSingleWindowVenue = isSouthCart || isYifuKiosk;
+  const isNinanHut = venue?.id === 'v-hut';
+  const isSingleWindowVenue = isSouthCart || isYifuKiosk || isNinanHut;
   const cartFoodNames = southGateCartFoodNames[interfaceTheme === 'night' ? 'night' : 'day'];
   const modelWindowCount = indoorCanteen?.faces.reduce(
     (total, face) => total + face.windowCount,
@@ -345,6 +353,8 @@ export default function App() {
                 <p>
                   {isSouthCart
                     ? '开棚营业的小餐车，早餐与夜宵各有滋味。'
+                    : isNinanHut
+                      ? '树荫下的小屋，从一份早餐到一杯饮品。'
                     : isYifuKiosk
                       ? '地点：逸B102'
                     : view.level === 'building'
@@ -474,7 +484,20 @@ export default function App() {
                   <UiIcon name="arrow-left" size={17} />{' '}
                   {view.level === 'floor' ? '返回建筑' : '返回校园地图'}
                 </button>
-                {isSouthCart ? (
+                {isNinanHut ? (
+                  <div className="venue-description cart-description">
+                    <span className="tiny-tag">呢喃小屋 · 四五六食堂东侧</span>
+                    <h3>{ninanMeal === 'breakfast' ? '早餐 · 棚下早茶' : ninanMeal === 'lunch' ? '午餐 · 咖啡饮品' : '晚餐 · 烧烤时间'}</h3>
+                    <button
+                      className={`stall-card ${stallId === ninanHutStall.id ? 'selected' : ''}`}
+                      onClick={() => setStallId(ninanHutStall.id)}
+                    >
+                      <span className="stall-number"><UiIcon name="cart" size={18} /></span>
+                      <span className="stall-copy"><strong>打开小屋详情看板</strong></span>
+                      <UiIcon name="chevron-right" size={16} />
+                    </button>
+                  </div>
+                ) : isSouthCart ? (
                   <div className="venue-description cart-description">
                     <span className="tiny-tag">开棚营业 · 南门小餐车</span>
                     <p>南大门西侧的小餐车，打开遮阳棚，看看柜台上今天有什么。</p>
@@ -623,6 +646,8 @@ export default function App() {
                 view={view}
                 theme={theme}
                 interfaceTheme={interfaceTheme}
+                ninanMeal={ninanMeal}
+                onNinanMealChange={setNinanMeal}
                 selectedStall={stallId}
                 onExplore={mobile ? undefined : exploreMap}
                 onPick={pick}
@@ -716,6 +741,7 @@ export default function App() {
                 </button>
               </div>
               <h2>{hasOfferings ? stall.name : stallFace?.name || stall.name}</h2>
+              {isNinanHut && <NinanHutDetails meal={ninanMeal} onMealChange={setNinanMeal} />}
               {isSouthCart && (
                 <>
                   <p className="detail-location">南大门西侧 · 餐车售餐点</p>

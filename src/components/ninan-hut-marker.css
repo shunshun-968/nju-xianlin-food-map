@@ -1,0 +1,53 @@
+.ninan-space-marker {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid #ffffffa6;
+  border-radius: 24px;
+  background: #705080;
+  color: #fff;
+  box-shadow: 0 5px 18px #34213f30;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ninan-space-marker[hidden] { display: none; }
+.ninan-space-marker span { border: 1px solid #ffffffb3; border-radius: 50%; width: 18px; height: 18px; text-align: center; }
+.ninan-space-marker::after { content: ''; position: absolute; left: 50%; bottom: -15px; height: 15px; width: 1px; background: #705080; }
+.ninan-space-marker:focus-visible { outline: 3px solid #d9a94e; outline-offset: 4px; }
+.ninan-space-marker:hover { background: #563365; }
+.ninan-view-controls { flex-wrap: wrap; max-width: calc(100% - 32px); }
+.app.fourth-model-active .map-area .fourth-view-controls.ninan-view-controls {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.ninan-view-controls .ninan-meal-tabs { margin: 0; }
+.app.fourth-model-active .detail-panel-anchor:has(.ninan-details) { width: 360px; }
+.app.fourth-model-active .detail-panel-anchor > .detail-panel:has(.ninan-details) {
+  max-height: min(72dvh, 640px, var(--detail-panel-max-height, 640px));
+}
+@media (max-width: 700px) {
+  .app.fourth-model-active .map-area .fourth-view-controls.ninan-view-controls {
+    top: calc(var(--model-overlay-top) + 46px);
+    left: var(--model-overlay-left);
+    right: 16px;
+    width: auto;
+    height: auto;
+    max-width: var(--model-overlay-width);
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .ninan-view-controls .ninan-meal-switch { flex: 1; min-width: 0; }
+  .ninan-view-controls .ninan-meal-label { display: none; }
+  .app.fourth-model-active .map-area .ninan-view-controls .ninan-meal-tabs button { min-width: 0; height: auto; }
+  .app.floating-shell.fourth-model-active .map-area:has(.ninan-view-controls) .breadcrumbs { max-width: var(--model-overlay-width); }
+  .app.fourth-model-active .detail-panel-anchor > .detail-panel:has(.ninan-details) { max-height: min(64dvh, var(--detail-panel-max-height, 64dvh)); }
+}

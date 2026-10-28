@@ -19,6 +19,10 @@ import {
 import type { InterfaceTheme } from '../lib/use-interface-theme';
 import './fourth-canteen.css';
 import { createSouthGateCartModel } from './SouthGateCartModel';
+import { createNinanHutModel, prepareNinanHutAssets, NINAN_HINT_POSITION, type NinanHutModel } from './NinanHutModel';
+import { NinanMealTabs } from './NinanHutDetails';
+import { ninanHutStall, type NinanMealMode } from '../data/ninan-hut';
+import './ninan-hut-marker.css';
 import { createYifuKioskModel, prepareYifuKioskAssets } from './YifuKioskModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
@@ -49,6 +53,8 @@ type Props = {
   onExplore?: () => void;
   selectedStall: string | null;
   interfaceTheme?: InterfaceTheme;
+  ninanMeal?: NinanMealMode;
+  onNinanMealChange?: (meal: NinanMealMode) => void;
 };
 type Engine = {
   scene: THREE.Scene;
@@ -191,6 +197,9 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   } else if (e.indoorSpec?.id === 'v-yifu') {
     e.controls.target.set(0, 1, 0);
     e.camera.position.set(7, 6, 11);
+  } else if (e.indoorSpec?.id === 'v-hut') {
+    e.controls.target.set(1.8, 1.4, 1.2);
+    e.camera.position.set(18, 13, 20);
   } else {
     const offset = framing.spatialOffset ?? { x: -25, y: 17.5, z: 36 };
     e.camera.position.set(framing.x + offset.x, offset.y, framing.z + offset.z);
@@ -304,7 +313,7 @@ function dispose(group: THREE.Group) {
 }
 
 export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
-  { data, view, theme, onPick, onExplore, selectedStall, interfaceTheme = 'day' },
+  { data, view, theme, onPick, onExplore, selectedStall, interfaceTheme = 'day', ninanMeal = 'breakfast', onNinanMealChange },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null),
@@ -312,6 +321,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     callback = useRef(onPick);
   const explore = useRef(onExplore);
   const compass = useRef<HTMLDivElement>(null);
+  const ninanMarker = useRef<HTMLButtonElement>(null);
+  const ninanMealRef = useRef(ninanMeal);
+  ninanMealRef.current = ninanMeal;
   const north = getModelNorth(view);
   const compassNorth = useRef(north);
   compassNorth.current = north;
@@ -325,7 +337,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   const modeledCanteen = getIndoorCanteen(floorId);
   const isFourthFloor = !!modeledCanteen;
   const isYifuKiosk = view.venueId === 'v-yifu';
-  const isCart = view.venueId === 'v-south' || isYifuKiosk;
+  const isNinanHut = view.venueId === 'v-hut';
+  const isCart = view.venueId === 'v-south' || isYifuKiosk || isNinanHut;
   const isExterior = view.level === 'building' && !!exteriorBuildings[view.venueId];
   const interfaceThemeRef = useRef(interfaceTheme);
   const selectedStallRef = useRef(selectedStall);
@@ -544,6 +557,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     renderer.domElement.addEventListener('pointerup', up);
     renderer.domElement.addEventListener('pointercancel', cancel);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const ninanProjected = new THREE.Vector3();
     let previousFrame = 0;
     renderer.setAnimationLoop((time) => {
       const delta = previousFrame ? Math.min((time - previousFrame) / 1000, 0.08) : 0;
@@ -583,6 +597,15 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       e.stallSelection?.tick(delta, reducedMotion.matches);
       renderer.render(scene, camera);
       e.entranceMarkers?.update(camera);
+      if (ninanMarker.current && e.indoorSpec?.id === 'v-hut') {
+        const point = ninanProjected.set(...NINAN_HINT_POSITION).project(camera);
+        const shown = Math.abs(point.x) < 0.96 && Math.abs(point.y) < 0.94 && Math.abs(point.z) <= 1;
+        ninanMarker.current.hidden = !shown;
+        if (shown) {
+          ninanMarker.current.style.left = `${(point.x + 1) * renderer.domElement.clientWidth / 2}px`;
+          ninanMarker.current.style.top = `${(1 - point.y) * renderer.domElement.clientHeight / 2}px`;
+        }
+      }
       if (compass.current) {
         const pose = modelCompassPose(camera, compassNorth.current ?? { x: 0, z: -1 });
         const degrees = pose.bearing.toFixed(2), scale = pose.scale.toFixed(4);
@@ -682,7 +705,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     scene.background = new THREE.Color(t.ground);
     camera.zoom = 1;
     const spec = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
-    if (spec || view.venueId === 'v-south' || view.venueId === 'v-yifu') {
+    if (spec || view.venueId === 'v-south' || view.venueId === 'v-yifu' || view.venueId === 'v-hut') {
       let cancelled = false;
       let frame = 0;
       setLoadingModel(true);
@@ -696,8 +719,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           if (spec?.style === 'tenth') await prepareTenthCanteenModel();
           if (spec?.style === 'fourth') await prepareFourthSignageAssets();
           if (view.venueId === 'v-yifu') await prepareYifuKioskAssets();
+          if (view.venueId === 'v-hut') await prepareNinanHutAssets();
           if (cancelled) return;
-          model = spec ? createCanteenModel(spec) : view.venueId === 'v-yifu' ? createYifuKioskModel() : createSouthGateCartModel();
+          model = spec ? createCanteenModel(spec) : view.venueId === 'v-hut' ? createNinanHutModel() : view.venueId === 'v-yifu' ? createYifuKioskModel() : createSouthGateCartModel();
           if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
         }
@@ -710,6 +734,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           'aria-label',
           spec
             ? `${spec.name}窗口模型，可切换俯视与三维、拖动缩放`
+            : view.venueId === 'v-hut'
+              ? '呢喃小屋外观，点击空间提示查看详情，切换早餐午餐晚餐，可拖动、旋转和缩放'
             : view.venueId === 'v-yifu'
               ? '逸夫楼 B102 休闲食坊模型，南侧敞开，点击售卖点查看窗口信息，可拖动平移、单击右键进入旋转模式、滚轮缩放'
             : '南门小餐车模型，点击餐车查看窗口信息，可拖动平移、单击右键进入旋转模式、滚轮缩放',
@@ -717,7 +743,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.indoorSpec = spec ?? {
           ...fourthCanteenSpec,
           id: view.venueId,
-          frame: view.venueId === 'v-yifu'
+          frame: view.venueId === 'v-hut'
+            ? { x: 1.8, z: 1.2, planRange: 10, spatialRange: 8.8, halfWidth: 11 }
+            : view.venueId === 'v-yifu'
             ? { x: 0, z: 0, planRange: 4.4, spatialRange: 4.25, halfWidth: 4.75 }
             : { x: 0, z: 0.25, planRange: 5, spatialRange: 4.7, halfWidth: 6.3 },
         };
@@ -758,7 +786,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           });
           e.stallSelection.select(selectedStallRef.current);
           content.add(e.stallTargets.group, e.stallSelection.group);
-        } else {
+        } else if (view.venueId !== 'v-hut') {
           // The whole service point has one identity from every viewing angle.
           const serviceStall = view.venueId === 'v-yifu' ? yifuKioskStall : southGateCartStall;
           if (view.venueId === 'v-yifu') {
@@ -780,6 +808,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
         if (e.stallSelection) e.stallSelection.withLightingUpdate(() => model!.setInterfaceTheme(night));
         else model.setInterfaceTheme(night);
+        if (view.venueId === 'v-hut') {
+          (model as NinanHutModel).setMealMode(ninanMealRef.current);
+          e.renderer.domElement.dataset.mealMode = ninanMealRef.current;
+        }
         setFourthView(spec ? 'plan' : '3d');
         frameFourth(e, spec ? 'plan' : '3d');
         if (!spec) {
@@ -984,9 +1016,17 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
     if (e.stallSelection) e.stallSelection.withLightingUpdate(() => e.fourth!.setInterfaceTheme(night));
     else e.fourth.setInterfaceTheme(night);
-    if (['v-south', 'v-yifu'].includes(e.indoorSpec?.id ?? '')) e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
+    if (['v-south', 'v-yifu', 'v-hut'].includes(e.indoorSpec?.id ?? '')) e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
     e.renderer.shadowMap.needsUpdate = true;
   }, [interfaceTheme, view]);
+  useEffect(() => {
+    const e = engine.current;
+    if (e?.fourth && e.indoorSpec?.id === 'v-hut') {
+      (e.fourth as NinanHutModel).setMealMode(ninanMeal);
+      e.renderer.domElement.dataset.mealMode = ninanMeal;
+      e.renderer.shadowMap.needsUpdate = true;
+    }
+  }, [ninanMeal]);
   useEffect(() => {
     engine.current?.stallSelection?.select(selectedStall);
     engine.current?.content.traverse((obj) => {
@@ -1001,7 +1041,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host} data-loading={loadingModel || undefined}>
       <ModelCompass ref={compass} knownNorth={!!north} hidden={error || loadingModel} />
       {isCart && (
-        <div className={`fourth-view-controls${isYifuKiosk ? ' yifu-view-controls' : ''}`} role="group" aria-label={isYifuKiosk ? '售卖点模型控制' : '餐车模型控制'}>
+        <div className={`fourth-view-controls${isYifuKiosk ? ' yifu-view-controls' : ''}${isNinanHut ? ' ninan-view-controls' : ''}`} role="group" aria-label={isNinanHut ? '呢喃小屋模型控制' : isYifuKiosk ? '售卖点模型控制' : '餐车模型控制'}>
+          {isNinanHut && onNinanMealChange && <NinanMealTabs meal={ninanMeal} onMealChange={onNinanMealChange} idPrefix="scene" showLabel={false} />}
           {isYifuKiosk && (['plan', '3d'] as const).map((mode) => (
             <button
               key={mode}
@@ -1020,7 +1061,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
               {mode === 'plan' ? '俯视图' : '3D 模式'}
             </button>
           ))}
-          <button
+          {!isNinanHut && <button
             disabled={loadingModel || error || (isYifuKiosk && fourthView === 'plan')}
             aria-label="自动旋转"
             aria-pressed={cartRotating}
@@ -1036,8 +1077,16 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             }}
           >
             {cartRotating ? '暂停旋转' : '自动旋转'}
-          </button>
+          </button>}
         </div>
+      )}
+      {isNinanHut && !loadingModel && !error && (
+        <>
+          <button ref={ninanMarker} className="ninan-space-marker" aria-label="打开呢喃小屋详情看板"
+            onClick={() => { explore.current?.(); callback.current('stall', ninanHutStall.id); }}>
+            <span aria-hidden="true">i</span> 小屋详情
+          </button>
+        </>
       )}
       {loadingModel && (
         <div className="loading model-loading" role="status">

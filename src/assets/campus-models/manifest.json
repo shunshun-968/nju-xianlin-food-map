@@ -76,5 +76,18 @@
     "modelScale": 1.1363636363636362,
     "pixelWidth": 762,
     "pixelHeight": 1024
+  },
+  "v-hut": {
+    "width": 12.289983475606807,
+    "height": 11.8339583910505,
+    "offsetX": -5.533733471260634,
+    "offsetY": -8.398333363234997,
+    "referenceWidth": 11,
+    "referenceDepth": 7,
+    "angle": 90,
+    "alignmentAngle": -90,
+    "modelScale": 0.7291666666666667,
+    "pixelWidth": 1024,
+    "pixelHeight": 986
   }
 }

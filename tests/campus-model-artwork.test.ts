@@ -18,10 +18,10 @@ const manifest: Record<string, CampusModelMetadata> = JSON.parse(
 );
 const close = (a: number, b: number) => assert.ok(Math.abs(a - b) < 1e-7, `${a} != ${b}`);
 
-test('six real model artworks have paired local day/night resources and positive framing metadata', () => {
+test('seven model artworks have paired local day/night resources and positive framing metadata', () => {
   assert.deepEqual(
     [...modeledCampusVenueIds].sort(),
-    ['v-10', 'v-1112', 'v-456', 'v-891', 'v-south', 'v-yifu'].sort(),
+    ['v-10', 'v-1112', 'v-456', 'v-891', 'v-south', 'v-yifu', 'v-hut'].sort(),
   );
   for (const id of modeledCampusVenueIds) {
     const venue = map.venues.find((v) => v.id === id)!;
@@ -56,7 +56,7 @@ test('enlargement preserves approved anchors and applies the same factor to the 
     close(p.x - venue.point[0], entry.offsetX * p.boost);
     close(p.y - venue.point[1], entry.offsetY * p.boost);
     close(p.width / entry.width, p.height / entry.height);
-    if (venue.id !== 'v-south' && venue.id !== 'v-yifu') close(p.boost, 1.14);
+    if (!['v-south', 'v-yifu', 'v-hut'].includes(venue.id)) close(p.boost, 1.14);
     const centre = p.groundPolygon.reduce(([x, y], [px, py]) => [x + px / 4, y + py / 4], [0, 0]);
     close(centre[0], venue.point[0]);
     close(centre[1], venue.point[1]);
@@ -105,6 +105,7 @@ test('cart stays visible at overview and every model retains a 24px pick target 
         const previousBoost = Math.max(1.3, 18 / (entry.width * scale));
         close((p.width * p.height) / (entry.width * entry.height * previousBoost ** 2), 0.5);
       }
+      if (venue.id === 'v-hut') assert.ok(p.width * scale >= 18 - 1e-7);
       assert.ok(p.hitBounds.width * scale >= 24 - 1e-7);
       assert.ok(p.hitBounds.height * scale >= 24 - 1e-7);
       assert.ok(p.hitBounds.x <= p.x && p.hitBounds.y <= p.y);

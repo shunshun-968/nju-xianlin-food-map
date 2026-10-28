@@ -8,7 +8,7 @@ import {
 
 export const reviewLines = (feature: OsmFeature) =>
   feature.properties.venue_id === 'v-hut'
-    ? ['四五六食堂东侧', '美食小&小餐车']
+    ? ['呢喃小屋']
     : feature.properties.indoor === true
       ? [featureName(feature), '室内售卖点']
       : [featureName(feature)];

@@ -1,7 +1,15 @@
 import manifest from '../assets/campus-models/manifest.json';
 import type { MapVenue, XY } from './campus-basemap';
 
-export const modeledCampusVenueIds = ['v-456', 'v-891', 'v-10', 'v-1112', 'v-south', 'v-yifu'] as const;
+export const modeledCampusVenueIds = [
+  'v-456',
+  'v-891',
+  'v-10',
+  'v-1112',
+  'v-south',
+  'v-yifu',
+  'v-hut',
+] as const;
 export type ModeledCampusVenueId = (typeof modeledCampusVenueIds)[number];
 export type CampusModelMetadata = {
   /** The pre-rendered image bounds in map metres relative to its unchanged ground anchor. */
@@ -40,6 +48,10 @@ const artwork: Record<ModeledCampusVenueId, { day: string; night: string }> = {
     day: new URL('../assets/campus-models/v-yifu-day.webp', import.meta.url).href,
     night: new URL('../assets/campus-models/v-yifu-night.webp', import.meta.url).href,
   },
+  'v-hut': {
+    day: new URL('../assets/campus-models/v-hut-day.webp', import.meta.url).href,
+    night: new URL('../assets/campus-models/v-hut-night.webp', import.meta.url).href,
+  },
 };
 
 export type CampusModelPlacement = {
@@ -72,7 +84,7 @@ export function getCampusModelPlacement(
     venue.depth / entry.referenceDepth,
   );
   let originalBoost =
-    id === 'v-south'
+    id === 'v-south' || id === 'v-hut'
       ? Math.max(1.3 * referenceScale, 18 / (entry.width * pixelsPerMetre))
       : 1.14 * referenceScale;
   // Half the previous visual area at every zoom, with the same ground anchor and pick target.
@@ -82,7 +94,8 @@ export function getCampusModelPlacement(
     // 只缩放模型图与脚印，绝不改动批准的室内点位坐标。
     const cart = metadata['v-south'];
     if (cart) {
-      const cartBoost = Math.max(1.3 * referenceScale, 18 / (cart.width * pixelsPerMetre)) * Math.SQRT1_2;
+      const cartBoost =
+        Math.max(1.3 * referenceScale, 18 / (cart.width * pixelsPerMetre)) * Math.SQRT1_2;
       boost = Math.min(cart.width / entry.width, cart.height / entry.height) * cartBoost * 1.05;
       originalBoost = boost;
     }

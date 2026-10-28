@@ -16,7 +16,7 @@
 | v-891   | way/99814405        | 民族食堂、第八、九食堂      |
 | v-10    | way/188130723       | 第十食堂与教工食堂          |
 | v-1112  | way/350505117       | 第十一、十二食堂            |
-| v-hut   | food-venues.geojson | 四五六食堂东侧美食小&小餐车 |
+| v-hut   | food-venues.geojson | 呢喃小屋 |
 | v-south | food-venues.geojson | 南门小餐车                  |
 | v-yifu  | food-venues.geojson | 逸夫楼快餐售卖点（室内）    |
 

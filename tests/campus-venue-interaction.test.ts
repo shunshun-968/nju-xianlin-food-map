@@ -9,11 +9,10 @@ import {
 } from '../src/lib/campus-venue-interaction';
 import type { CampusBasemap } from '../src/lib/campus-basemap';
 
-test('the modeled venue registry includes Yifu and excludes unmodeled places', () => {
-  assert.equal(modeledCampusVenueIds.length, 6);
+test('the modeled venue registry includes Yifu and Ninan hut and excludes unknown places', () => {
+  assert.equal(modeledCampusVenueIds.length, 7);
   for (const id of modeledCampusVenueIds) assert.equal(isModeledCampusVenue(id), true);
-  for (const id of [null, 'v-hut', 'unknown', 'v-10-f1'])
-    assert.equal(isModeledCampusVenue(id), false);
+  for (const id of [null, 'unknown', 'v-10-f1']) assert.equal(isModeledCampusVenue(id), false);
 });
 
 test('two completed taps on the same modeled place reveal its name then enter once', () => {
@@ -53,7 +52,7 @@ test('switching places replaces the preview and blank or cancelled navigation di
 
 test('desktop and unmodeled places enter directly without inheriting a touch preview', () => {
   for (const currentPreview of [null, 'v-456', 'v-10']) {
-    for (const id of [...modeledCampusVenueIds, 'v-hut'])
+    for (const id of [...modeledCampusVenueIds, 'unmodeled-example'])
       assert.deepEqual(nextCampusVenueTap(currentPreview, id, false), {
         preview: null,
         enter: id,

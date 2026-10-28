@@ -50,10 +50,7 @@ test('map labels never overlap, and road names stay attached to their road ancho
         const y = height / 2 - (campusFrame.y + campusFrame.height / 2) * scale + panY;
         const requests: LabelRequest[] = Object.entries(venueAnchors).map(([id, a]) => ({
           id,
-          lines:
-            id === 'v-hut'
-              ? ['四五六食堂东侧', '美食小屋／小餐车']
-              : [a.source.replace(/\.(jpg|png)$/, '')],
+          lines: id === 'v-hut' ? ['呢喃小屋'] : [a.source.replace(/\.(jpg|png)$/, '')],
           x: x + a.point[0] * scale,
           y: y + a.point[1] * scale,
           priority: 0,
@@ -93,9 +90,12 @@ test('reference-image names and the expanded tenth-canteen name override old pri
   for (const venue of catalog.venues) {
     const anchor = venueAnchors[venue.id];
     // 定位原图仍名为“第十食堂.jpg”，网站名称已明确包含同楼的教工食堂。
-    const expectedName = venue.id === 'v-10'
-      ? '第十食堂与教工食堂'
-      : anchor.source.replace(/\.(jpg|png)$/, '');
+    const expectedName =
+      venue.id === 'v-10'
+        ? '第十食堂与教工食堂'
+        : venue.id === 'v-hut'
+          ? '呢喃小屋'
+          : anchor.source.replace(/\.(jpg|png)$/, '');
     assert.equal(venue.name, expectedName);
     assert(venue.campusPosition[0] >= 0 && venue.campusPosition[0] <= layout.width);
     assert(venue.campusPosition[1] >= 0 && venue.campusPosition[1] <= layout.height);

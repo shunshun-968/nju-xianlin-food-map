@@ -152,7 +152,7 @@ test('the initial view is one wheel level larger and all building labels appear 
   assert.equal(initial.zoom, initialZoom);
   const initialLabels = mapLabels(map, initial, overview, [], true);
   assert.equal(initialLabels.details.length, 0);
-  assert.deepEqual(initialLabels.food.map((label) => label.id).sort(), ['v-hut']);
+  assert.deepEqual(initialLabels.food.map((label) => label.id).sort(), []);
 
   const nextZoom = initialZoom * wheelZoomFactor(-120);
   assert.equal(nextZoom, landmarkZoomThreshold);
@@ -196,12 +196,9 @@ test('common mouse deltas represent one level while small trackpad deltas remain
 });
 
 test('modeled venue names are revealed one at a time and touch preview reserves its confirmation hint', () => {
-  for (const venueId of ['v-456', 'v-891', 'v-10', 'v-1112', 'v-south']) {
+  for (const venueId of ['v-456', 'v-891', 'v-10', 'v-1112', 'v-south', 'v-hut']) {
     const hovered = mapLabels(map, fitted(), overview, [], true, { venueId });
-    assert.deepEqual(
-      hovered.food.map((label) => label.id).sort(),
-      [venueId, 'v-hut'].sort(),
-    );
+    assert.deepEqual(hovered.food.map((label) => label.id).sort(), [venueId]);
     const name = hovered.food.find((label) => label.id === venueId)!;
     assert.ok(name && !name.lines.includes('再点一次进入'));
     const tapped = mapLabels(map, fitted(), overview, [], true, { venueId, touchHint: true });

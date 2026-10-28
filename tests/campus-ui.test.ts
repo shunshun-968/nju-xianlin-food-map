@@ -8,8 +8,8 @@ test('Original dining labels reserve their full multiline height and icon paddin
   const [label] = placeMapLabels(
     [
       {
-        id: 'hut',
-        lines: ['四五六食堂东侧', '美食小屋／小餐车'],
+        id: 'minzu',
+        lines: ['民族食堂', '第八、九食堂'],
         x: 200,
         y: 200,
         priority: 0,
@@ -22,7 +22,7 @@ test('Original dining labels reserve their full multiline height and icon paddin
   );
   assert.equal(label.lineHeight, 14);
   assert.equal(label.height, 38);
-  assert(label.width >= 7 * 10.5 + 24);
+  assert(label.width >= 6 * 10.5 + 24);
   assert(label.box.bottom - label.box.top > label.height);
 });
 
@@ -42,7 +42,7 @@ test('dining labels stay clear of overlays at desktop and phone overview sizes',
     ];
     const requests: LabelRequest[] = catalog.venues.map((venue) => ({
       id: venue.id,
-      lines: venue.id === 'v-hut' ? ['四五六食堂东侧', '美食小屋／小餐车'] : [venue.name],
+      lines: [venue.name],
       x: x + venue.campusPosition[0] * scale,
       y: y + venue.campusPosition[1] * scale,
       priority: 0,

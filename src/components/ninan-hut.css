@@ -1,0 +1,207 @@
+.ninan-meal-switch {
+  --ninan-text: #4d3d59;
+  --ninan-muted: #817489;
+  --ninan-tint: #f1eaf4;
+  --ninan-accent: #76538a;
+  color: var(--ninan-text);
+}
+.ninan-meal-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ninan-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.ninan-meal-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--ninan-tint);
+}
+.ninan-meal-tabs button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 50px;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ninan-muted);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+.ninan-meal-tabs button strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.ninan-meal-tabs button span {
+  font-size: 10px;
+}
+.ninan-meal-tabs button:hover {
+  color: var(--ninan-text);
+  background: #ffffff80;
+}
+.ninan-meal-tabs button[aria-pressed='true'] {
+  background: var(--ninan-accent);
+  color: #fff;
+}
+.ninan-meal-tabs button:focus-visible {
+  outline: 2px solid var(--ninan-accent);
+  outline-offset: 3px;
+}
+.ninan-details {
+  color: #51465b;
+}
+.ninan-details .ninan-reference {
+  margin: 18px 0 0;
+}
+.ninan-reference img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+.ninan-reference figcaption {
+  margin-top: 7px;
+  color: #84758d;
+  font-size: 11px;
+  text-align: center;
+}
+.ninan-details .ninan-location-note {
+  margin: 15px 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.ninan-menu-samples {
+  padding: 14px;
+  border: 1px solid #e5dce9;
+  border-radius: 12px;
+  background: #faf7fb;
+}
+.ninan-menu-samples h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.ninan-menu-samples dl {
+  margin: 0;
+}
+.ninan-menu-samples dl > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9e0ec;
+  font-size: 12px;
+}
+.ninan-menu-samples dd {
+  margin: 0;
+  color: #79528d;
+  white-space: nowrap;
+}
+.ninan-details .ninan-menu-samples p {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.ninan-price-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #84758d;
+}
+.ninan-details .ninan-price-note {
+  color: #84758d;
+}
+.ninan-board-link {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid #e5dce9;
+  border-radius: 10px;
+  color: #76538a;
+  text-decoration: none;
+  font-size: 12px;
+}
+.ninan-board-link img {
+  width: 62px;
+  height: auto;
+  border-radius: 5px;
+}
+.ninan-board-link:hover {
+  background: #f1eaf4;
+}
+.ninan-board-link:focus-visible {
+  outline: 2px solid #76538a;
+  outline-offset: 3px;
+}
+.ninan-dinner-note {
+  padding: 28px 10px 20px;
+  text-align: center;
+}
+.ninan-service-tag {
+  color: #8c693c;
+  font-size: 12px;
+}
+.ninan-dinner-note h3 {
+  margin: 12px 0;
+  font-size: 18px;
+}
+.ninan-details .ninan-dinner-note p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+[data-interface-theme='night'] .ninan-meal-switch {
+  --ninan-text: #eee3f5;
+  --ninan-muted: #b3a4c0;
+  --ninan-tint: #352f45;
+  --ninan-accent: #8660a0;
+}
+[data-interface-theme='night'] .ninan-meal-tabs button:hover {
+  background: #ffffff10;
+}
+[data-interface-theme='night'] .ninan-meal-tabs button[aria-pressed='true'] {
+  background: var(--ninan-accent);
+}
+[data-interface-theme='night'] .ninan-details {
+  color: #e5daed;
+}
+[data-interface-theme='night'] .ninan-menu-samples {
+  background: #302c3b;
+  border-color: #51465f;
+}
+[data-interface-theme='night'] .ninan-menu-samples dl > div {
+  border-color: #51465f;
+}
+[data-interface-theme='night'] .ninan-menu-samples dd,
+[data-interface-theme='night'] .ninan-board-link {
+  color: #d5b7e9;
+}
+[data-interface-theme='night'] .ninan-board-link {
+  border-color: #51465f;
+}
+[data-interface-theme='night'] .ninan-board-link:hover {
+  background: #3b324b;
+}
+[data-interface-theme='night'] .ninan-reference figcaption,
+[data-interface-theme='night'] .ninan-price-head,
+[data-interface-theme='night'] .ninan-details .ninan-price-note {
+  color: #b3a4c0;
+}
+[data-interface-theme='night'] .ninan-service-tag {
+  color: #e3be85;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ninan-meal-tabs button {
+    transition: none;
+  }
+}

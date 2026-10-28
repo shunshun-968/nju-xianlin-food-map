@@ -76,11 +76,11 @@
     },
     {
       "id": "v-hut",
-      "name": "四五六食堂东侧美食小屋／小餐车",
-      "area": "四五六食堂东侧 · 蓝色 × 标注处",
+      "name": "呢喃小屋",
+      "area": "四五六食堂东侧",
       "kind": "cart",
       "floors": 1,
-      "shortName": "四五六食堂东侧美食小屋／小餐车",
+      "shortName": "呢喃小屋",
       "campusPosition": [
         509,
         1465
@@ -89,7 +89,7 @@
         13,
         9
       ],
-      "description": "位置按“四五六食堂东侧美食小屋／小餐车.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "四五六食堂东侧的呢喃小屋，早上在小棚下供应早茶，中午供应饮品，晚上供应烧烤。可切换餐段查看外部场景与详情。",
       "verified": false
     },
     {
@@ -125,7 +125,7 @@
         15,
         9
       ],
-      "description": "位置按“逸夫楼快餐售卖点.jpg”标注。楼层与窗口目前为演示布局，后续接入实测数据。",
+      "description": "逸夫楼 B102 休闲食坊，提供早餐、点心、饮品与预订盒饭。按现场照片还原室内陈设，整间售卖点作为一个窗口。",
       "verified": false
     }
   ],
@@ -234,11 +234,11 @@
       "id": "v-hut-f1",
       "venueId": "v-hut",
       "level": 1,
-      "name": "1F",
-      "width": 32,
+      "name": "呢喃小屋外部",
+      "width": 22,
       "depth": 22,
       "elevation": 0,
-      "layoutVersion": 1
+      "layoutVersion": 2
     },
     {
       "id": "v-south-f1",
@@ -254,11 +254,11 @@
       "id": "v-yifu-f1",
       "venueId": "v-yifu",
       "level": 1,
-      "name": "1F",
-      "width": 32,
-      "depth": 22,
+      "name": "B102 休闲食坊",
+      "width": 5.8,
+      "depth": 6.8,
       "elevation": 0,
-      "layoutVersion": 1
+      "layoutVersion": 2
     }
   ],
   "stalls": [
@@ -2625,136 +2625,36 @@
       "dishes": []
     },
     {
-      "id": "v-hut-f1-s1",
+      "id": "v-hut-f1-service",
       "floorId": "v-hut-f1",
-      "name": "面食小站",
-      "category": "面食",
+      "name": "呢喃小屋",
+      "category": "早餐 · 饮品 · 烧烤",
       "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "x": 2,
+        "z": -2.8,
+        "width": 0.5,
+        "depth": 3.9,
+        "rotationY": 0
       },
-      "photoKey": null,
-      "dishes": [
+      "serviceAreas": [
         {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-hut-f1-s2",
-      "floorId": "v-hut-f1",
-      "name": "家常小炒",
-      "category": "家常菜",
-      "position": {
-        "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
+          "x": 4.4,
+          "z": 7.5,
+          "width": 3.8,
+          "depth": 0.5,
+          "rotationY": 0
+        },
         {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
+          "x": 3.05,
+          "z": 2.8,
+          "width": 0.5,
+          "depth": 2.2,
+          "rotationY": 0
         }
-      ]
-    },
-    {
-      "id": "v-hut-f1-s3",
-      "floorId": "v-hut-f1",
-      "name": "热汤米线",
-      "category": "米线",
-      "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
+      ],
+      "breakfast": true,
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-hut-f1-s4",
-      "floorId": "v-hut-f1",
-      "name": "轻食时刻",
-      "category": "轻食",
-      "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-hut-f1-s5",
-      "floorId": "v-hut-f1",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-hut-f1-s6",
-      "floorId": "v-hut-f1",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     },
     {
       "id": "v-south-f1-cart",
@@ -2773,136 +2673,20 @@
       "dishes": []
     },
     {
-      "id": "v-yifu-f1-s1",
+      "id": "v-yifu-f1-kiosk",
       "floorId": "v-yifu-f1",
-      "name": "面食小站",
-      "category": "面食",
-      "position": {
-        "x": -10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "番茄鸡蛋面",
-          "price": 12,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-yifu-f1-s2",
-      "floorId": "v-yifu-f1",
-      "name": "家常小炒",
-      "category": "家常菜",
+      "name": "逸夫楼 B102 休闲食坊",
+      "category": "早餐 · 点心 · 饮品 · 盒饭",
       "position": {
         "x": 0,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
+        "z": 0,
+        "width": 5.8,
+        "depth": 6.8,
+        "rotationY": 0
       },
+      "breakfast": true,
       "photoKey": null,
-      "dishes": [
-        {
-          "name": "时蔬小炒",
-          "price": 15,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-yifu-f1-s3",
-      "floorId": "v-yifu-f1",
-      "name": "热汤米线",
-      "category": "米线",
-      "position": {
-        "x": 10,
-        "z": -7,
-        "rotationY": 0,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "鲜汤米线",
-          "price": 13,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-yifu-f1-s4",
-      "floorId": "v-yifu-f1",
-      "name": "轻食时刻",
-      "category": "轻食",
-      "position": {
-        "x": -10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "缤纷蔬菜碗",
-          "price": 16,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-yifu-f1-s5",
-      "floorId": "v-yifu-f1",
-      "name": "香香盖饭",
-      "category": "盖饭",
-      "position": {
-        "x": 0,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "香菇鸡肉饭",
-          "price": 14,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
-    },
-    {
-      "id": "v-yifu-f1-s6",
-      "floorId": "v-yifu-f1",
-      "name": "现做饼铺",
-      "category": "小吃",
-      "position": {
-        "x": 10,
-        "z": 7,
-        "rotationY": 3.141592653589793,
-        "width": 6,
-        "depth": 4
-      },
-      "photoKey": null,
-      "dishes": [
-        {
-          "name": "葱香薄饼",
-          "price": 8,
-          "description": "演示菜品与参考价格，不代表实际在售商品。",
-          "photoKey": null
-        }
-      ]
+      "dishes": []
     }
   ]
 }

@@ -63,6 +63,7 @@ test('documented floor directions remain distinct from the exterior world axes a
     'v-1112-f1': { x: 1, z: 0 },
     'v-1112-f2': { x: 1, z: 0 },
     'v-south-f1': { x: 0, z: -1 },
+    'v-yifu-f1': { x: 0, z: -1 },
   };
   for (const [floorId, north] of Object.entries(confirmed)) {
     const venueId = floorId.replace(/-f\d+$/, '');
@@ -73,11 +74,12 @@ test('documented floor directions remain distinct from the exterior world axes a
     getModelNorth({ level: 'building', venueId: 'v-south' }),
     confirmed['v-south-f1'],
   );
+  assert.deepEqual(getModelNorth({ level: 'building', venueId: 'v-yifu' }), confirmed['v-yifu-f1']);
   assert.notDeepEqual(
     getModelNorth({ level: 'building', venueId: 'v-10' }),
     getModelNorth({ level: 'floor', venueId: 'v-10', floorId: 'v-10-f2' }),
   );
-  for (const venueId of ['v-hut', 'v-yifu', 'unmapped-venue']) {
+  for (const venueId of ['v-hut', 'unmapped-venue']) {
     assert.equal(getModelNorth({ level: 'building', venueId }), undefined);
     assert.equal(getModelNorth({ level: 'floor', venueId, floorId: `${venueId}-f1` }), undefined);
   }

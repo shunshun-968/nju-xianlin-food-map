@@ -9,8 +9,9 @@ import { createBuilding as createMinzu } from '../src/models/exteriors/minzu89-b
 import { createBuilding as createEleven } from '../src/models/exteriors/eleven-twelve-building.js';
 import { createExteriorLighting } from '../src/lib/exterior-lighting';
 import { createSouthGateCartModel } from '../src/components/SouthGateCartModel';
+import { createYifuMapHouse } from '../src/models/exteriors/yifu-map-house';
 
-type VenueId = 'v-456' | 'v-10' | 'v-891' | 'v-1112' | 'v-south';
+type VenueId = 'v-456' | 'v-10' | 'v-891' | 'v-1112' | 'v-south' | 'v-yifu';
 type Source = {
   core: [number, number];
   turn: number;
@@ -23,6 +24,7 @@ const sources: Record<VenueId, Source> = {
   'v-891': { core: [50, 72], turn: 0, swap: false, factory: createMinzu },
   'v-1112': { core: [68, 58], turn: 90, swap: true, factory: createEleven },
   'v-south': { core: [6.6, 2.7], turn: 0, swap: false },
+  'v-yifu': { core: [6.2, 4.4], turn: 0, swap: false },
 };
 type SpriteMetadata = {
   width: number;
@@ -143,7 +145,9 @@ export async function renderCampusSprite(
     if (!venue) throw Error(`Missing current map venue ${id}`);
     const target = source.swap ? [venue.depth, venue.width] : [venue.width, venue.depth];
     const scale = Math.min(target[0] / source.core[0], target[1] / source.core[1]);
-    const alignmentAngle = id === 'v-south' ? 0 : venue.angle + source.turn;
+    // B102 uses a compact white-house symbol, separate from its detailed indoor
+    // model and the footprint of the whole Yifu building.
+    const alignmentAngle = id === 'v-yifu' ? 28 : id === 'v-south' ? 0 : venue.angle + source.turn;
     // SVG positive rotation is clockwise in (x,z); THREE yaw has the opposite sign.
     wrapper.rotation.y = -THREE.MathUtils.degToRad(alignmentAngle);
     wrapper.scale.set(scale, scale * 1.2, scale);
@@ -164,6 +168,10 @@ export async function renderCampusSprite(
       model.setSelected(null);
       lighting = createExteriorLighting(model);
       lighting.setNight(night);
+    } else if (id === 'v-yifu') {
+      cart = createYifuMapHouse();
+      wrapper.add(cart.group);
+      cart.setInterfaceTheme(night);
     } else {
       cart = createSouthGateCartModel();
       wrapper.add(cart.group);
@@ -201,7 +209,7 @@ export async function renderCampusSprite(
       scene.add(ambient, sun);
     }
     const projected = projectedBounds(wrapper, excluded);
-    const margin = id === 'v-south' ? 0.5 : 2;
+    const margin = id === 'v-south' || id === 'v-yifu' ? 0.5 : 2;
     const left = projected.left - margin,
       right = projected.right + margin;
     const top = projected.top - margin,
@@ -276,3 +284,39 @@ declare global {
 }
 window.renderCampusSprite = renderCampusSprite;
 window.campusSpriteReady = true;
+
+// Visible export controls keep image generation reproducible without depending
+// on a particular automation runtime or evaluating private browser state.
+const exportButton = document.querySelector<HTMLButtonElement>('#render-sprite');
+const modelSelect = document.querySelector<HTMLSelectElement>('#model-id');
+const themeSelect = document.querySelector<HTMLSelectElement>('#model-theme');
+const status = document.querySelector<HTMLOutputElement>('#export-status');
+const download = document.querySelector<HTMLAnchorElement>('#download-sprite');
+const metadataOutput = document.querySelector<HTMLPreElement>('#sprite-metadata');
+async function exportSelected() {
+  if (!exportButton || !modelSelect || !themeSelect || !status || !download || !metadataOutput) return;
+  exportButton.disabled = true;
+  status.textContent = '正在渲染…';
+  download.hidden = true;
+  try {
+    const id = modelSelect.value as VenueId;
+    const night = themeSelect.value === 'night';
+    const result = await renderCampusSprite(id, night);
+    download.href = result.dataUrl;
+    download.download = `${id}-${night ? 'night' : 'day'}.webp`;
+    download.hidden = false;
+    metadataOutput.textContent = JSON.stringify(result.metadata, null, 2);
+    status.textContent = '渲染完成';
+  } catch (error) {
+    status.textContent = `渲染失败：${error instanceof Error ? error.message : String(error)}`;
+  } finally {
+    exportButton.disabled = false;
+  }
+}
+exportButton?.addEventListener('click', () => { void exportSelected(); });
+const exportQuery = new URLSearchParams(window.location.search);
+if (modelSelect && exportQuery.has('venue') && exportQuery.get('venue')! in sources) {
+  modelSelect.value = exportQuery.get('venue')!;
+  if (themeSelect) themeSelect.value = exportQuery.get('theme') === 'night' ? 'night' : 'day';
+  void exportSelected();
+}

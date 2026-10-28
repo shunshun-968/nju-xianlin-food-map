@@ -63,5 +63,18 @@
     "modelScale": 1.3636363636363638,
     "pixelWidth": 1017,
     "pixelHeight": 1024
+  },
+  "v-yifu": {
+    "width": 9.936966589478843,
+    "height": 13.352473810410476,
+    "offsetX": -4.968483294739421,
+    "offsetY": -8.800155525145659,
+    "referenceWidth": 9,
+    "referenceDepth": 5,
+    "angle": -28,
+    "alignmentAngle": 28,
+    "modelScale": 1.1363636363636362,
+    "pixelWidth": 762,
+    "pixelHeight": 1024
   }
 }

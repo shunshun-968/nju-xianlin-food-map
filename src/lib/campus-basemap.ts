@@ -120,7 +120,6 @@ export function mapLabels(
   const preferred: Record<string, XY> = {
     'v-456': [-60, 8],
     'v-hut': [75, 12],
-    'v-yifu': [64, -31],
     'v-south': [61, 28],
   };
   const modelBoxes = new Map(
@@ -143,6 +142,8 @@ export function mapLabels(
   );
   // Keep labels beside the raised model rather than laying opaque badges over its roof.
   const foodRequests = data.venues
+    // 逸夫楼点位仅显示微缩售卖点，不生成常驻、悬停或触摸文字标牌。
+    .filter((v) => v.id !== 'v-yifu')
     .filter((v) => !modelBoxes.has(v.id) || v.id === namePreview.venueId)
     .map((v) => {
       const [x, y] = screen(v.point);

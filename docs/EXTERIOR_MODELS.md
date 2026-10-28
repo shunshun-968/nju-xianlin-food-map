@@ -7,7 +7,7 @@
 | 原网站场所 | 外观文件 | 门牌对应的现有楼层 ID |
 | --- | --- | --- |
 | `v-456` 四五六食堂 | `src/models/exteriors/fourth-fifth-sixth.js` | 第四 3 门 → `v-456-f1`；第五 3 门 → `v-456-f2`；第六 1 门 → `v-456-f3` |
-| `v-10` 第十食堂／教工餐厅 | `src/models/exteriors/tenth-building.js` | 第十 3 门 → `v-10-f1`；教工 1 门 → `v-10-f2` |
+| `v-10` 第十食堂与教工食堂 | `src/models/exteriors/tenth-building.js` | 第十 3 门 → `v-10-f1`；教工 1 门 → `v-10-f2` |
 | `v-891` 民族／八九食堂 | `src/models/exteriors/minzu89-building.js` | 民族 2 门 → `v-891-f1`；第八 2 门 → `v-891-f2`；第九 1 门 → `v-891-f3` |
 | `v-1112` 十一十二食堂 | `src/models/exteriors/eleven-twelve-building.js` | 第十一 3 门 → `v-1112-f1`；第十二 2 门 → `v-1112-f2` |
 

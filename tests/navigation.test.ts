@@ -4,7 +4,7 @@ import { navigationPath, navigationUrl, readNavigation } from '../src/lib/use-ap
 import { catalog } from '../src/data/catalog';
 
 test('direct floor links contain campus and building ancestors, with reversible URLs', () => {
-  for (const floor of catalog.floors) {
+  for (const floor of catalog.floors.filter((floor) => floor.venueId !== 'v-yifu')) {
     const state = readNavigation(new URL(`https://example.test/map/?floor=${floor.id}`));
     const path = navigationPath(state);
     assert.deepEqual(

@@ -18,10 +18,10 @@ const manifest: Record<string, CampusModelMetadata> = JSON.parse(
 );
 const close = (a: number, b: number) => assert.ok(Math.abs(a - b) < 1e-7, `${a} != ${b}`);
 
-test('five real model artworks have paired local day/night resources and positive framing metadata', () => {
+test('six real model artworks have paired local day/night resources and positive framing metadata', () => {
   assert.deepEqual(
     [...modeledCampusVenueIds].sort(),
-    ['v-10', 'v-1112', 'v-456', 'v-891', 'v-south'].sort(),
+    ['v-10', 'v-1112', 'v-456', 'v-891', 'v-south', 'v-yifu'].sort(),
   );
   for (const id of modeledCampusVenueIds) {
     const venue = map.venues.find((v) => v.id === id)!;
@@ -56,7 +56,7 @@ test('enlargement preserves approved anchors and applies the same factor to the 
     close(p.x - venue.point[0], entry.offsetX * p.boost);
     close(p.y - venue.point[1], entry.offsetY * p.boost);
     close(p.width / entry.width, p.height / entry.height);
-    if (venue.id !== 'v-south') close(p.boost, 1.14);
+    if (venue.id !== 'v-south' && venue.id !== 'v-yifu') close(p.boost, 1.14);
     const centre = p.groundPolygon.reduce(([x, y], [px, py]) => [x + px / 4, y + py / 4], [0, 0]);
     close(centre[0], venue.point[0]);
     close(centre[1], venue.point[1]);
@@ -74,6 +74,21 @@ test('enlargement preserves approved anchors and applies the same factor to the 
     close(shifted.y - p.y, -75);
     close(shifted.width, p.width);
     close(shifted.height, p.height);
+  }
+});
+
+test('Yifu stays indoors at its approved anchor and never exceeds a cart-sized display', () => {
+  const yifu = map.venues.find((venue) => venue.id === 'v-yifu')!;
+  const cart = map.venues.find((venue) => venue.id === 'v-south')!;
+  assert.equal(yifu.indoor, true);
+  for (const scale of [0.08, 0.2, 0.5, 1, 4, 12]) {
+    const model = getCampusModelPlacement(yifu, scale)!;
+    const reference = getCampusModelPlacement(cart, scale)!;
+    assert.deepEqual(model.anchor, yifu.point);
+    assert.ok(model.width <= reference.width * 1.05 + 1e-7);
+    assert.ok(model.height <= reference.height * 1.05 + 1e-7);
+    assert.ok(model.width * model.height <= reference.width * reference.height * 1.105);
+    assert.ok(Math.max(model.width, model.height) * scale >= 12);
   }
 });
 

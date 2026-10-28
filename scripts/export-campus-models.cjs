@@ -1,7 +1,7 @@
 async (page) => {
   await page.waitForFunction(() => window.campusSpriteReady === true);
   const manifest = {};
-  for (const id of ['v-456', 'v-10', 'v-891', 'v-1112', 'v-south']) {
+  for (const id of ['v-456', 'v-10', 'v-891', 'v-1112', 'v-south', 'v-yifu']) {
     for (const night of [false, true]) {
       const download = page.waitForEvent('download');
       const metadata = await page.evaluate(
@@ -38,5 +38,5 @@ async (page) => {
     JSON.stringify(manifest, null, 2) + '\n',
   );
   await (await download).saveAs('src/assets/campus-models/manifest.json');
-  console.log('Exported 10 transparent views with stable ground anchors.');
+  console.log('Exported 12 transparent views with stable ground anchors.');
 };

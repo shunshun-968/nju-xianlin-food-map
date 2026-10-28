@@ -19,13 +19,19 @@ import {
 import type { InterfaceTheme } from '../lib/use-interface-theme';
 import './fourth-canteen.css';
 import { createSouthGateCartModel } from './SouthGateCartModel';
+import { createYifuKioskModel, prepareYifuKioskAssets } from './YifuKioskModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
 import { createStallPickTargets } from '../lib/stall-picking';
 import { createStallSelection } from '../lib/stall-selection';
+import { createYifuKioskSelection } from '../lib/yifu-kiosk-selection';
+import { createYifuKioskPickTargets } from '../lib/yifu-kiosk-picking';
+import { createModelClickGesture } from '../lib/model-click-gesture';
+import { YIFU_BROAD_LIGHTS } from '../data/yifu-lighting';
 import { eighthDumplingKiosk } from '../data/eighth-canteen';
 import { eleventhDumplingKiosk } from '../data/eleventh-canteen';
 import { SOUTH_GATE_CART_HEIGHT, southGateCartStall } from '../data/south-gate-cart';
+import { yifuKioskStall } from '../data/yifu-kiosk';
 import { exteriorBuildings, exteriorFrame, loadExteriorModel, pickExteriorFloor } from '../data/exterior-buildings';
 import type { ExteriorModel } from '../models/exteriors/types';
 import { createExteriorEntranceMarkers } from '../lib/exterior-entrance-markers';
@@ -157,6 +163,11 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.mouse.reset();
   const framing = e.indoorSpec?.frame ?? fourthCanteenSpec.frame;
   e.fourthMode = mode;
+  if (e.indoorSpec?.id === 'v-yifu') {
+    e.renderer.domElement.setAttribute('aria-label', mode === 'plan'
+      ? '逸夫楼 B102 俯视图，保留四面墙与南侧门，点击售卖点查看窗口信息，可拖动和缩放'
+      : '逸夫楼 B102 三维模型，南侧敞开，点击售卖点查看窗口信息，可拖动平移、单击右键旋转、滚轮缩放');
+  }
   e.stallTargets?.setMode(mode);
   e.stallSelection?.setMode(mode);
   if (e.stallSelection) e.stallSelection.withLightingUpdate(() => e.fourth?.setMode(mode));
@@ -169,7 +180,7 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   e.controls.maxZoom = 14;
   e.controls.minPolarAngle = 0;
   // 餐车可降到顾客平视高度；室内保留微俯视，方便看清柜台与布局。
-  e.controls.maxPolarAngle = e.indoorSpec?.id === 'v-south' ? Math.PI / 2 : Math.PI / 2.05;
+  e.controls.maxPolarAngle = ['v-south', 'v-yifu'].includes(e.indoorSpec?.id ?? '') ? Math.PI / 2 : Math.PI / 2.05;
   e.controls.target.set(framing.x, 0.7, framing.z);
   if (mode === 'plan') {
     e.controls.target.set(framing.x, 0, framing.z);
@@ -177,6 +188,9 @@ function frameFourth(e: Engine, mode: FourthViewMode) {
   } else if (e.indoorSpec?.id === 'v-south') {
     e.controls.target.set(0, 1.6, 0.25);
     e.camera.position.set(-8.8, 5.6, 11.7);
+  } else if (e.indoorSpec?.id === 'v-yifu') {
+    e.controls.target.set(0, 1, 0);
+    e.camera.position.set(7, 6, 11);
   } else {
     const offset = framing.spatialOffset ?? { x: -25, y: 17.5, z: 36 };
     e.camera.position.set(framing.x + offset.x, offset.y, framing.z + offset.z);
@@ -310,7 +324,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   const floorId = view.level === 'floor' ? view.floorId : undefined;
   const modeledCanteen = getIndoorCanteen(floorId);
   const isFourthFloor = !!modeledCanteen;
-  const isCart = view.venueId === 'v-south';
+  const isYifuKiosk = view.venueId === 'v-yifu';
+  const isCart = view.venueId === 'v-south' || isYifuKiosk;
   const isExterior = view.level === 'building' && !!exteriorBuildings[view.venueId];
   const interfaceThemeRef = useRef(interfaceTheme);
   const selectedStallRef = useRef(selectedStall);
@@ -456,27 +471,48 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     controls.addEventListener('start', interact);
     const raycaster = new THREE.Raycaster(),
       pointer = new THREE.Vector2();
-    let start: [number, number] | null = null;
-    const down = (event: PointerEvent) => {
-      explore.current?.();
-      start = event.button === 0 && !mouse.isActive() ? [event.clientX, event.clientY] : null;
-    };
-    const up = (event: PointerEvent) => {
-      const origin = start;
-      start = null;
-      if (
-        !origin ||
-        mouse.isActive() ||
-        event.button !== 0 ||
-        Math.hypot(event.clientX - origin[0], event.clientY - origin[1]) > 6
-      )
-        return;
+    const yifuClick = createModelClickGesture<THREE.Ray>();
+    const pointerRay = (event: PointerEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.set(
         ((event.clientX - rect.left) / rect.width) * 2 - 1,
         (-(event.clientY - rect.top) / rect.height) * 2 + 1,
       );
       raycaster.setFromCamera(pointer, camera);
+    };
+    let start: [number, number] | null = null;
+    const down = (event: PointerEvent) => {
+      if (e.indoorSpec?.id === 'v-yifu' && !mouse.isActive()) {
+        // 顶栏收起会平移默认取景。保留按下瞬间的射线，避免松开时目标已移动而漏点。
+        pointerRay(event);
+        yifuClick.down(event, raycaster.ray.clone());
+      }
+      explore.current?.();
+      start = event.button === 0 && !mouse.isActive() ? [event.clientX, event.clientY] : null;
+    };
+    const move = (event: PointerEvent) => {
+      if (e.indoorSpec?.id === 'v-yifu') yifuClick.move(event);
+    };
+    const cancel = (event: PointerEvent) => {
+      start = null;
+      yifuClick.cancel(event);
+    };
+    const up = (event: PointerEvent) => {
+      const origin = start;
+      start = null;
+      if (e.indoorSpec?.id === 'v-yifu') {
+        const ray = yifuClick.up(event);
+        if (!ray || mouse.isActive()) return;
+        raycaster.ray.copy(ray);
+      } else {
+        if (
+        !origin ||
+        mouse.isActive() ||
+        event.button !== 0 ||
+        Math.hypot(event.clientX - origin[0], event.clientY - origin[1]) > 6
+        ) return;
+        pointerRay(event);
+      }
       if (e.exterior) {
         const floorId = pickExteriorFloor(e.exterior, raycaster);
         if (floorId) callback.current('floor', floorId);
@@ -504,7 +540,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       }
     };
     renderer.domElement.addEventListener('pointerdown', down);
+    renderer.domElement.addEventListener('pointermove', move);
     renderer.domElement.addEventListener('pointerup', up);
+    renderer.domElement.addEventListener('pointercancel', cancel);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let previousFrame = 0;
     renderer.setAnimationLoop((time) => {
@@ -572,7 +610,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       map?.removeEventListener('foodmap:model-layout', followOverlays);
       renderer.setAnimationLoop(null);
       renderer.domElement.removeEventListener('pointerdown', down);
+      renderer.domElement.removeEventListener('pointermove', move);
       renderer.domElement.removeEventListener('pointerup', up);
+      renderer.domElement.removeEventListener('pointercancel', cancel);
+      yifuClick.clear();
       mouse.dispose();
       controls.dispose();
       e.stallSelection?.dispose();
@@ -641,21 +682,22 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     scene.background = new THREE.Color(t.ground);
     camera.zoom = 1;
     const spec = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
-    if (spec || view.venueId === 'v-south') {
+    if (spec || view.venueId === 'v-south' || view.venueId === 'v-yifu') {
       let cancelled = false;
       let frame = 0;
       setLoadingModel(true);
       const activate = async () => {
         e.preparing = true;
         const started = performance.now();
-        const id = spec?.id ?? 'v-south';
+        const id = spec?.id ?? view.venueId;
         let model = e.models.get(id);
         const cached = !!model;
         if (!model) {
           if (spec?.style === 'tenth') await prepareTenthCanteenModel();
           if (spec?.style === 'fourth') await prepareFourthSignageAssets();
+          if (view.venueId === 'v-yifu') await prepareYifuKioskAssets();
           if (cancelled) return;
-          model = spec ? createCanteenModel(spec) : createSouthGateCartModel();
+          model = spec ? createCanteenModel(spec) : view.venueId === 'v-yifu' ? createYifuKioskModel() : createSouthGateCartModel();
           if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
         }
@@ -668,12 +710,16 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           'aria-label',
           spec
             ? `${spec.name}窗口模型，可切换俯视与三维、拖动缩放`
+            : view.venueId === 'v-yifu'
+              ? '逸夫楼 B102 休闲食坊模型，南侧敞开，点击售卖点查看窗口信息，可拖动平移、单击右键进入旋转模式、滚轮缩放'
             : '南门小餐车模型，点击餐车查看窗口信息，可拖动平移、单击右键进入旋转模式、滚轮缩放',
         );
         e.indoorSpec = spec ?? {
           ...fourthCanteenSpec,
-          id: 'v-south',
-          frame: { x: 0, z: 0.25, planRange: 5, spatialRange: 4.7, halfWidth: 6.3 },
+          id: view.venueId,
+          frame: view.venueId === 'v-yifu'
+            ? { x: 0, z: 0, planRange: 4.4, spatialRange: 4.25, halfWidth: 4.75 }
+            : { x: 0, z: 0.25, planRange: 5, spatialRange: 4.7, halfWidth: 6.3 },
         };
         if (!e.indoorEnvironment) {
           const room = new RoomEnvironment();
@@ -683,7 +729,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           pmrem.dispose();
         }
         scene.environment = e.indoorEnvironment.texture;
-        scene.environmentIntensity = 0.28;
+        scene.environmentIntensity = view.venueId === 'v-yifu' ? YIFU_BROAD_LIGHTS.environmentIntensity : 0.28;
         e.ambientLight.intensity = 0.65;
         e.ambientLight.color.set('#fff1d9');
         e.keyLight.intensity = 1.0;
@@ -693,6 +739,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.keyLight.shadow.normalBias = 0.025;
         e.fourth = model;
         content.add(model.group);
+        if (view.venueId === 'v-yifu') {
+          // 校准选中亮度前即关闭通用场景灯，夜间基准只包含售卖点自身照明。
+          e.keyLight.visible = false;
+          e.ambientLight.visible = false;
+        }
         if (spec) {
           const stalls = data.stalls.filter((s) => s.floorId === spec.id);
           const heights = {
@@ -708,12 +759,19 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           e.stallSelection.select(selectedStallRef.current);
           content.add(e.stallTargets.group, e.stallSelection.group);
         } else {
-          // Pick the actual cart meshes from every angle, rather than a single
-          // front-facing plane. They all open the same catalog window.
-          e.stallSelection = createStallSelection(
-            data.stalls.filter((stall) => stall.id === southGateCartStall.id),
-            { [southGateCartStall.id]: SOUTH_GATE_CART_HEIGHT },
-            { model: model.group, scene, fillLights: [e.ambientLight, e.keyLight] },
+          // The whole service point has one identity from every viewing angle.
+          const serviceStall = view.venueId === 'v-yifu' ? yifuKioskStall : southGateCartStall;
+          if (view.venueId === 'v-yifu') {
+            e.stallTargets = createYifuKioskPickTargets(serviceStall);
+            content.add(e.stallTargets.group);
+          }
+          const serviceLighting = { model: model.group, scene, fillLights: [e.ambientLight, e.keyLight] };
+          e.stallSelection = view.venueId === 'v-yifu'
+            ? createYifuKioskSelection(serviceStall, serviceLighting)
+            : createStallSelection(
+            data.stalls.filter((stall) => stall.id === serviceStall.id),
+            { [serviceStall.id]: SOUTH_GATE_CART_HEIGHT },
+            serviceLighting,
           );
           e.stallSelection.select(selectedStallRef.current);
           content.add(e.stallSelection.group);
@@ -725,7 +783,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         setFourthView(spec ? 'plan' : '3d');
         frameFourth(e, spec ? 'plan' : '3d');
         if (!spec) {
-          scene.environment = null;
+          // B102 uses the room environment for the stainless steel counter and glass.
+          if (view.venueId === 'v-south') scene.environment = null;
           e.keyLight.visible = false;
           e.ambientLight.visible = false;
           e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
@@ -925,7 +984,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     e.scene.background = new THREE.Color(night ? '#252735' : '#f4f1ec');
     if (e.stallSelection) e.stallSelection.withLightingUpdate(() => e.fourth!.setInterfaceTheme(night));
     else e.fourth.setInterfaceTheme(night);
-    if (e.indoorSpec?.id === 'v-south') e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
+    if (['v-south', 'v-yifu'].includes(e.indoorSpec?.id ?? '')) e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
     e.renderer.shadowMap.needsUpdate = true;
   }, [interfaceTheme, view]);
   useEffect(() => {
@@ -942,14 +1001,32 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host} data-loading={loadingModel || undefined}>
       <ModelCompass ref={compass} knownNorth={!!north} hidden={error || loadingModel} />
       {isCart && (
-        <div className="fourth-view-controls" role="group" aria-label="餐车模型控制">
+        <div className={`fourth-view-controls${isYifuKiosk ? ' yifu-view-controls' : ''}`} role="group" aria-label={isYifuKiosk ? '售卖点模型控制' : '餐车模型控制'}>
+          {isYifuKiosk && (['plan', '3d'] as const).map((mode) => (
+            <button
+              key={mode}
+              disabled={loadingModel || error}
+              aria-pressed={fourthView === mode}
+              onClick={() => {
+                const e = engine.current;
+                if (!e?.fourth) return;
+                explore.current?.();
+                e.controls.autoRotate = false;
+                setCartRotating(false);
+                frameFourth(e, mode);
+                setFourthView(mode);
+              }}
+            >
+              {mode === 'plan' ? '俯视图' : '3D 模式'}
+            </button>
+          ))}
           <button
-            disabled={loadingModel || error}
+            disabled={loadingModel || error || (isYifuKiosk && fourthView === 'plan')}
             aria-label="自动旋转"
             aria-pressed={cartRotating}
             onClick={() => {
               const e = engine.current;
-              if (!e?.fourth) return;
+              if (!e?.fourth || e.fourthMode === 'plan') return;
               explore.current?.();
               e.animating = false;
               e.followDefault = false;
@@ -1012,7 +1089,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           </div>
         </>
       )}
-      {!error && !loadingModel && (!isFourthFloor || fourthView === '3d') && (
+      {!error && !loadingModel && (!(isFourthFloor || isYifuKiosk) || fourthView === '3d') && (
         <div className="interaction-hint" role="status" aria-live="polite">
           {rotationMode ? '旋转中·左键临时平移·右键/Esc退出' : '单击右键进入旋转模式'}
         </div>

@@ -1,0 +1,276 @@
+/* 原信、纸面、折痕独立分层；两种主题共用固定轮廓和排版。 */
+.app.floating-shell .about-letter-backdrop {
+  --letter-environment: #efeee9;
+  --letter-heading: #746b7e;
+  --letter-paper: #f4eee3;
+  --letter-light: #fffef6f2;
+  --letter-shade: #746c842b;
+  --letter-shadow-near: #39333d26;
+  --letter-shadow-far: #39333d20;
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  overflow: hidden;
+  background: #efeee965;
+  backdrop-filter: blur(12px) saturate(0.7);
+  -webkit-backdrop-filter: blur(12px) saturate(0.7);
+  animation: about-letter-fade 240ms ease-out both;
+}
+.app.floating-shell .about-letter-dialog {
+  position: relative;
+  width: min(756px, 100%);
+  max-height: 100%;
+  min-width: 0;
+  padding: 0 28px 28px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  animation: about-letter-unfold 240ms ease-out both;
+}
+.about-letter-dialog::-webkit-scrollbar {
+  display: none;
+}
+.about-letter-accessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.about-letter-heading {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  width: calc(100% + 56px);
+  margin-inline: -28px;
+  padding-inline: 28px;
+  margin-bottom: 12px;
+  /* 滚动时保护关闭与放大操作区，不形成展示底板。 */
+  background: transparent;
+  color: var(--letter-heading);
+}
+.about-letter-dialog.is-scrolled .about-letter-heading {
+  background: var(--letter-environment);
+}
+.about-letter-paper-wrap {
+  position: relative;
+  width: 100%;
+  filter: drop-shadow(0 1px 1px var(--letter-shadow-near))
+    drop-shadow(2px 7px 9px var(--letter-shadow-far));
+}
+.about-letter-paper {
+  position: relative;
+  isolation: isolate;
+  padding: 30px 26px 35px;
+  background:
+    radial-gradient(ellipse 110% 90% at 0% 0%, var(--letter-light), transparent 74%),
+    linear-gradient(135deg, transparent 24%, var(--letter-shade) 100%), var(--letter-paper);
+  /* 静态蒙版只处理安全留白处的轮廓，不位移或模糊手写字。 */
+  -webkit-mask: url('../assets/about/paper-edge-mask.svg') center / 100% 100% no-repeat;
+  mask: url('../assets/about/paper-edge-mask.svg') center / 100% 100% no-repeat;
+}
+.about-letter-texture {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  /* 按比例居中裁剪真实原图，保留纸纤维尺度；日夜共用同一张材质。 */
+  background: url('../assets/about/paper-fiber-original.jpg') center / cover no-repeat;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.about-letter-folds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 保留原折痕位置，亮带约为旧版一半；去掉右下角卷边高光。 */
+  background:
+    linear-gradient(
+      93deg,
+      transparent 43.5%,
+      #796c5e12 46.6%,
+      #fffdf44a 47.1%,
+      #bcb3a314 47.8%,
+      transparent 50%
+    ),
+    linear-gradient(177deg, transparent 46%, #8274640d 48.2%, #fffdf533 48.7%, transparent 50.2%),
+    linear-gradient(43deg, transparent 12%, #796d5f09 13.4%, #fffdf32e 14.1%, transparent 17%);
+}
+.about-letter-handwriting {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1010 / 1030;
+  z-index: 1;
+  overflow: hidden;
+}
+.about-letter-wrinkles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('../assets/about/paper-wrinkles.svg') center / 100% 100% no-repeat;
+  opacity: 0.76;
+  pointer-events: none;
+}
+.app.floating-shell .about-letter-close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  color: var(--letter-heading);
+  cursor: pointer;
+}
+.about-letter-close::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--purple-soft);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.about-letter-close svg {
+  position: relative;
+}
+.app.floating-shell .about-letter-close:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: -2px;
+  color: var(--purple-dark);
+}
+.about-letter-reading-tools {
+  display: none;
+}
+.app.floating-shell .about-letter-zoom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--letter-heading);
+  font-size: 12px;
+}
+.app.floating-shell .about-letter-zoom:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+}
+.about-letter-reading-tools span {
+  font-size: 11px;
+}
+@media (hover: hover) {
+  .about-letter-close:hover::before {
+    opacity: 1;
+  }
+  .app.floating-shell .about-letter-close:hover,
+  .app.floating-shell .about-letter-zoom:hover {
+    color: var(--purple-dark);
+  }
+}
+.app.floating-shell .about-letter-backdrop.is-night {
+  --letter-environment: #242329;
+  --letter-heading: #bdb2c8;
+  --letter-paper: #cdc5b6;
+  --letter-light: #fff0cceb;
+  --letter-shade: #50495826;
+  --letter-shadow-near: #08070d55;
+  --letter-shadow-far: #08070d45;
+  /* 与加入手写信前的夜间 .modal-backdrop 完全一致。 */
+  background: #17131f80;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.is-night .about-letter-paper {
+  background:
+    radial-gradient(ellipse 105% 92% at 4% 2%, var(--letter-light), transparent 68%),
+    linear-gradient(135deg, transparent 25%, var(--letter-shade) 100%), var(--letter-paper);
+}
+@keyframes about-letter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes about-letter-unfold {
+  from {
+    transform: translateY(5px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (max-width: 700px) {
+  .app.floating-shell .about-letter-backdrop {
+    align-items: flex-start;
+    padding: max(12px, env(safe-area-inset-top)) 6px max(12px, env(safe-area-inset-bottom));
+  }
+  .app.floating-shell .about-letter-dialog {
+    padding: 0 8px 24px;
+  }
+  .about-letter-heading {
+    width: calc(100% + 16px);
+    margin-inline: -8px;
+    padding-inline: 8px;
+    margin-bottom: 8px;
+  }
+  .about-letter-reading-tools {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .about-letter-paper {
+    padding: 22px 12px 27px;
+  }
+  .is-enlarged .about-letter-paper-wrap {
+    width: 700px;
+  }
+  .is-enlarged .about-letter-paper {
+    padding: 30px 26px 35px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.floating-shell .about-letter-backdrop,
+  .app.floating-shell .about-letter-dialog {
+    animation: none;
+  }
+  .about-letter-close::before {
+    transition: none;
+  }
+}

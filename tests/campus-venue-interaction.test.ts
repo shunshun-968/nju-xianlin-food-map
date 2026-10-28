@@ -9,21 +9,31 @@ import {
 } from '../src/lib/campus-venue-interaction';
 import type { CampusBasemap } from '../src/lib/campus-basemap';
 
-test('confirmation eligibility follows the actual modeled venue registry', () => {
-  assert.equal(modeledCampusVenueIds.length, 5);
+test('the modeled venue registry includes Yifu and excludes unmodeled places', () => {
+  assert.equal(modeledCampusVenueIds.length, 6);
   for (const id of modeledCampusVenueIds) assert.equal(isModeledCampusVenue(id), true);
-  for (const id of [null, 'v-hut', 'v-yifu', 'unknown', 'v-10-f1'])
+  for (const id of [null, 'v-hut', 'unknown', 'v-10-f1'])
     assert.equal(isModeledCampusVenue(id), false);
 });
 
 test('two completed taps on the same modeled place reveal its name then enter once', () => {
-  for (const id of modeledCampusVenueIds) {
+  for (const id of modeledCampusVenueIds.filter((venueId) => venueId !== 'v-yifu')) {
     const first = nextCampusVenueTap(null, id, true);
     assert.deepEqual(first, { preview: id, enter: null });
     const second = nextCampusVenueTap(first.preview, id, true);
     assert.deepEqual(second, { preview: null, enter: id });
     // Returning to the map starts a fresh confirmation rather than keeping an armed place.
     assert.deepEqual(nextCampusVenueTap(second.preview, id, true), first);
+  }
+});
+
+test('Yifu has no name-preview step and enters directly on the first touch', () => {
+  for (const preview of [null, 'v-yifu', 'v-south']) {
+    for (const confirmation of [false, true])
+      assert.deepEqual(nextCampusVenueTap(preview, 'v-yifu', confirmation), {
+        preview: null,
+        enter: 'v-yifu',
+      });
   }
 });
 
@@ -43,7 +53,7 @@ test('switching places replaces the preview and blank or cancelled navigation di
 
 test('desktop and unmodeled places enter directly without inheriting a touch preview', () => {
   for (const currentPreview of [null, 'v-456', 'v-10']) {
-    for (const id of [...modeledCampusVenueIds, 'v-hut', 'v-yifu'])
+    for (const id of [...modeledCampusVenueIds, 'v-hut'])
       assert.deepEqual(nextCampusVenueTap(currentPreview, id, false), {
         preview: null,
         enter: id,

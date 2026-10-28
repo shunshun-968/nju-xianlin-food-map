@@ -16,10 +16,29 @@
         max-height: 100vh;
         object-fit: contain;
       }
+      body { font-family: system-ui, sans-serif; color: #3d3544; background: #e9e5df; }
+      .export-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px; background: white; }
+      select, button { font: inherit; padding: 6px 10px; }
+      pre { padding: 16px; font-size: 12px; }
     </style>
   </head>
   <body>
+    <div class="export-tools">
+      <label>地点 <select id="model-id">
+        <option value="v-yifu">逸夫楼售卖点</option>
+        <option value="v-south">南门餐车</option>
+        <option value="v-456">四五六食堂</option>
+        <option value="v-891">民族八九食堂</option>
+        <option value="v-10">第十食堂与教工食堂</option>
+        <option value="v-1112">十一十二食堂</option>
+      </select></label>
+      <label>主题 <select id="model-theme"><option value="day">白天</option><option value="night">夜晚</option></select></label>
+      <button id="render-sprite">渲染模型</button>
+      <output id="export-status">选择地点后渲染</output>
+      <a id="download-sprite" hidden>下载透明 WebP</a>
+    </div>
     <canvas id="sprite"></canvas>
+    <pre id="sprite-metadata" aria-label="模型投影元数据"></pre>
     <script type="module" src="./render-campus-models.ts"></script>
   </body>
 </html>

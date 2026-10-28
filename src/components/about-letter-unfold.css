@@ -1,0 +1,84 @@
+/* 一次展开：纸团先松开，纸面分阶段舒展，笔迹最后进入阅读状态。 */
+.about-letter-unfold-stage {
+  position: relative;
+  perspective: 1200px;
+  width: 100%;
+}
+.paper-unfold-ball {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: 21%;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  filter: drop-shadow(1px 3px 2px #38303920) drop-shadow(3px 9px 9px #3830391c);
+  animation: letter-ball-release 1200ms linear both;
+}
+.paper-unfold-ball svg { display: block; width: 100%; height: auto; overflow: visible; }
+.paper-ball-light { stop-color: color-mix(in srgb, var(--letter-paper) 70%, white); }
+.paper-ball-base { stop-color: var(--letter-paper); }
+.paper-ball-shade { stop-color: color-mix(in srgb, var(--letter-paper) 82%, #625b53); }
+.paper-ball-face-light { fill: color-mix(in srgb, var(--letter-paper) 74%, white); }
+.paper-ball-face-mid { fill: color-mix(in srgb, var(--letter-paper) 94%, #80796f); }
+.paper-ball-face-shadow { fill: color-mix(in srgb, var(--letter-paper) 77%, #6b645c); }
+.paper-ball-face-deep { fill: color-mix(in srgb, var(--letter-paper) 65%, #655f59); }
+.paper-ball-fine-creases { stroke: #fffdf6; stroke-width: 0.65; opacity: 0.5; }
+.paper-ball-facet { transform-box: fill-box; transform-origin: center; }
+.paper-ball-facet-left { animation: letter-ball-left 1200ms ease-out both; }
+.paper-ball-facet-right { animation: letter-ball-right 1200ms ease-out both; }
+.about-letter-unfold-stage > .about-letter-paper-wrap {
+  transform-origin: 50% 50%;
+  animation: letter-sheet-expand 1200ms cubic-bezier(0.22, 0.65, 0.28, 1) both;
+}
+.about-letter-unfold-stage .about-letter-paper {
+  animation: letter-sheet-outline 1200ms cubic-bezier(0.22, 0.65, 0.28, 1) both;
+}
+.about-letter-unfold-stage .about-letter-handwriting { animation: letter-ink-reveal 1200ms ease-out both; }
+@keyframes letter-ball-release {
+  0% { opacity: 0; transform: translate(-50%, -47%) rotate(-9deg) scale(0.92); }
+  10%, 24% { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg) scale(1); }
+  39% { opacity: 0.4; transform: translate(-50%, -50%) rotate(-2deg) scale(1.6, 1.3); }
+  56% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(2.35, 1.65); }
+  100% { opacity: 0; visibility: hidden; transform: translate(-50%, -50%) scale(2.35, 1.65); }
+}
+@keyframes letter-ball-left {
+  0%, 24% { transform: translate(0, 0) rotate(0deg); }
+  56%, 100% { transform: translate(-5px, -1px) rotate(-8deg); }
+}
+@keyframes letter-ball-right {
+  0%, 24% { transform: translate(0, 0) rotate(0deg); }
+  56%, 100% { transform: translate(5px, 2px) rotate(7deg); }
+}
+@keyframes letter-sheet-expand {
+  0%, 24% { opacity: 0; transform: scale(0.19, 0.2) rotateX(42deg) rotateY(-12deg) rotateZ(-6deg); }
+  39% { opacity: 1; transform: scale(0.35, 0.38) rotateX(24deg) rotateY(8deg) rotateZ(-3deg); }
+  62% { opacity: 1; transform: scale(0.68, 0.77) rotateX(12deg) rotateY(-4deg) rotateZ(1deg); }
+  84% { opacity: 1; transform: scale(0.96, 0.98) rotateX(2deg) rotateY(0deg) rotateZ(-0.2deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes letter-sheet-outline {
+  0%, 24% {
+    clip-path: polygon(23% 3%, 42% 10%, 55% 1%, 74% 10%, 89% 13%, 99% 32%, 91% 48%, 97% 70%, 89% 87%, 72% 92%, 57% 99%, 36% 91%, 19% 98%, 8% 78%, 2% 57%, 12% 33%);
+  }
+  48% {
+    clip-path: polygon(11% 5%, 30% 2%, 53% 6%, 74% 1%, 97% 8%, 92% 29%, 100% 52%, 94% 73%, 99% 95%, 75% 92%, 54% 100%, 29% 94%, 3% 97%, 7% 72%, 1% 48%, 5% 27%);
+  }
+  80% {
+    clip-path: polygon(1% 0%, 25% 1%, 50% 0%, 75% 0%, 100% 1%, 99% 25%, 100% 50%, 100% 75%, 99% 100%, 75% 99%, 50% 100%, 25% 100%, 0% 99%, 1% 75%, 0% 50%, 0% 25%);
+  }
+  100% {
+    clip-path: polygon(0% 0%, 25% 0%, 50% 0%, 75% 0%, 100% 0%, 100% 25%, 100% 50%, 100% 75%, 100% 100%, 75% 100%, 50% 100%, 25% 100%, 0% 100%, 0% 75%, 0% 50%, 0% 25%);
+  }
+}
+@keyframes letter-ink-reveal {
+  0%, 44% { opacity: 0; }
+  76%, 100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-unfold-ball { display: none; animation: none; }
+  .paper-ball-facet { animation: none; }
+  .about-letter-unfold-stage > .about-letter-paper-wrap,
+  .about-letter-unfold-stage .about-letter-paper,
+  .about-letter-unfold-stage .about-letter-handwriting { animation: none; }
+}

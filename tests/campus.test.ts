@@ -89,10 +89,14 @@ test('map labels never overlap, and road names stay attached to their road ancho
   }
 });
 
-test('reference-image names override the old printed names', () => {
+test('reference-image names and the expanded tenth-canteen name override old printed names', () => {
   for (const venue of catalog.venues) {
     const anchor = venueAnchors[venue.id];
-    assert.equal(venue.name, anchor.source.replace(/\.(jpg|png)$/, ''));
+    // 定位原图仍名为“第十食堂.jpg”，网站名称已明确包含同楼的教工食堂。
+    const expectedName = venue.id === 'v-10'
+      ? '第十食堂与教工食堂'
+      : anchor.source.replace(/\.(jpg|png)$/, '');
+    assert.equal(venue.name, expectedName);
     assert(venue.campusPosition[0] >= 0 && venue.campusPosition[0] <= layout.width);
     assert(venue.campusPosition[1] >= 0 && venue.campusPosition[1] <= layout.height);
     if (anchor.replaces) {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { catalog } from '../data/catalog';
 import { SOUTH_GATE_CART_FLOOR_ID, SOUTH_GATE_CART_VENUE_ID } from '../data/south-gate-cart';
+import { YIFU_KIOSK_FLOOR_ID, YIFU_KIOSK_VENUE_ID } from '../data/yifu-kiosk';
 import type { View } from '../domain';
 
 export type NavigationState = { view: View; stallId: string | null; showInfo: boolean };
@@ -8,15 +9,20 @@ export function readNavigation(url: URL): NavigationState {
   const floor = catalog.floors.find((f) => f.id === url.searchParams.get('floor'));
   const venue = catalog.venues.find((v) => v.id === url.searchParams.get('venue'));
   const view: View = floor
-    ? { level: 'floor', venueId: floor.venueId, floorId: floor.id }
+    ? floor.id === YIFU_KIOSK_FLOOR_ID
+      ? { level: 'building', venueId: YIFU_KIOSK_VENUE_ID }
+      : { level: 'floor', venueId: floor.venueId, floorId: floor.id }
     : venue
       ? { level: 'building', venueId: venue.id }
       : { level: 'campus' };
   // The cart is directly selectable in its building view, without entering a floor.
-  const stallFloorId = floor?.id ??
+  const stallFloorId =
+    floor?.id ??
     (view.level === 'building' && view.venueId === SOUTH_GATE_CART_VENUE_ID
       ? SOUTH_GATE_CART_FLOOR_ID
-      : undefined);
+      : view.level === 'building' && view.venueId === YIFU_KIOSK_VENUE_ID
+        ? YIFU_KIOSK_FLOOR_ID
+        : undefined);
   const stall = catalog.stalls.find(
     (s) => s.id === url.searchParams.get('stall') && s.floorId === stallFloorId,
   );

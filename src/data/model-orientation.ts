@@ -27,10 +27,12 @@ export const indoorNorth: Readonly<Record<string, ModelNorth>> = {
   'v-1112-f2': right,
   // User confirmed the cart's service front (+Z) faces south on 2026-10-26.
   'v-south-f1': northZ,
+  // 逸夫楼照片说明：靠门的一面为南，模型移除该面墙与门。
+  'v-yifu-f1': northZ,
 };
 
 export function getModelNorth(view: Exclude<View, { level: 'campus' }>): ModelNorth | undefined {
   // The cart has the same model on its building and floor routes.
-  if (view.venueId === 'v-south') return northZ;
+  if (view.venueId === 'v-south' || view.venueId === 'v-yifu') return northZ;
   return view.level === 'floor' ? indoorNorth[view.floorId] : exteriorNorth[view.venueId];
 }

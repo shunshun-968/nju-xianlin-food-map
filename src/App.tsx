@@ -5,7 +5,9 @@ import { UiIcon } from './components/UiIcon';
 import { CompassRose } from './components/CompassRose';
 import { FloatingSidebar } from './components/FloatingSidebar';
 import { DraggableDetailPanel } from './components/DraggableDetailPanel';
+import { AboutLetter } from './components/AboutLetter';
 import { southGateCartFoodNames, southGateCartStall } from './data/south-gate-cart';
+import { yifuKioskFoodNames, yifuKioskOfferings, yifuKioskServiceNote, yifuKioskStall } from './data/yifu-kiosk';
 import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
@@ -128,13 +130,21 @@ export default function App() {
     if (!showInfo || !aboutDialog.current) return;
     const previous = document.activeElement;
     const dialog = aboutDialog.current;
-    const buttons = [...dialog.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];
-    buttons[0]?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog.tabIndex = -1;
+    // 先把焦点放在信件容器，打开时不让关闭键出现悬停或键盘焦点装饰。
+    dialog.focus({ preventScroll: true });
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return;
+      const buttons = [...dialog.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex="0"]')]
+        .filter((element) => element.getClientRects().length > 0);
       const first = buttons[0],
         last = buttons[buttons.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!first || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first)?.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last?.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -145,7 +155,11 @@ export default function App() {
     dialog.addEventListener('keydown', trapFocus);
     return () => {
       dialog.removeEventListener('keydown', trapFocus);
-      if (previous instanceof HTMLElement) previous.focus();
+      document.body.style.overflow = previousOverflow;
+      const returnTarget = previous instanceof HTMLElement && previous !== document.body && previous.isConnected
+        ? previous
+        : document.querySelector<HTMLElement>('.header-nav .about');
+      returnTarget?.focus({ preventScroll: true });
     };
   }, [showInfo]);
   useEffect(() => {
@@ -182,6 +196,8 @@ export default function App() {
     indoorCanteen?.style === 'faculty' ||
     indoorCanteen?.style === 'eleventh' || indoorCanteen?.style === 'tenth';
   const isSouthCart = venue?.id === 'v-south';
+  const isYifuKiosk = venue?.id === 'v-yifu';
+  const isSingleWindowVenue = isSouthCart || isYifuKiosk;
   const cartFoodNames = southGateCartFoodNames[interfaceTheme === 'night' ? 'night' : 'day'];
   const modelWindowCount = indoorCanteen?.faces.reduce(
     (total, face) => total + face.windowCount,
@@ -215,7 +231,7 @@ export default function App() {
   );
   return (
     <div
-      className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}${isModeledFloor || isSouthCart ? ' fourth-model-active' : ''}`}
+      className={`app floating-shell theme-${theme} view-${view.level} ${headerOpen ? 'header-open' : 'header-hidden'}${isModeledFloor || isSingleWindowVenue ? ' fourth-model-active' : ''}`}
       data-interface-theme={interfaceTheme}
     >
       {!mobile && (
@@ -305,7 +321,7 @@ export default function App() {
               {view.level !== 'campus' && (
                 <div className="eyebrow">
                   <span className="hero-dot" />{' '}
-                  {isSouthCart
+                  {isSingleWindowVenue
                     ? '校园里的烟火气'
                     : view.level === 'building'
                       ? '走进一栋楼，发现一餐饭'
@@ -329,6 +345,8 @@ export default function App() {
                 <p>
                   {isSouthCart
                     ? '开棚营业的小餐车，早餐与夜宵各有滋味。'
+                    : isYifuKiosk
+                      ? '地点：逸B102'
                     : view.level === 'building'
                       ? '转一转这栋建筑，选一层开始探索。'
                       : '走近窗口，看看本大王想吃些什么(๑•̀ㅂ•́)و✧'}
@@ -480,6 +498,24 @@ export default function App() {
                       <UiIcon name="chevron-right" size={16} />
                     </button>
                     <p>点击餐车查看详情 · 单击右键进入旋转模式</p>
+                  </div>
+                ) : isYifuKiosk ? (
+                  <div className="venue-description cart-description">
+                    <span className="tiny-tag">B102 休闲食坊 · 一个售卖窗口</span>
+                    <p>红灯笼下的热餐台，窗边的木椅，还有亮着灯的饮品冰柜。</p>
+                    <h3>逸夫楼里的日常一餐</h3>
+                    <div className="cart-food-tags">
+                      {yifuKioskFoodNames.map((name) => <span key={name}>{name}</span>)}
+                    </div>
+                    <button
+                      className={`stall-card ${stallId === yifuKioskStall.id ? 'selected' : ''}`}
+                      onClick={() => setStallId(yifuKioskStall.id)}
+                    >
+                      <span className="stall-number"><UiIcon name="cart" size={18} /></span>
+                      <span className="stall-copy"><strong>查看售卖点窗口</strong></span>
+                      <UiIcon name="chevron-right" size={16} />
+                    </button>
+                    <p>点击售卖点查看详情 · 上方切换俯视图与 3D</p>
                   </div>
                 ) : (
                   <>
@@ -673,7 +709,7 @@ export default function App() {
                 aria-label="窗口详情移动栏，可拖动或使用方向键移动"
                 title="拖动标题栏移动卡片，也可聚焦后用方向键移动"
               >
-                <span className="tiny-tag">{isModeledFloor || isSouthCart ? '窗口信息' : '示例窗口'}</span>
+                <span className="tiny-tag">{isModeledFloor || isSingleWindowVenue ? '窗口信息' : '示例窗口'}</span>
                 <span className="detail-drag-hint" aria-hidden="true">拖动移位</span>
                 <button aria-label="关闭窗口详情" onClick={() => setStallId(null)}>
                   <UiIcon name="close" size={19} />
@@ -687,6 +723,21 @@ export default function App() {
                   <div className="cart-food-tags">
                     {cartFoodNames.map((name) => <span key={name}>{name}</span>)}
                   </div>
+                </>
+              )}
+              {isYifuKiosk && (
+                <>
+                  <p className="detail-location">逸夫楼 B102 · 休闲食坊</p>
+                  {yifuKioskOfferings.map((offering) => (
+                    <div key={offering.category}>
+                      <h3>{offering.category}</h3>
+                      <div className="cart-food-tags">
+                        {offering.names.map((name) => <span key={name}>{name}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                  <p className="detail-location">{yifuKioskServiceNote}</p>
+                  <small>餐品信息来自现场招牌，实际供应以现场为准。</small>
                 </>
               )}
               {indoorCanteen && (
@@ -736,7 +787,7 @@ export default function App() {
                   )}
                 </>
               )}
-              {!isModeledFloor && !isSouthCart && (
+              {!isModeledFloor && !isSingleWindowVenue && (
                 <>
                   <p className="detail-location">
                     {venue?.name} · {floor?.name}
@@ -772,64 +823,11 @@ export default function App() {
         </section>
       </main>
       {showInfo && (
-        <div className="modal-backdrop" onClick={() => setShowInfo(false)}>
-          <section
-            ref={aboutDialog}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="about-title"
-            className="about-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="modal-close"
-              onClick={() => setShowInfo(false)}
-              aria-label="关闭说明"
-            >
-              <UiIcon name="close" size={22} />
-            </button>
-            <div className="about-scroll">
-              <span className="eyebrow">FROM CAMPUS, FOR CAMPUS</span>
-              <h2 id="about-title">
-                让好好吃饭，
-                <br />
-                成为校园里的小确幸。
-              </h2>
-              <p>
-                「仙林食光」是由同学共同建设的交互式美食地图。目前处于 Phase
-                0，正在打磨从校园、食堂建筑到楼层窗口的探索体验。
-              </p>
-              <p>开发者：顺顺和 lungfish</p>
-              <p>
-                校园底图按提供的平面图重绘，地点名称以定位图片文件名为准，餐车与售卖点按蓝色 ×
-                标记定位。四五六食堂、民族食堂及第八食堂内部已按参考资料建模，其他楼层与菜单仍为示例；模型尺寸为示意比例。
-              </p>
-              <section className="zoom-guide" aria-labelledby="zoom-guide-title">
-                <h3 id="zoom-guide-title">缩放规则</h3>
-                <ul>
-                  <li>鼠标滚轮：向上放大、向下缩小，校园地图以鼠标所在位置为缩放中心。</li>
-                  <li>触屏操作：在校园地图上双指张开放大、合拢缩小，单指拖动浏览。</li>
-                  <li>
-                    右侧 ＋／－：以画面中心放大或缩小。校园地图的缩放范围为初始视角的 0.85—8 倍。
-                  </li>
-                  <li>点击右侧复位按钮，恢复当前场景的初始视角。</li>
-                </ul>
-                <p>单击右键进入旋转模式</p>
-              </section>
-              <p>下一步：现场采集 → 校准空间 → 完善菜单 → 开放真实评价。</p>
-              <p className="source-credits">
-                比例尺校准数据：{' '}
-                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-                  © OpenStreetMap contributors
-                </a>{' '}
-                （ODbL）。
-              </p>
-              <button className="primary-button" onClick={() => setShowInfo(false)}>
-                开始探索 <UiIcon name="arrow-right" size={18} />
-              </button>
-            </div>
-          </section>
-        </div>
+        <AboutLetter
+          dialogRef={aboutDialog}
+          onClose={() => setShowInfo(false)}
+          night={interfaceTheme === 'night'}
+        />
       )}
     </div>
   );

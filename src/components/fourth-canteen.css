@@ -126,6 +126,17 @@
   background: var(--purple);
   color: #fff9f2;
 }
+.yifu-view-controls button {
+  min-width: 64px;
+  padding-inline: 9px;
+}
+.yifu-view-controls button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.app.floating-shell.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs {
+  max-width: max(0px, calc(var(--model-overlay-width) - 245px));
+}
 .fourth-view-note {
   position: absolute;
   z-index: 3;
@@ -210,6 +221,12 @@
     padding: 0 3px;
     white-space: nowrap;
     font-size: 10.5px;
+  }
+  .app.fourth-model-active .map-area .yifu-view-controls {
+    width: 184px;
+  }
+  .app.floating-shell.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs {
+    max-width: max(0px, calc(var(--model-overlay-width) - 192px));
   }
 }
 

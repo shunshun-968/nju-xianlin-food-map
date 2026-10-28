@@ -101,6 +101,12 @@
   color: var(--purple-dark);
 }
 
+.app.floating-shell:is(.view-building, .view-floor) :is(.floor-card, .stall-card),
+.app.floating-shell:is(.view-building, .view-floor)
+  :is(.floor-card, .stall-card):is(:hover, :focus-visible, .selected) {
+  border-radius: 0;
+}
+
 .app.floating-shell:is(.view-building, .view-floor) .sidebar > .list-heading {
   margin-top: 12px;
 }

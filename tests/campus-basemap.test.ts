@@ -113,7 +113,7 @@ test('the seven outer-map venues retain the catalog IDs and explicit canteen nam
   const expected = {
     'v-456': ['way/99814434', '四五六食堂'],
     'v-891': ['way/99814405', '民族食堂、第八、九食堂'],
-    'v-10': ['way/188130723', '第十食堂'],
+    'v-10': ['way/188130723', '第十食堂与教工食堂'],
     'v-1112': ['way/350505117', '第十一、十二食堂'],
   };
   for (const [id, [osmId, name]] of Object.entries(expected)) {
@@ -152,7 +152,7 @@ test('the initial view is one wheel level larger and all building labels appear 
   assert.equal(initial.zoom, initialZoom);
   const initialLabels = mapLabels(map, initial, overview, [], true);
   assert.equal(initialLabels.details.length, 0);
-  assert.deepEqual(initialLabels.food.map((label) => label.id).sort(), ['v-hut', 'v-yifu']);
+  assert.deepEqual(initialLabels.food.map((label) => label.id).sort(), ['v-hut']);
 
   const nextZoom = initialZoom * wheelZoomFactor(-120);
   assert.equal(nextZoom, landmarkZoomThreshold);
@@ -200,7 +200,7 @@ test('modeled venue names are revealed one at a time and touch preview reserves 
     const hovered = mapLabels(map, fitted(), overview, [], true, { venueId });
     assert.deepEqual(
       hovered.food.map((label) => label.id).sort(),
-      [venueId, 'v-hut', 'v-yifu'].sort(),
+      [venueId, 'v-hut'].sort(),
     );
     const name = hovered.food.find((label) => label.id === venueId)!;
     assert.ok(name && !name.lines.includes('再点一次进入'));
@@ -221,6 +221,18 @@ test('modeled venue names are revealed one at a time and touch preview reserves 
           ),
       ),
     );
+  }
+});
+
+test('Yifu never adds a visible name badge, including hover and touch previews', () => {
+  for (const zoom of [initialZoom, landmarkZoomThreshold, 4, 12]) {
+    for (const touchHint of [false, true]) {
+      const labels = mapLabels(map, fitted(zoom), overview, [], true, {
+        venueId: 'v-yifu',
+        touchHint,
+      });
+      assert.ok(labels.food.every((label) => label.id !== 'v-yifu'));
+    }
   }
 });
 

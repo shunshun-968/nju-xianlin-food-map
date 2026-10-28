@@ -40,11 +40,11 @@
     },
     {
       "id": "v-10",
-      "name": "第十食堂",
+      "name": "第十食堂与教工食堂",
       "area": "东部生活区 · 静园南侧",
       "kind": "canteen",
       "floors": 2,
-      "shortName": "第十食堂",
+      "shortName": "第十食堂与教工食堂",
       "campusPosition": [
         964,
         1212

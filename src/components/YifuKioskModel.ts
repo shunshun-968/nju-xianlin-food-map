@@ -787,6 +787,7 @@ export function createYifuKioskModel(): FourthCanteenModel {
       atmosphere.setMode(mode);
     },
     setInterfaceTheme(night) {
+      group.userData.night = night;
       hemi.intensity = night
         ? YIFU_BROAD_LIGHTS.hemisphere.night
         : YIFU_BROAD_LIGHTS.hemisphere.day;

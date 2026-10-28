@@ -221,14 +221,18 @@ test('modeled venue names are revealed one at a time and touch preview reserves 
   }
 });
 
-test('Yifu never adds a visible name badge, including hover and touch previews', () => {
+test('Yifu reveals its name badge for hover and touch previews', () => {
   for (const zoom of [initialZoom, landmarkZoomThreshold, 4, 12]) {
     for (const touchHint of [false, true]) {
-      const labels = mapLabels(map, fitted(zoom), overview, [], true, {
+      const transform = fitted(zoom);
+      const venue = map.venues.find((item) => item.id === 'v-yifu')!;
+      transform.x = overview.width / 2 - venue.point[0] * transform.scale;
+      transform.y = overview.height / 2 - venue.point[1] * transform.scale;
+      const labels = mapLabels(map, transform, overview, [], true, {
         venueId: 'v-yifu',
         touchHint,
       });
-      assert.ok(labels.food.every((label) => label.id !== 'v-yifu'));
+      assert.ok(labels.food.some((label) => label.id === 'v-yifu'));
     }
   }
 });

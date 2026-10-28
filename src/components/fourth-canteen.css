@@ -135,7 +135,10 @@
   opacity: 0.4;
 }
 .app.floating-shell.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs {
-  max-width: max(0px, calc(var(--model-overlay-width) - 245px));
+  max-width: max(0px, calc(var(--model-overlay-width) - 160px));
+}
+.app.floating-shell.fourth-model-active .map-area:not(:has(.fourth-view-controls)) .breadcrumbs {
+  max-width: var(--model-overlay-width);
 }
 .fourth-view-note {
   position: absolute;
@@ -223,10 +226,12 @@
     font-size: 10.5px;
   }
   .app.fourth-model-active .map-area .yifu-view-controls {
-    width: 184px;
+    width: 140px;
+    top: calc(var(--model-overlay-top, 16px) + 46px);
   }
   .app.floating-shell.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs {
-    max-width: max(0px, calc(var(--model-overlay-width) - 192px));
+    max-width: var(--model-overlay-width);
+    width: var(--model-overlay-width);
   }
 }
 

@@ -166,6 +166,29 @@ export function createYifuKioskSelection(
   let lastAppliedEnvironment = environmentIntensity;
   let calibratedVisibility = '';
   let disposed = false;
+  let night = false;
+
+  function updateBeamTheme() {
+    const next = lighting.model.userData.night === true;
+    if (next === night) return;
+    night = next;
+    if (night) {
+      spotlight.position.set(3, 10, 5);
+      spotlight.target.position.set(0, 0.8, 0);
+    } else {
+      spotlight.position.copy(source);
+      spotlight.target.position.copy(focus);
+    }
+    spotlight.angle = night ? 0.65 : 0.56;
+    spotlight.penumbra = night ? 0.45 : 0.65;
+    spotlight.distance = night ? 28 : 11;
+    spotlight.color.set(night ? '#ffe4ad' : '#ffd593');
+    beamMaterial.uniforms.tint.value.set(night ? '#ffdf9c' : '#ffcf80');
+    const axis = spotlight.target.position.clone().sub(spotlight.position);
+    beam.position.copy(spotlight.position).add(spotlight.target.position).multiplyScalar(0.5);
+    beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), axis.clone().normalize());
+    beam.scale.set(night ? 2.9 : 1, axis.length() / beamGeometry.parameters.height, night ? 2.9 : 1);
+  }
 
   function broadVisibility() {
     let signature = '';
@@ -222,6 +245,7 @@ export function createYifuKioskSelection(
   }
 
   function captureLighting() {
+    updateBeamTheme();
     sourceLights.clear();
     sourceEmissions.clear();
     const remember = (light: THREE.Light) => {
@@ -269,7 +293,7 @@ export function createYifuKioskSelection(
   function renderStrength() {
     applyLighting(amount);
     spotlight.intensity = peakIntensity * amount;
-    beamMaterial.uniforms.opacity.value = amount * 0.055;
+    beamMaterial.uniforms.opacity.value = amount * (night ? 0.24 : 0.055);
     glowMaterial.opacity = amount * 0.15;
     beam.visible = amount > 0;
   }

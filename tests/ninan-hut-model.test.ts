@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { createNinanHutModel, NINAN_HINT_POSITION } from '../src/components/NinanHutModel';
+import { createNinanHutModel } from '../src/components/NinanHutModel';
 import { ninanHutStall } from '../src/data/ninan-hut';
 
 test('Ninan exterior keeps spatial identity and changes only the selected meal equipment', async (t) => {
@@ -118,6 +118,27 @@ test('Ninan exterior keeps spatial identity and changes only the selected meal e
       );
     });
 
+    await t.test('warm interior lamps illuminate the house only at night', () => {
+      const lights = [1, 2, 3].map(
+        (number) => required(`ninan-interior-warm-light-${number}`) as THREE.PointLight,
+      );
+      model.setMealMode('lunch');
+      model.setInterfaceTheme(true);
+      for (const light of lights) {
+        assert.ok(light instanceof THREE.PointLight);
+        assert.equal(light.color.getHexString(), 'ffb969');
+        assert.equal(light.intensity, 13);
+        assert.equal(light.distance, 4.2);
+        assert.ok(light.position.x > -1 && light.position.x < 2, 'Lamp stays inside the house');
+        assert.ok(Math.abs(light.position.z) < 4.8, 'Lamp stays inside the long walls');
+      }
+      model.setMealMode('dinner');
+      assert.ok(lights.every((light) => light.intensity === 13), 'Meal switches keep the warm light');
+      model.setInterfaceTheme(false);
+      assert.ok(lights.every((light) => light.intensity === 0));
+      assert.equal(root.userData.mealMode, 'dinner');
+    });
+
     await t.test(
       'breakfast board stands southeast of the separate tent and drink menu belongs below coffee',
       () => {
@@ -138,7 +159,6 @@ test('Ninan exterior keeps spatial identity and changes only the selected meal e
         assert.ok(
           serviceAreas?.some((area) => Math.abs(area.x - tent.x) < 0.001 && area.z > tent.z),
         );
-        assert.ok(NINAN_HINT_POSITION[0] > 2, 'Hint is outside the north service wall');
       },
     );
 
@@ -250,7 +270,7 @@ test('Ninan exterior keeps spatial identity and changes only the selected meal e
       });
     });
 
-    await t.test('plain exterior meshes do not intercept the dedicated detail hint', () => {
+    await t.test('plain exterior meshes leave service picking to dedicated targets', () => {
       root.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           assert.notEqual(object.userData.kind, 'stall');

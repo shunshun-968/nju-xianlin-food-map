@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 const boardUrl = new URL('../assets/yifu-kiosk/b102-board.jpg', import.meta.url).href;
-const wallUrl = new URL('../assets/yifu-kiosk/west-reference.jpg', import.meta.url).href;
+const wallUrl = new URL('../assets/yifu-kiosk/west-wall-art.webp', import.meta.url).href;
 const logisticsUrl = new URL('../assets/branding/南大后勤.png', import.meta.url).href;
 const crestUrl = new URL('../assets/branding/南大校徽.png', import.meta.url).href;
 const fonts = '"Microsoft YaHei", "PingFang SC", sans-serif';
@@ -140,7 +140,8 @@ export function createYifuWallArt(parent: THREE.Group) {
   const frame = new THREE.Mesh(new THREE.BoxGeometry(0.77, 0.96, 0.036), new THREE.MeshStandardMaterial({ color: '#322c27', roughness: 0.4 }));
   frame.castShadow = true; root.add(frame);
   if (wallPhoto) {
-    const art = photoPlane(wallPhoto, 0.727, 0.918, [[0.219, 0.181], [0.371, 0.198], [0.368, 0.325], [0.218, 0.321]]);
+    // 原图 3072×4096 中裁出 (667,739)—(1142,1334)，同步换算 UV，保持原来的透视和取景。
+    const art = photoPlane(wallPhoto, 0.727, 0.918, [[0.012143158, 0.003993277], [0.995183158, 0.121021849], [0.975781053, 0.995294118], [0.005675789, 0.967757983]]);
     art.position.z = 0.02; root.add(art);
   }
   const notice = yifuLabel('禁止吸烟\n请保持环境整洁', 0.32, 0.19, '#eee9d7', '#64554e');

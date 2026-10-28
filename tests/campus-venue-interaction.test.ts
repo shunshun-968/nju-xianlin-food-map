@@ -16,23 +16,13 @@ test('the modeled venue registry includes Yifu and Ninan hut and excludes unknow
 });
 
 test('two completed taps on the same modeled place reveal its name then enter once', () => {
-  for (const id of modeledCampusVenueIds.filter((venueId) => venueId !== 'v-yifu')) {
+  for (const id of modeledCampusVenueIds) {
     const first = nextCampusVenueTap(null, id, true);
     assert.deepEqual(first, { preview: id, enter: null });
     const second = nextCampusVenueTap(first.preview, id, true);
     assert.deepEqual(second, { preview: null, enter: id });
     // Returning to the map starts a fresh confirmation rather than keeping an armed place.
     assert.deepEqual(nextCampusVenueTap(second.preview, id, true), first);
-  }
-});
-
-test('Yifu has no name-preview step and enters directly on the first touch', () => {
-  for (const preview of [null, 'v-yifu', 'v-south']) {
-    for (const confirmation of [false, true])
-      assert.deepEqual(nextCampusVenueTap(preview, 'v-yifu', confirmation), {
-        preview: null,
-        enter: 'v-yifu',
-      });
   }
 });
 

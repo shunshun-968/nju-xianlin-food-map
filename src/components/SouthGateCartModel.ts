@@ -34,6 +34,7 @@ export function createSouthGateCartModel(): FourthCanteenModel {
     group,
     setMode() {},
     setInterfaceTheme(night) {
+      group.userData.night = night;
       cart.setNight(night);
       ground.setNight(night);
       food.day.visible = !night;

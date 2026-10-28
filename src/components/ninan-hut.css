@@ -15,33 +15,26 @@
 .ninan-meal-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
+  gap: 4px;
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--ninan-tint);
 }
 .ninan-meal-tabs button {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 50px;
-  padding: 8px 6px;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 9px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 7px;
   background: transparent;
   color: var(--ninan-muted);
+  font-size: 12px;
   cursor: pointer;
   transition:
     background 150ms ease,
     color 150ms ease;
-}
-.ninan-meal-tabs button strong {
-  font-size: 13px;
-  font-weight: 600;
-}
-.ninan-meal-tabs button span {
-  font-size: 10px;
 }
 .ninan-meal-tabs button:hover {
   color: var(--ninan-text);
@@ -57,21 +50,6 @@
 }
 .ninan-details {
   color: #51465b;
-}
-.ninan-details .ninan-reference {
-  margin: 18px 0 0;
-}
-.ninan-reference img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-}
-.ninan-reference figcaption {
-  margin-top: 7px;
-  color: #84758d;
-  font-size: 11px;
-  text-align: center;
 }
 .ninan-details .ninan-location-note {
   margin: 15px 0;
@@ -119,47 +97,6 @@
 .ninan-details .ninan-price-note {
   color: #84758d;
 }
-.ninan-board-link {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 14px;
-  padding: 10px;
-  border: 1px solid #e5dce9;
-  border-radius: 10px;
-  color: #76538a;
-  text-decoration: none;
-  font-size: 12px;
-}
-.ninan-board-link img {
-  width: 62px;
-  height: auto;
-  border-radius: 5px;
-}
-.ninan-board-link:hover {
-  background: #f1eaf4;
-}
-.ninan-board-link:focus-visible {
-  outline: 2px solid #76538a;
-  outline-offset: 3px;
-}
-.ninan-dinner-note {
-  padding: 28px 10px 20px;
-  text-align: center;
-}
-.ninan-service-tag {
-  color: #8c693c;
-  font-size: 12px;
-}
-.ninan-dinner-note h3 {
-  margin: 12px 0;
-  font-size: 18px;
-}
-.ninan-details .ninan-dinner-note p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.8;
-}
 [data-interface-theme='night'] .ninan-meal-switch {
   --ninan-text: #eee3f5;
   --ninan-muted: #b3a4c0;
@@ -182,23 +119,12 @@
 [data-interface-theme='night'] .ninan-menu-samples dl > div {
   border-color: #51465f;
 }
-[data-interface-theme='night'] .ninan-menu-samples dd,
-[data-interface-theme='night'] .ninan-board-link {
+[data-interface-theme='night'] .ninan-menu-samples dd {
   color: #d5b7e9;
 }
-[data-interface-theme='night'] .ninan-board-link {
-  border-color: #51465f;
-}
-[data-interface-theme='night'] .ninan-board-link:hover {
-  background: #3b324b;
-}
-[data-interface-theme='night'] .ninan-reference figcaption,
 [data-interface-theme='night'] .ninan-price-head,
 [data-interface-theme='night'] .ninan-details .ninan-price-note {
   color: #b3a4c0;
-}
-[data-interface-theme='night'] .ninan-service-tag {
-  color: #e3be85;
 }
 @media (prefers-reduced-motion: reduce) {
   .ninan-meal-tabs button {

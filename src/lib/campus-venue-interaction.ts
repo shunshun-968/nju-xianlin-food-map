@@ -14,8 +14,6 @@ export function nextCampusVenueTap(
   requiresConfirmation: boolean,
 ): { preview: string | null; enter: string | null } {
   if (venueId === null) return { preview: null, enter: null };
-  // B102 不显示地图文字标牌，因此触摸直接进入，避免无反馈的第一下点击。
-  if (venueId === 'v-yifu') return { preview: null, enter: venueId };
   if (!requiresConfirmation || currentPreview === venueId) return { preview: null, enter: venueId };
   return { preview: venueId, enter: null };
 }

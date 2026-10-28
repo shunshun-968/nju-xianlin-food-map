@@ -8,7 +8,6 @@ import { batchModel } from '../lib/model-batches';
 import { ninanBrand, ninanFacadeLetters, ninanLabel, ninanPhoto } from './ninan-hut-signage';
 export { prepareNinanHutAssets } from './ninan-hut-signage';
 
-export const NINAN_HINT_POSITION = [4, 2.4, 0.3] as const;
 export type NinanHutModel = FourthCanteenModel & { setMealMode: (mode: NinanMealMode) => void };
 
 /** 现场照片 1–9 与手绘北向：X 向北、-Z 向西，尺寸为照片比例估算。保留封闭屋顶，仅从外部观察。 */
@@ -51,6 +50,10 @@ export function createNinanHutModel(): NinanHutModel {
     depthWrite: false,
     side: THREE.DoubleSide,
   });
+  // 建筑玻璃单独响应室内暖光，保温柜与饮料机仍保留各自的玻璃颜色。
+  const windowGlass = glass.clone();
+  windowGlass.emissive.set('#ffb969');
+  windowGlass.emissiveIntensity = 0;
   const warmWindows: THREE.MeshStandardMaterial[] = [];
   function mesh(
     parent: THREE.Object3D,
@@ -215,7 +218,7 @@ export function createNinanHutModel(): NinanHutModel {
   function window(parent: THREE.Object3D, x: number, width: number, open = false, full = false) {
     const bottom = full ? 0.4 : 1.25,
       top = 2.65;
-    box(parent, x, (top + bottom) / 2, -0.006, width - 0.06, top - bottom, 0.025, glass);
+    box(parent, x, (top + bottom) / 2, -0.006, width - 0.06, top - bottom, 0.025, windowGlass);
     for (const sx of [-1, 1])
       box(parent, x + (sx * width) / 2, (top + bottom) / 2, 0.04, 0.055, top - bottom, 0.075, trim);
     for (const yy of [bottom, full ? 1.34 : 2.08, top])
@@ -225,7 +228,7 @@ export function createNinanHutModel(): NinanHutModel {
       // 上悬窗朝外打开；可透过开口看到少量当餐设备，但不开放室内导航。
       const sash = part(parent, 'outward-open-serving-window', x, 2.65, 0.1);
       sash.rotation.x = -0.92;
-      box(sash, 0, -0.38, 0, width - 0.04, 0.74, 0.028, glass);
+      box(sash, 0, -0.38, 0, width - 0.04, 0.74, 0.028, windowGlass);
       for (const yy of [0, -0.76]) box(sash, 0, yy, 0, width, 0.045, 0.06, trim);
       for (const sx of [-1, 1]) box(sash, (sx * width) / 2, -0.38, 0, 0.045, 0.76, 0.06, trim);
       rod(parent, [x - width / 2, 2.17, 0.1], [x - width / 2, 2.19, 0.69], 0.014, steel);
@@ -255,7 +258,7 @@ export function createNinanHutModel(): NinanHutModel {
         // 照片 5/6 的中部双开玻璃门，只做外观，无进入交互。
         for (const side of [-1, 1]) {
           const door = part(parent, 'central-glass-door', x + side * 0.84, 0.38, 0.04, side * 0.45);
-          box(door, -side * 0.42, 1.08, 0, 0.84, 2.16, 0.028, glass);
+          box(door, -side * 0.42, 1.08, 0, 0.84, 2.16, 0.028, windowGlass);
           for (const yy of [0.02, 2.15]) box(door, -side * 0.42, yy, 0, 0.85, 0.045, 0.06, trim);
           box(door, -side * 0.84, 1.08, 0, 0.045, 2.15, 0.06, trim);
           rod(door, [-side * 0.72, 0.75, 0.08], [-side * 0.72, 1.3, 0.08], 0.018, steel);
@@ -636,6 +639,24 @@ export function createNinanHutModel(): NinanHutModel {
     warmWindows.push(lamp);
     box(fixtures, 2.29, 3.59, z, 0.015, 0.15, 0.2, lamp);
   }
+  // 沿用第五食堂的暖黄色窗口灯，分三段照亮狭长屋内；切换餐段不改变灯的位置。
+  const interiorFixtures = part(structure, 'ninan-interior-warm-light-fixtures');
+  const interiorLamp = new THREE.MeshStandardMaterial({
+    color: '#fffce9',
+    emissive: '#fff0cf',
+    emissiveIntensity: 0,
+  });
+  const interiorLights: THREE.PointLight[] = [];
+  for (const [index, z] of [-3.25, 0, 3.25].entries()) {
+    box(interiorFixtures, 0.5, 2.68, z, 1.72, 0.065, 0.16, trim);
+    const tube = box(interiorFixtures, 0.5, 2.64, z, 1.6, 0.025, 0.09, interiorLamp);
+    tube.castShadow = false;
+    const light = new THREE.PointLight('#ffb969', 0, 4.2, 2);
+    light.name = `ninan-interior-warm-light-${index + 1}`;
+    light.position.set(0.5, 2.43, z);
+    interiorLights.push(light);
+    interiorFixtures.add(light);
+  }
   const hemi = new THREE.HemisphereLight('#fff7df', '#b7b8a2', 2.3);
   const key = new THREE.DirectionalLight('#fff1d0', 3.0);
   key.position.set(5, 13, 7);
@@ -696,6 +717,9 @@ export function createNinanHutModel(): NinanHutModel {
       fill.intensity = night ? 0.55 : 1.2;
       glow.intensity = night ? 24 : 0;
       for (const lamp of warmWindows) lamp.emissiveIntensity = night ? 2.5 : 0.15;
+      interiorLamp.emissiveIntensity = night ? 1.6 : 0;
+      windowGlass.emissiveIntensity = night ? 0.16 : 0;
+      for (const light of interiorLights) light.intensity = night ? 13 : 0;
       group.userData.night = night;
     },
     tick() {},

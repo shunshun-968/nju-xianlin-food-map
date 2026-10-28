@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 20px;
+  padding: 0;
   overflow: hidden;
   background: #efeee965;
   backdrop-filter: blur(12px) saturate(0.7);
@@ -22,10 +22,14 @@
 }
 .app.floating-shell .about-letter-dialog {
   position: relative;
-  width: min(756px, 100%);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-height: 100%;
   min-width: 0;
-  padding: 0 28px 28px;
+  padding: 56px 14px;
   border: 0;
   border-radius: 0;
   outline: none;
@@ -35,7 +39,6 @@
   overscroll-behavior: contain;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  animation: about-letter-unfold 240ms ease-out both;
 }
 .about-letter-dialog::-webkit-scrollbar {
   display: none;
@@ -51,24 +54,30 @@
   white-space: nowrap;
   border: 0;
 }
-.about-letter-heading {
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 3;
+.about-letter-sheet-position {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(680px, 100%);
+  margin-block: auto;
+}
+.about-letter-sheet-position:not(.is-loading) {
+  animation: about-letter-unfold 240ms ease-out both;
+}
+.about-letter-loading {
+  position: fixed;
+  inset: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px;
-  align-items: center;
-  width: calc(100% + 56px);
-  margin-inline: -28px;
-  padding-inline: 28px;
-  margin-bottom: 12px;
-  /* 滚动时保护关闭与放大操作区，不形成展示底板。 */
+  place-items: center;
+  color: var(--letter-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+.app.floating-shell .about-letter-retry {
+  padding: 12px;
   background: transparent;
   color: var(--letter-heading);
-}
-.about-letter-dialog.is-scrolled .about-letter-heading {
-  background: var(--letter-environment);
+  pointer-events: auto;
 }
 .about-letter-paper-wrap {
   position: relative;
@@ -134,13 +143,12 @@
   pointer-events: none;
 }
 .app.floating-shell .about-letter-close {
-  position: relative;
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 5;
   display: grid;
   place-items: center;
-  align-self: start;
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
   width: 44px;
   height: 44px;
   padding: 0;
@@ -168,35 +176,11 @@
   outline-offset: -2px;
   color: var(--purple-dark);
 }
-.about-letter-reading-tools {
-  display: none;
-}
-.app.floating-shell .about-letter-zoom {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
-  min-height: 44px;
-  padding: 0;
-  border-radius: 3px;
-  background: transparent;
-  box-shadow: none;
-  color: var(--letter-heading);
-  font-size: 12px;
-}
-.app.floating-shell .about-letter-zoom:focus-visible {
-  outline: 2px solid var(--purple);
-  outline-offset: 2px;
-}
-.about-letter-reading-tools span {
-  font-size: 11px;
-}
 @media (hover: hover) {
   .about-letter-close:hover::before {
     opacity: 1;
   }
-  .app.floating-shell .about-letter-close:hover,
-  .app.floating-shell .about-letter-zoom:hover {
+  .app.floating-shell .about-letter-close:hover {
     color: var(--purple-dark);
   }
 }
@@ -234,40 +218,25 @@
     transform: translateY(0);
   }
 }
-@media (max-width: 700px) {
-  .app.floating-shell .about-letter-backdrop {
-    align-items: flex-start;
-    padding: max(12px, env(safe-area-inset-top)) 6px max(12px, env(safe-area-inset-bottom));
-  }
+/* 关闭键不占纸张布局高度：以纸本身的中心对齐整个视口。
+   当纸高超过视口时，auto margin 归零，保留从顶部开始的单一区域滚动。 */
+@media (min-width: 800px) {
   .app.floating-shell .about-letter-dialog {
-    padding: 0 8px 24px;
+    padding: 12px 60px;
   }
-  .about-letter-heading {
-    width: calc(100% + 16px);
-    margin-inline: -8px;
-    padding-inline: 8px;
-    margin-bottom: 8px;
-  }
-  .about-letter-reading-tools {
-    grid-column: 1;
-    grid-row: 1;
-    display: flex;
-    align-items: center;
-    gap: 16px;
+}
+@media (max-width: 700px) {
+  .app.floating-shell .about-letter-dialog {
+    padding: max(56px, env(safe-area-inset-top), env(safe-area-inset-bottom)) 14px;
   }
   .about-letter-paper {
     padding: 22px 12px 27px;
   }
-  .is-enlarged .about-letter-paper-wrap {
-    width: 700px;
-  }
-  .is-enlarged .about-letter-paper {
-    padding: 30px 26px 35px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .app.floating-shell .about-letter-backdrop,
-  .app.floating-shell .about-letter-dialog {
+  .app.floating-shell .about-letter-dialog,
+  .about-letter-sheet-position:not(.is-loading) {
     animation: none;
   }
   .about-letter-close::before {

@@ -1,6 +1,7 @@
-import { useEffect, useState, type Ref } from 'react';
+import { useEffect, useState, useSyncExternalStore, type Ref } from 'react';
 import { UiIcon } from './UiIcon';
 import { PaperUnfold } from './PaperUnfold';
+import { LoadingProgress } from './LoadingProgress';
 import { aboutLetterAssets } from '../lib/about-letter-assets';
 import './about-letter.css';
 
@@ -15,6 +16,7 @@ export function AboutLetter({ dialogRef, onClose, night }: Props) {
   const [assets, setAssets] = useState(aboutLetterAssets.peek);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const progress = useSyncExternalStore(aboutLetterAssets.subscribe, aboutLetterAssets.getProgress);
 
   useEffect(() => {
     let active = true;
@@ -56,11 +58,7 @@ export function AboutLetter({ dialogRef, onClose, night }: Props) {
         </button>
         <div className={`about-letter-sheet-position${assets ? '' : ' is-loading'}`}>
           {!assets ? (
-            <div
-              className="about-letter-loading"
-              role={failed ? 'alert' : 'status'}
-              aria-live="polite"
-            >
+            <div className="about-letter-loading" role={failed ? 'alert' : undefined}>
               {failed ? (
                 <button
                   className="about-letter-retry"
@@ -76,7 +74,7 @@ export function AboutLetter({ dialogRef, onClose, night }: Props) {
                   暂时无法加载，点击重试
                 </button>
               ) : (
-                '加载中'
+                <LoadingProgress kind="about" progress={progress} />
               )}
             </div>
           ) : (

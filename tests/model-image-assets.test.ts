@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { loadImageAsset, loadModelImage } from '../src/lib/image-assets';
 import {
   createModelImageLoader,
   ninanModelImages,
@@ -43,4 +44,37 @@ test('failed downloads and decodes are retried without losing other decoded imag
   assert.equal(await load('ready'), image);
   assert.equal(calls.get('decode-failure'), 2);
   assert.equal(calls.get('ready'), 1);
+});
+
+test('letter predecode matches normal images while model textures keep anonymous CORS', async (t) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'Image');
+  const images: FakeImage[] = [];
+  class FakeImage {
+    crossOrigin: string | null = null;
+    decoding = '';
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    constructor() {
+      images.push(this);
+    }
+    set src(_url: string) {
+      queueMicrotask(() => this.onload?.());
+    }
+    decode() {
+      return Promise.resolve();
+    }
+  }
+  Object.defineProperty(globalThis, 'Image', { configurable: true, value: FakeImage });
+  t.after(() => {
+    if (original) Object.defineProperty(globalThis, 'Image', original);
+    else Reflect.deleteProperty(globalThis, 'Image');
+  });
+  const url = 'test://request-mode';
+  const [letter, model] = await Promise.all([loadImageAsset(url), loadModelImage(url)]);
+  assert.equal(letter.crossOrigin, null, 'matches the letter <img> and CSS paper background');
+  assert.equal(model.crossOrigin, 'anonymous', 'WebGL texture access stays origin-safe');
+  assert.notEqual(letter, model, 'request modes have separate bitmap caches');
+  assert.equal(await loadImageAsset(url), letter);
+  assert.equal(await loadModelImage(url), model);
+  assert.equal(images.length, 2, 'each mode reuses its own decoded image on subsequent loads');
 });

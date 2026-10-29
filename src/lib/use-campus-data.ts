@@ -17,6 +17,7 @@ export function useCampusData({
   isInteracting,
   prefetchSurroundings = true,
   backgroundPaused = false,
+  deferSurroundings = false,
 }: {
   transform: MapTransform;
   viewport: { width: number; height: number };
@@ -24,6 +25,7 @@ export function useCampusData({
   isInteracting: () => boolean;
   prefetchSurroundings?: boolean;
   backgroundPaused?: boolean;
+  deferSurroundings?: boolean;
 }) {
   const [manifest, setManifest] = useState<MapManifest | null>(null);
   const [baseMap, setBaseMap] = useState<CampusBasemap | null>(null);
@@ -34,6 +36,7 @@ export function useCampusData({
   const [unlocked, setUnlocked] = useState(false);
   const [priorityReady, setPriorityReady] = useState(false);
   const [prefetched, setPrefetched] = useState(false);
+  const [coreProgress, setCoreProgress] = useState(0);
   const busyCheck = useRef(isInteracting);
   busyCheck.current = isInteracting;
   useEffect(() => {
@@ -42,8 +45,10 @@ export function useCampusData({
     basemapLoader
       .loadManifest()
       .then(async (value) => {
+        if (!cancelled) setCoreProgress(0.25);
         const core = await basemapLoader.loadChunk(value, value.core);
         if (!cancelled) {
+          setCoreProgress(1);
           setManifest((previous) => previous ?? value);
           setBaseMap((previous) => previous ?? { ...value.metadata, features: core.features });
         }
@@ -75,7 +80,7 @@ export function useCampusData({
           .join('|')
       : '';
   useEffect(() => {
-    if (!manifest || !priorityBounds) return;
+    if (!manifest || !priorityBounds || deferSurroundings) return;
     let cancelled = false;
     setOuterError(false);
     // Finish the initial window even if the user changes zoom while it is loading.
@@ -106,11 +111,18 @@ export function useCampusData({
       cancelled = true;
     };
     // Chunk IDs, not every pointer event, define a data-loading boundary.
-  }, [manifest, wantedKey, priorityKey, retry]);
+  }, [manifest, wantedKey, priorityKey, retry, deferSurroundings]);
 
   useEffect(() => {
     // 手机只请求当前视野所需周边；不在首屏后抢占信件与模型的带宽、解码和内存。
-    if (!manifest || !priorityReady || !prefetchSurroundings || backgroundPaused) return;
+    if (
+      !manifest ||
+      !priorityReady ||
+      !prefetchSurroundings ||
+      backgroundPaused ||
+      deferSurroundings
+    )
+      return;
     let cancelled = false,
       cursor = 0;
     let timeout: ReturnType<typeof window.setTimeout> | undefined;
@@ -151,7 +163,7 @@ export function useCampusData({
       if (timeout !== undefined) window.clearTimeout(timeout);
       if (idle !== undefined) window.cancelIdleCallback(idle);
     };
-  }, [manifest, priorityReady, prefetchSurroundings, backgroundPaused]);
+  }, [manifest, priorityReady, prefetchSurroundings, backgroundPaused, deferSurroundings]);
 
   const map = useMemo(
     () =>
@@ -166,6 +178,7 @@ export function useCampusData({
   );
   return {
     baseMap,
+    coreProgress,
     map,
     error,
     outerError,

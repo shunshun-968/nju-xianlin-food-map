@@ -41,6 +41,7 @@ import { modelCompassPose, compassLetterPosition } from '../lib/model-compass';
 import { prepareSceneModel } from '../lib/scene-loading';
 import { modelAssets } from '../lib/progressive-model-assets';
 import { modelPhase } from '../lib/scene-performance';
+import { LoadingProgress } from './LoadingProgress';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -331,7 +332,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   compassNorth.current = north;
   explore.current = onExplore;
   const [error, setError] = useState(false);
-  const [loadingModel, setLoadingModel] = useState(false);
+  const [loadingModel, setLoadingModel] = useState(true);
+  const [modelProgress, setModelProgress] = useState(0.12);
   const [fourthView, setFourthView] = useState<FourthViewMode>('plan');
   const [rotationMode, setRotationMode] = useState(false);
   const floorId = view.level === 'floor' ? view.floorId : undefined;
@@ -400,6 +402,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     } catch {
       setError(true);
+      setLoadingModel(false);
       return;
     }
     const element = host.current;
@@ -659,6 +662,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     controls.autoRotateSpeed = 0.65;
     e.preparing = false;
     setError(false);
+    setLoadingModel(true);
+    setModelProgress(0.12);
     e.entranceMarkers?.dispose();
     e.entranceMarkers = undefined;
     if (e.exterior) {
@@ -703,10 +708,19 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     scene.background = new THREE.Color(t.ground);
     camera.zoom = 1;
     const spec = getIndoorCanteen(view.level === 'floor' ? view.floorId : undefined);
+    let cancelled = false;
+    let frame = 0;
+    let finishPaint: (() => void) | undefined;
+    const showPreparation = () => new Promise<void>((resolve) => {
+      finishPaint = resolve;
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
+          finishPaint = undefined;
+          resolve();
+        });
+      });
+    });
     if (spec || view.venueId === 'v-south' || view.venueId === 'v-yifu' || view.venueId === 'v-hut') {
-      let cancelled = false;
-      let frame = 0;
-      setLoadingModel(true);
       const activate = async () => {
         e.preparing = true;
         const started = performance.now();
@@ -717,6 +731,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           const createModel = await prepareSceneModel(view);
           if (cancelled) return;
           if (!createModel) throw new Error('未找到场所模型');
+          setModelProgress(0.42);
+          // 新几何体同步构建前让提示绘制一次；缓存模型不增加等待。
+          await showPreparation();
+          if (cancelled) return;
           const createStarted = performance.now();
           model = createModel();
           modelPhase(id, 'model-create', createStarted);
@@ -724,6 +742,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           e.models.set(id, model);
         }
         if (cancelled) return;
+        setModelProgress(0.56);
         model.group.traverse((node) => {
           if (node instanceof THREE.Mesh && node.userData.baseColor)
             (node.material as THREE.MeshStandardMaterial).color.set(node.userData.baseColor);
@@ -824,24 +843,28 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
         }
         const assets = modelAssets(model.group);
-        if (assets) {
-          // 只让当前可见场景在首帧编译，避免预编译其他餐段/视图；高清上传从首帧之后开始。
-          e.firstModelFrame = (renderStarted) => {
-            if (cancelled) return;
-            modelPhase(id, 'first-render-gpu', renderStarted);
-            modelPhase(id, 'first-visible', started, { cached });
+        setModelProgress(0.78);
+        // 以真实首帧为完成点；高清照片继续渐进补齐，不延长加载条。
+        e.firstModelFrame = (renderStarted) => {
+          if (cancelled) return;
+          modelPhase(id, 'first-render-gpu', renderStarted);
+          modelPhase(id, 'first-visible', started, { cached });
+          setLoadingModel(false);
+          if (assets) {
             assets.start(texture => {
               const uploadStarted = performance.now();
               e.renderer.initTexture(texture);
               modelPhase(id, 'texture-upload', uploadStarted);
             }, failures => modelPhase(id, failures ? 'hd-settled-with-errors' : 'hd-ready', started, { failures }));
-          };
-        } else {
+          }
+        };
+        // 只让当前可见场景在首帧编译，避免预编译其他餐段/视图。
+        if (!assets) {
           await e.renderer.compileAsync(scene, camera);
         }
         if (!cancelled) {
           e.preparing = false;
-          setLoadingModel(false);
+          setModelProgress(0.94);
           if (import.meta.env.DEV) {
             e.renderer.domElement.dataset.modelCached = String(cached);
             e.renderer.domElement.dataset.modelPrepareMs = String(
@@ -856,6 +879,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             if (!cancelled) {
               console.error(error);
               setError(true);
+              e.firstModelFrame = undefined;
               e.preparing = false;
               setLoadingModel(false);
             }
@@ -865,22 +889,27 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       return () => {
         cancelled = true;
         cancelAnimationFrame(frame);
+        finishPaint?.();
         e.firstModelFrame = undefined;
         if (e.fourth) modelAssets(e.fourth.group)?.pause();
       };
     } else if (view.level === 'building' && exteriorBuildings[view.venueId]) {
       const exteriorSpec = exteriorBuildings[view.venueId];
-      let cancelled = false;
-      let frame = 0;
-      setLoadingModel(true);
       const activate = async () => {
         e.preparing = true;
+        // 模块下载完成后再让浏览器绘制进度；loadExteriorModel 复用浏览器的模块缓存。
+        await exteriorSpec.load();
+        if (cancelled) return;
+        setModelProgress(0.42);
+        await showPreparation();
+        if (cancelled) return;
         const model = await loadExteriorModel(view.venueId, data);
         if (cancelled) {
           model?.dispose();
           return;
         }
         if (!model) throw new Error('外观模型未找到');
+        setModelProgress(0.56);
         e.exterior = model;
         content.add(model.group);
         e.entranceMarkers = createExteriorEntranceMarkers(
@@ -909,11 +938,15 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         updateProjection(e);
         lightExterior(e, interfaceThemeRef.current === 'night');
         e.animating = true;
+        setModelProgress(0.78);
         await e.renderer.compileAsync(scene, camera);
         if (!cancelled) {
           e.preparing = false;
           e.renderer.shadowMap.needsUpdate = true;
-          setLoadingModel(false);
+          setModelProgress(0.94);
+          e.firstModelFrame = () => {
+            if (!cancelled) setLoadingModel(false);
+          };
         }
       };
       frame = requestAnimationFrame(() => {
@@ -922,6 +955,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
             if (!cancelled) {
               console.error(error);
               setError(true);
+              e.firstModelFrame = undefined;
               e.preparing = false;
               setLoadingModel(false);
             }
@@ -931,6 +965,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       return () => {
         cancelled = true;
         cancelAnimationFrame(frame);
+        finishPaint?.();
+        e.firstModelFrame = undefined;
       };
     } else if (view.level === 'building') {
       const v = data.venues.find((v) => v.id === view.venueId)!;
@@ -1020,7 +1056,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     updateProjection(e);
     controls.enableRotate = true;
     e.animating = true;
-    setLoadingModel(false);
+    setModelProgress(0.94);
+    e.firstModelFrame = () => setLoadingModel(false);
     // Opening/closing a detail panel changes navigation history, not the model.
     // Depend on actual route IDs so closing details preserves the 3D camera and mode.
   }, [data, view.level, view.venueId, floorId, theme]);
@@ -1085,9 +1122,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         </div>
       )}
       {loadingModel && (
-        <div className="loading model-loading" role="status">
-          正在展开模型…
-        </div>
+        <LoadingProgress kind="model" progress={modelProgress} className="loading model-loading" />
       )}
       {isExterior && (
         <div className="fourth-view-note">建筑外观 · 点击入口标记或选择楼层进入</div>

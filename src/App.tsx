@@ -8,6 +8,7 @@ import { CompassRose } from './components/CompassRose';
 import { FloatingSidebar } from './components/FloatingSidebar';
 import { DraggableDetailPanel } from './components/DraggableDetailPanel';
 import { AboutLetter } from './components/AboutLetter';
+import { LoadingProgress } from './components/LoadingProgress';
 import { southGateCartFoodNames, southGateCartStall } from './data/south-gate-cart';
 import { yifuKioskFoodNames, yifuKioskOfferings, yifuKioskServiceNote, yifuKioskStall } from './data/yifu-kiosk';
 import { defaultNinanMealMode, ninanHutStall, type NinanMealMode } from './data/ninan-hut';
@@ -664,7 +665,7 @@ export default function App() {
                 backgroundPaused={showInfo}
               />
             ) : (
-              <Suspense fallback={<div className="loading model-loading" role="status">正在展开模型…</div>}>
+              <Suspense fallback={<LoadingProgress kind="model" progress={0.06} className="loading model-loading" />}>
               <MapScene
                 ref={scene}
                 data={data}
@@ -680,10 +681,12 @@ export default function App() {
               />
               </Suspense>
             )
-          ) : (
+          ) : error ? (
             <div className="loading" role="status">
-              {error || '正在展开校园地图…'}
+              {error}
             </div>
+          ) : (
+            <LoadingProgress kind={view.level === 'campus' ? 'campus' : 'model'} progress={0.03} className="loading" />
           )}
           <nav className="breadcrumbs" aria-label="当前层级">
             <button onClick={() => navigate({ level: 'campus' })}>

@@ -31,6 +31,8 @@ import { campusViewArea } from '../lib/campus-view-area';
 import { batchRoads, batchBuildings } from '../lib/map-batches';
 import { CampusVenueModel } from './CampusVenueModel';
 import { getCampusModelPlacement } from '../lib/campus-model-artwork';
+import { useCampusArtwork } from '../lib/use-campus-artwork';
+import { LoadingProgress } from './LoadingProgress';
 import { CampusVenueName } from './CampusVenueName';
 import {
   isModeledCampusVenue,
@@ -127,8 +129,10 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   const overview = useRef(true);
   const exploreCallback = useRef(onExplore);
   exploreCallback.current = onExplore;
+  const artwork = useCampusArtwork(nightMode);
   const {
     baseMap,
+    coreProgress,
     map,
     error,
     outerError,
@@ -144,7 +148,21 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     isInteracting: () => pointers.current.size > 0 || settleTimer.current !== null,
     prefetchSurroundings: !legacyMobile,
     backgroundPaused,
+    deferSurroundings: !artwork.settled,
   });
+  const [paintedTheme, setPaintedTheme] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!baseMap || !artwork.settled) return;
+    let nextFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      nextFrame = requestAnimationFrame(() => setPaintedTheme(nightMode));
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(nextFrame);
+    };
+  }, [baseMap, artwork.settled, nightMode]);
+  const campusLoading = !baseMap || !artwork.settled || paintedTheme !== nightMode;
   const gesture = useRef({
     x: 0,
     y: 0,
@@ -604,23 +622,37 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
       data-map-theme={nightMode ? 'night' : 'day'}
       ref={host}
       data-priority-ready={priorityReady}
+      data-artwork-ready={artwork.readyIds.size}
+      aria-busy={campusLoading || undefined}
       data-periphery-unlocked={unlocked}
       data-periphery-cached={prefetched}
       data-camera-mode={overview.current ? 'overview' : 'exploring'}
     >
-      {!map && (
-        <p className="geo-map-status" role={error ? 'alert' : 'status'}>
-          {error ? `底图加载失败：${error}` : '正在展开校园地图…'}
-          {error && (
-            <button type="button" onClick={retry}>
-              重试
-            </button>
-          )}
+      {campusLoading && !error && (
+        <LoadingProgress
+          kind="campus"
+          className="loading"
+          progress={baseMap ? 0.55 + 0.43 * artwork.progress : 0.08 + 0.47 * coreProgress}
+        />
+      )}
+      {!map && error && (
+        <p className="geo-map-status" role="alert">
+          {`底图加载失败：${error}`}
+          <button type="button" onClick={retry}>
+            重试
+          </button>
         </p>
       )}
-      {outerError && (
-        <button type="button" className="geo-context-retry" onClick={retry}>
-          部分周边地图加载失败，点击重试
+      {(outerError || artwork.failed > 0) && (
+        <button
+          type="button"
+          className="geo-context-retry"
+          onClick={() => {
+            if (artwork.failed > 0) artwork.retry();
+            if (outerError) retry();
+          }}
+        >
+          {artwork.failed > 0 ? '部分建筑图片未加载，点击重试' : '部分周边地图加载失败，点击重试'}
         </button>
       )}
       <svg
@@ -869,6 +901,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                               venue={venue}
                               scale={transform.scale}
                               nightMode={nightMode}
+                              imageReady={artwork.readyIds.has(venue.id)}
+                              onImageError={artwork.onImageError}
                               highlighted={highlightedVenueId === venue.id}
                             />
                           ) : (

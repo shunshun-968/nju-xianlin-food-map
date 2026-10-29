@@ -3,7 +3,14 @@ import type { MapVenue } from '../lib/campus-basemap';
 import { getCampusModelPlacement } from '../lib/campus-model-artwork';
 import './campus-venue-model.css';
 
-type Props = { venue: MapVenue; scale: number; nightMode: boolean; highlighted?: boolean };
+type Props = {
+  venue: MapVenue;
+  scale: number;
+  nightMode: boolean;
+  highlighted?: boolean;
+  imageReady?: boolean;
+  onImageError?: (href: string) => void;
+};
 
 /** Artwork only: the enclosing venue group retains the map's keyboard and pointer navigation. */
 export const CampusVenueModel = memo(function CampusVenueModel({
@@ -11,17 +18,25 @@ export const CampusVenueModel = memo(function CampusVenueModel({
   scale,
   nightMode,
   highlighted = false,
+  imageReady = true,
+  onImageError,
 }: Props) {
   const model = getCampusModelPlacement(venue, scale);
   if (!model) return null;
   const unit = 1 / Math.max(0.001, scale);
   const glowId = `campus-model-glow-${venue.id}`;
   const [x, y] = model.anchor;
+  const href = nightMode ? model.hrefNight : model.hrefDay;
+  const showArtwork = imageReady;
+  const base = model.groundPolygon;
+  const roof = base.map(([px, py]) => [px, py - Math.max(venue.height, 5 * unit)]);
+  const points = (vertices: number[][]) => vertices.map((p) => p.join(',')).join(' ');
   return (
     <g
       className={`campus-venue-model${highlighted ? ' is-highlighted' : ''}`}
       data-model-venue={venue.id}
       data-model-theme={nightMode ? 'night' : 'day'}
+      data-artwork-ready={showArtwork}
       style={
         {
           '--campus-model-lift': `${-1.4 * unit}px`,
@@ -55,15 +70,43 @@ export const CampusVenueModel = memo(function CampusVenueModel({
           fill={`url(#${glowId})`}
         />
         <g className="campus-venue-image">
-          <image
-            className="campus-venue-model-image"
-            href={nightMode ? model.hrefNight : model.hrefDay}
-            x={model.x}
-            y={model.y}
-            width={model.width}
-            height={model.height}
-            preserveAspectRatio="none"
-          />
+          {!showArtwork && (
+            <g data-campus-model-placeholder>
+              {base.map((point, index) => (
+                <polygon
+                  key={index}
+                  points={points([
+                    point,
+                    base[(index + 1) % 4],
+                    roof[(index + 1) % 4],
+                    roof[index],
+                  ])}
+                  fill={venue.color}
+                  stroke="var(--map-venue-edge, #989f8e)"
+                  strokeWidth={0.7 * unit}
+                />
+              ))}
+              <polygon
+                points={points(roof)}
+                fill={venue.color}
+                stroke="var(--map-venue-rim, #fffdf3)"
+                strokeWidth={unit}
+              />
+            </g>
+          )}
+          {showArtwork && (
+            <image
+              className="campus-venue-model-image"
+              href={href}
+              crossOrigin="anonymous"
+              onError={() => onImageError?.(href)}
+              x={model.x}
+              y={model.y}
+              width={model.width}
+              height={model.height}
+              preserveAspectRatio="none"
+            />
+          )}
         </g>
       </g>
       <rect

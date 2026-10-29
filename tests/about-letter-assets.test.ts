@@ -50,7 +50,10 @@ test('letter waits for both raster images, while inline paper SVGs require no im
   );
   assert.ok(
     requested.every(
-      (url) => !url.includes('handwritten-letter-original') && !url.endsWith('.svg') && !url.startsWith('data:'),
+      (url) =>
+        !url.includes('handwritten-letter-original') &&
+        !url.endsWith('.svg') &&
+        !url.startsWith('data:'),
     ),
   );
 });
@@ -65,6 +68,62 @@ test('failed asset preparation can retry without caching a broken letter', async
   await assert.rejects(loader.load(), /offline/);
   assert.equal(loader.peek(), undefined);
   assert.match((await loader.load()).inkUrl, /handwritten-letter-ink\.webp/);
+});
+
+test('letter progress follows decoded assets and cached opens need no loading phase', async () => {
+  const paper = deferred<HTMLImageElement>();
+  const ink = deferred<HTMLImageElement>();
+  const image = {} as HTMLImageElement;
+  const loader = createAboutLetterAssetLoader((url) =>
+    url.includes('paper-fiber-runtime') ? paper.promise : ink.promise,
+  );
+  const updates: number[] = [];
+  const unsubscribe = loader.subscribe(() => updates.push(loader.getProgress()));
+  const loading = loader.load();
+  assert.equal(loader.getProgress(), 0.08);
+  paper.resolve(image);
+  await Promise.resolve();
+  assert.equal(loader.getProgress(), 0.4, 'decoded paper advances to writing');
+  assert.equal(loader.peek(), undefined, 'ink still needs decoding');
+  ink.resolve(image);
+  await loading;
+  assert.equal(loader.getProgress(), 1);
+  assert.ok(
+    updates.some((value) => value >= 0.85 && value < 1),
+    'both images reach signing',
+  );
+  assert.ok(updates.every((value, index) => index === 0 || value >= updates[index - 1]));
+  const updateCount = updates.length;
+  const ready = loader.peek();
+  assert.ok(ready, 'a reopened dialog can render cached pixels immediately');
+  assert.equal(await loader.load(), ready);
+  assert.equal(updates.length, updateCount, 'cached opens never reset the progress animation');
+  unsubscribe();
+});
+
+test('an unfinished asset from a failed load cannot change the retry progress', async () => {
+  const stalePaper = deferred<HTMLImageElement>();
+  const retryPaper = deferred<HTMLImageElement>();
+  const retryInk = deferred<HTMLImageElement>();
+  const image = {} as HTMLImageElement;
+  let attempt = 0;
+  const loader = createAboutLetterAssetLoader((url) => {
+    if (url.includes('handwritten-letter-ink')) {
+      attempt += 1;
+      return attempt === 1 ? Promise.reject(new Error('offline')) : retryInk.promise;
+    }
+    return attempt === 1 ? stalePaper.promise : retryPaper.promise;
+  });
+  await assert.rejects(loader.load(), /offline/);
+  assert.equal(loader.getProgress(), 0);
+  const retry = loader.load();
+  stalePaper.resolve(image);
+  await Promise.resolve();
+  assert.equal(loader.getProgress(), 0.08, 'only the current attempt can advance progress');
+  retryInk.resolve(image);
+  retryPaper.resolve(image);
+  await retry;
+  assert.equal(loader.getProgress(), 1);
 });
 
 test('ink extraction clears the paper, keeps solid strokes and preserves soft edge alpha', () => {

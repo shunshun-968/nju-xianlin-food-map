@@ -54,6 +54,14 @@ const artwork: Record<ModeledCampusVenueId, { day: string; night: string }> = {
   },
 };
 
+/** Only the visible theme is downloaded; the other seven images can wait for a theme switch. */
+export function getCampusArtworkSources(nightMode: boolean) {
+  return modeledCampusVenueIds.map((id) => ({
+    id,
+    href: artwork[id][nightMode ? 'night' : 'day'],
+  }));
+}
+
 export type CampusModelPlacement = {
   hrefDay: string;
   hrefNight: string;

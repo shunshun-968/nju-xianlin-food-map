@@ -1,11 +1,14 @@
 import { modelPhase } from './scene-performance';
 /** 全站图片共用下载与解码任务；不依赖 Three，也不包含任何场所的资源清单。 */
-function decodeImage(url: string): Promise<HTMLImageElement> {
+function decodeImage(
+  url: string,
+  crossOrigin: 'anonymous' | null = 'anonymous',
+): Promise<HTMLImageElement> {
   const started = performance.now();
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.decoding = 'async';
-    image.crossOrigin = 'anonymous';
+    if (crossOrigin) image.crossOrigin = crossOrigin;
     const clear = () => {
       image.onload = null;
       image.onerror = null;
@@ -65,7 +68,9 @@ export function createModelImageLoader(
 }
 
 export const loadModelImage = createModelImageLoader();
-export const loadImageAsset = loadModelImage;
+// 普通 <img> 与 CSS 背景默认使用 no-CORS；预解码也使用同一请求模式，
+// 才能复用已准备好的位图，避免显示信纸时再次请求。WebGL 材质仍保持匿名 CORS。
+export const loadImageAsset = createModelImageLoader((url) => decodeImage(url, null));
 
 export async function prepareImages(urls: Iterable<string>): Promise<void> {
   await Promise.all([...new Set(urls)].map(loadModelImage));

@@ -39,6 +39,8 @@ import { ModelCompass } from './ModelCompass';
 import { getModelNorth } from '../data/model-orientation';
 import { modelCompassPose, compassLetterPosition } from '../lib/model-compass';
 import { prepareSceneModel } from '../lib/scene-loading';
+import { modelAssets } from '../lib/progressive-model-assets';
+import { modelPhase } from '../lib/scene-performance';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -86,6 +88,7 @@ type Engine = {
   ambientLight: THREE.HemisphereLight;
   models: Map<string, FourthCanteenModel>;
   preparing?: boolean;
+  firstModelFrame?: (renderStarted: number) => void;
 };
 
 function lightExterior(e: Engine, night: boolean) {
@@ -293,6 +296,7 @@ function path(parent: THREE.Object3D, points: number[][], color: string, width: 
   }
 }
 function dispose(group: THREE.Group) {
+  modelAssets(group)?.dispose();
   group.traverse((obj) => {
     const renderable = obj as THREE.Mesh;
     renderable.geometry?.dispose();
@@ -591,7 +595,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       }
       if (!reducedMotion.matches) e.fourth?.tick(time / 1000);
       e.stallSelection?.tick(delta, reducedMotion.matches);
+      const renderStarted = e.firstModelFrame ? performance.now() : 0;
       renderer.render(scene, camera);
+      const firstModelFrame = e.firstModelFrame;
+      e.firstModelFrame = undefined;
+      firstModelFrame?.(renderStarted);
       e.entranceMarkers?.update(camera);
       if (compass.current) {
         const pose = modelCompassPose(camera, compassNorth.current ?? { x: 0, z: -1 });
@@ -658,7 +666,11 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       e.exterior.dispose();
       e.exterior = undefined;
     }
-    if (e.fourth) e.fourth.group.removeFromParent();
+    e.firstModelFrame = undefined;
+    if (e.fourth) {
+      modelAssets(e.fourth.group)?.pause();
+      e.fourth.group.removeFromParent();
+    }
     e.fourth = undefined;
     e.indoorSpec = undefined;
     e.defaultFrame = undefined;
@@ -705,7 +717,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           const createModel = await prepareSceneModel(view);
           if (cancelled) return;
           if (!createModel) throw new Error('未找到场所模型');
+          const createStarted = performance.now();
           model = createModel();
+          modelPhase(id, 'model-create', createStarted);
           if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
         }
@@ -809,7 +823,22 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           e.ambientLight.visible = false;
           e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
         }
-        await e.renderer.compileAsync(scene, camera);
+        const assets = modelAssets(model.group);
+        if (assets) {
+          // 只让当前可见场景在首帧编译，避免预编译其他餐段/视图；高清上传从首帧之后开始。
+          e.firstModelFrame = (renderStarted) => {
+            if (cancelled) return;
+            modelPhase(id, 'first-render-gpu', renderStarted);
+            modelPhase(id, 'first-visible', started, { cached });
+            assets.start(texture => {
+              const uploadStarted = performance.now();
+              e.renderer.initTexture(texture);
+              modelPhase(id, 'texture-upload', uploadStarted);
+            }, failures => modelPhase(id, failures ? 'hd-settled-with-errors' : 'hd-ready', started, { failures }));
+          };
+        } else {
+          await e.renderer.compileAsync(scene, camera);
+        }
         if (!cancelled) {
           e.preparing = false;
           setLoadingModel(false);
@@ -836,6 +865,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       return () => {
         cancelled = true;
         cancelAnimationFrame(frame);
+        e.firstModelFrame = undefined;
+        if (e.fourth) modelAssets(e.fourth.group)?.pause();
       };
     } else if (view.level === 'building' && exteriorBuildings[view.venueId]) {
       const exteriorSpec = exteriorBuildings[view.venueId];

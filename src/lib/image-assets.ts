@@ -1,5 +1,7 @@
+import { modelPhase } from './scene-performance';
 /** 全站图片共用下载与解码任务；不依赖 Three，也不包含任何场所的资源清单。 */
 function decodeImage(url: string): Promise<HTMLImageElement> {
+  const started = performance.now();
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.decoding = 'async';
@@ -13,9 +15,12 @@ function decodeImage(url: string): Promise<HTMLImageElement> {
       reject(new Error(`图片加载失败：${url}`));
     };
     image.onload = () => {
+      modelPhase('image', 'download', started, { url });
+      const decodeStarted = performance.now();
       const decoded = typeof image.decode === 'function' ? image.decode() : Promise.resolve();
       void decoded.then(
         () => {
+          modelPhase('image', 'decode', decodeStarted, { url });
           clear();
           resolve(image);
         },

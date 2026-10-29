@@ -4,6 +4,7 @@ import { getIndoorCanteen } from '../data/indoor-canteens';
 import { exteriorBuildings } from '../data/exterior-specs';
 import { prepareIndoorModel } from './indoor-model-loading';
 import { preloadVenueModelImages } from './model-image-assets';
+import { modelPhase } from './scene-performance';
 
 type ModelFactory = () => FourthCanteenModel;
 const services = new Map<string, Promise<ModelFactory>>();
@@ -17,14 +18,17 @@ export function prepareSceneModel(view: Exclude<View, { level: 'campus' }>): Pro
   const existing = services.get(id);
   if (existing) return existing;
   const task = (async (): Promise<ModelFactory> => {
+    const started = performance.now();
+    // 照片可并行预取，但失败或慢速解码不能阻塞模型模块；贴图由模型自身渐进更新。
+    if (id === 'v-yifu' || id === 'v-hut') void preloadVenueModelImages(id).catch(() => {});
     if (id === 'v-yifu') {
-      const [module] = await Promise.all([import('../components/YifuKioskModel'), preloadVenueModelImages(id)]);
-      await module.prepareYifuKioskAssets();
+      const module = await import('../components/YifuKioskModel');
+      modelPhase(id, 'module-ready', started);
       return module.createYifuKioskModel;
     }
     if (id === 'v-hut') {
-      const [module] = await Promise.all([import('../components/NinanHutModel'), preloadVenueModelImages(id)]);
-      await module.prepareNinanHutAssets();
+      const module = await import('../components/NinanHutModel');
+      modelPhase(id, 'module-ready', started);
       return module.createNinanHutModel;
     }
     const module = await import('../components/SouthGateCartModel');

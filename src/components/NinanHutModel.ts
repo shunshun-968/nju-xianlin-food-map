@@ -5,7 +5,8 @@ import type { NinanMealMode } from '../data/ninan-hut';
 import { ninanDinnerLayout } from '../data/ninan-hut';
 import { createNinanIngredientCabinet, createNinanBarbecueTop } from './ninan-hut-dinner';
 import { batchModel } from '../lib/model-batches';
-import { ninanBrand, ninanFacadeLetters, ninanLabel, ninanPhoto } from './ninan-hut-signage';
+import { ninanBrand as brand, ninanFacadeLetters, ninanLabel, ninanPhoto as photo } from './ninan-hut-signage';
+import { attachModelAssets } from '../lib/progressive-model-assets';
 export { prepareNinanHutAssets } from './ninan-hut-signage';
 
 export type NinanHutModel = FourthCanteenModel & { setMealMode: (mode: NinanMealMode) => void };
@@ -13,6 +14,9 @@ export type NinanHutModel = FourthCanteenModel & { setMealMode: (mode: NinanMeal
 /** 现场照片 1–9 与手绘北向：X 向北、-Z 向西，尺寸为照片比例估算。保留封闭屋顶，仅从外部观察。 */
 export function createNinanHutModel(): NinanHutModel {
   const group = new THREE.Group();
+  const assets = attachModelAssets(group);
+  const ninanBrand = (name: 'crest' | 'logistics', width: number, color?: string) => brand(name, width, color, assets);
+  const ninanPhoto = (name: Parameters<typeof photo>[0], width: number, height: number, corners: Parameters<typeof photo>[3]) => photo(name, width, height, corners, assets);
   group.name = 'ninan-hut-exterior';
   const structure = new THREE.Group(),
     ground = new THREE.Group(),

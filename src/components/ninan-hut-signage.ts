@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { loadModelImage, ninanModelImages } from '../lib/model-image-assets';
 import { croppedPhotoPoint, ninanPostersCrop } from '../lib/photo-crop';
+import { photoPlaceholder, setPhotoPixels, type ProgressiveModelAssets } from '../lib/progressive-model-assets';
 
 const urls = ninanModelImages;
 type Asset = keyof typeof urls;
@@ -117,9 +118,31 @@ export function ninanFacadeLetters(text: string, width: number, height: number) 
 }
 
 /** 直接采用品牌原图像素，只去紫底并着色，保留字形与宽高比。 */
-export function ninanBrand(name: 'crest' | 'logistics', width: number, color = '#6c477e') {
+export function ninanBrand(name: 'crest' | 'logistics', width: number, color = '#6c477e', assets?: ProgressiveModelAssets) {
+  if (assets) {
+    const map = photoPlaceholder(null);
+    // 原始 PNG 的宽高比；占位与最终品牌图使用同一个平面和材质。
+    const ratio = name === 'crest' ? 363 / 306 : 180 / 390;
+    const result = new THREE.Mesh(new THREE.PlaneGeometry(width, width * ratio),
+      new THREE.MeshStandardMaterial({ map, transparent: true, depthWrite: false, roughness: 0.8, side: THREE.DoubleSide }));
+    result.name = `ninan-original-${name}-artwork`;
+    assets.add([urls[name]], ([image]) => setPhotoPixels(map, brandCanvas(image, color)));
+    return result;
+  }
   const source = images.get(name);
   if (!source) return new THREE.Group();
+  const canvas = brandCanvas(source, color);
+  const result = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, (width * source.height) / source.width),
+    new THREE.MeshStandardMaterial({
+      map: texture(canvas), transparent: true, depthWrite: false, roughness: 0.8, side: THREE.DoubleSide,
+    }),
+  );
+  result.name = `ninan-original-${name}-artwork`;
+  return result;
+}
+
+function brandCanvas(source: HTMLImageElement, color: string) {
   let variants = brandCanvases.get(source);
   if (!variants) {
     variants = new Map();
@@ -146,18 +169,7 @@ export function ninanBrand(name: 'crest' | 'logistics', width: number, color = '
     ctx.putImageData(pixels, 0, 0);
     variants.set(color, canvas);
   }
-  const result = new THREE.Mesh(
-    new THREE.PlaneGeometry(width, (width * source.height) / source.width),
-    new THREE.MeshStandardMaterial({
-      map: texture(canvas),
-      transparent: true,
-      depthWrite: false,
-      roughness: 0.8,
-      side: THREE.DoubleSide,
-    }),
-  );
-  result.name = `ninan-original-${name}-artwork`;
-  return result;
+  return canvas;
 }
 
 type Point = readonly [number, number];
@@ -167,9 +179,10 @@ export function ninanPhoto(
   width: number,
   height: number,
   corners: readonly [Point, Point, Point, Point],
+  assets?: ProgressiveModelAssets,
 ) {
   const source = images.get(asset);
-  if (!source)
+  if (!source && !assets)
     return ninanLabel(
       asset === 'breakfast' ? '早餐套餐' : '呢喃小屋',
       width,
@@ -204,10 +217,12 @@ export function ninanPhoto(
       : [sourceX, sourceY];
     uv.setXY(i, sampleX, 1 - sampleY);
   }
+  const map = assets ? photoPlaceholder('#805092') : texture(source!);
+  assets?.add([urls[asset]], ([image]) => setPhotoPixels(map, image));
   return new THREE.Mesh(
     geometry,
     new THREE.MeshStandardMaterial({
-      map: texture(source),
+      map,
       roughness: 0.82,
       side: THREE.DoubleSide,
     }),

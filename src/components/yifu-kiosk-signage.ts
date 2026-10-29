@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { photoPlaceholder, setPhotoPixels, type ProgressiveModelAssets } from '../lib/progressive-model-assets';
 import { loadModelImage, yifuModelImages } from '../lib/model-image-assets';
 import { croppedPhotoPoint, yifuBoardCrop, type PhotoCrop } from '../lib/photo-crop';
 
@@ -24,6 +25,17 @@ export function prepareYifuKioskAssets(): Promise<void> {
     }
     boardPhoto = board;
     wallPhoto = wall;
+    brandTexture = canvasTexture(brandCanvas(logistics, crest));
+  }).catch((error) => { preparing = undefined; throw error; });
+  return preparing;
+}
+
+const brands = new WeakMap<HTMLImageElement, WeakMap<HTMLImageElement, HTMLCanvasElement>>();
+function brandCanvas(logistics: HTMLImageElement, crest: HTMLImageElement) {
+  let variants = brands.get(logistics);
+  if (!variants) { variants = new WeakMap(); brands.set(logistics, variants); }
+  const cached = variants.get(crest);
+  if (cached) return cached;
     // 按项目约定使用随仓库保存的两份品牌原图，保留原始书法及校徽比例。
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
@@ -51,9 +63,8 @@ export function prepareYifuKioskAssets(): Promise<void> {
     };
     drawWhiteArtwork(crest, 22, 40, 87);
     drawWhiteArtwork(logistics, 125, 56, 240);
-    brandTexture = canvasTexture(canvas);
-  }).catch((error) => { preparing = undefined; throw error; });
-  return preparing;
+    variants.set(crest, canvas);
+    return canvas;
 }
 
 function canvasTexture(canvas: HTMLCanvasElement) {
@@ -114,16 +125,20 @@ function photoPlane(map: THREE.Texture, width: number, height: number, corners: 
   return new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map, roughness: 0.71, metalness: 0.02 }));
 }
 
-export function createYifuSignage(parent: THREE.Group) {
+export function createYifuSignage(parent: THREE.Group, assets?: ProgressiveModelAssets) {
   const root = new THREE.Group(); root.name = 'yifu-photo-3-standing-board';
   root.position.set(2.38, 0.08, 3.63); root.rotation.y = -0.1;
   const panel = new THREE.Group(); panel.position.set(0, 0.7, 0); panel.rotation.x = -0.13; root.add(panel);
   const edge = new THREE.MeshStandardMaterial({ color: '#74716b', metalness: 0.65, roughness: 0.36 });
   const backing = new THREE.Mesh(new THREE.BoxGeometry(0.91, 1.36, 0.035), edge); panel.add(backing); backing.castShadow = true;
-  const face = boardPhoto ? photoPlane(boardPhoto, 0.89, 1.335, [[0.002, 0.059], [0.998, 0.058], [0.859, 0.939], [0.133, 0.944]], yifuBoardCrop) : yifuLabel('逸夫楼B102休闲食坊\n早餐 · 饮品 · 盒饭', 0.89, 1.335, '#d8a568', '#9f2927');
+  const boardMap = assets ? photoPlaceholder('#d8a568') : boardPhoto?.clone();
+  if (assets && boardMap) assets.add([yifuModelImages.board], ([image]) => setPhotoPixels(boardMap, image));
+  const face = boardMap ? photoPlane(boardMap, 0.89, 1.335, [[0.002, 0.059], [0.998, 0.058], [0.859, 0.939], [0.133, 0.944]], yifuBoardCrop) : yifuLabel('逸夫楼B102休闲食坊\n早餐 · 饮品 · 盒饭', 0.89, 1.335, '#d8a568', '#9f2927');
   face.position.z = 0.019; panel.add(face);
-  if (brandTexture) {
-    const originalBrand = new THREE.Mesh(new THREE.PlaneGeometry(0.89, 0.193), new THREE.MeshStandardMaterial({ map: brandTexture, roughness: 0.8 }));
+  const brandMap = assets ? photoPlaceholder('#d9aa64') : brandTexture?.clone();
+  if (assets && brandMap) assets.add([yifuModelImages.logistics, yifuModelImages.crest], ([logistics, crest]) => setPhotoPixels(brandMap, brandCanvas(logistics, crest)));
+  if (brandMap) {
+    const originalBrand = new THREE.Mesh(new THREE.PlaneGeometry(0.89, 0.193), new THREE.MeshStandardMaterial({ map: brandMap, roughness: 0.8 }));
     originalBrand.name = 'yifu-original-nju-brand-artwork'; originalBrand.position.set(0, 0.571, 0.021); panel.add(originalBrand);
   }
   const rearLeg = new THREE.Mesh(new THREE.BoxGeometry(0.032, 1.09, 0.035), edge);
@@ -136,14 +151,16 @@ export function createYifuSignage(parent: THREE.Group) {
   parent.add(root); return root;
 }
 
-export function createYifuWallArt(parent: THREE.Group) {
+export function createYifuWallArt(parent: THREE.Group, assets?: ProgressiveModelAssets) {
   const root = new THREE.Group(); root.name = 'yifu-west-wall-photo-art';
   root.position.set(-2.79, 2.08, -1.6); root.rotation.y = Math.PI / 2;
   const frame = new THREE.Mesh(new THREE.BoxGeometry(0.77, 0.96, 0.036), new THREE.MeshStandardMaterial({ color: '#322c27', roughness: 0.4 }));
   frame.castShadow = true; root.add(frame);
-  if (wallPhoto) {
+  const wallMap = assets ? photoPlaceholder('#d5ccba') : wallPhoto?.clone();
+  if (assets && wallMap) assets.add([yifuModelImages.wall], ([image]) => setPhotoPixels(wallMap, image));
+  if (wallMap) {
     // 原图 3072×4096 中裁出 (667,739)—(1142,1334)，同步换算 UV，保持原来的透视和取景。
-    const art = photoPlane(wallPhoto, 0.727, 0.918, [[0.012143158, 0.003993277], [0.995183158, 0.121021849], [0.975781053, 0.995294118], [0.005675789, 0.967757983]]);
+    const art = photoPlane(wallMap, 0.727, 0.918, [[0.012143158, 0.003993277], [0.995183158, 0.121021849], [0.975781053, 0.995294118], [0.005675789, 0.967757983]]);
     art.position.z = 0.02; root.add(art);
   }
   const notice = yifuLabel('禁止吸烟\n请保持环境整洁', 0.32, 0.19, '#eee9d7', '#64554e');

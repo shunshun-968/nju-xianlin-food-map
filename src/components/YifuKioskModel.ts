@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { attachModelAssets } from '../lib/progressive-model-assets';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { FourthCanteenModel } from './FourthCanteenModel';
 import {
@@ -20,6 +21,7 @@ export { prepareYifuKioskAssets } from './yifu-kiosk-signage';
 /** 由六张现场照片复原 B102：北为 -Z。三维敞开南面，俯视补回墙门；尺寸为照片比例估算。 */
 export function createYifuKioskModel(): FourthCanteenModel {
   const group = new THREE.Group();
+  const assets = attachModelAssets(group);
   group.name = 'yifu-b102-open-south';
   const room = new THREE.Group(),
     furniture = new THREE.Group(),
@@ -680,8 +682,8 @@ export function createYifuKioskModel(): FourthCanteenModel {
         steel,
       );
   }
-  createYifuSignage(furniture);
-  createYifuWallArt(furniture);
+  createYifuSignage(furniture, assets);
+  createYifuWallArt(furniture, assets);
   furniture.traverse((object) => {
     if (object instanceof THREE.Mesh)
       object.userData = { ...object.userData, kind: 'stall', id: 'v-yifu-f1-kiosk' };

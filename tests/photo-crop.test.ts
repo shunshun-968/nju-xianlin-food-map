@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { createYifuSignage, prepareYifuKioskAssets } from '../src/components/yifu-kiosk-signage';
 import { ninanPhoto, prepareNinanHutAssets } from '../src/components/ninan-hut-signage';
 import { ninanPostersCrop, yifuBoardCrop } from '../src/lib/photo-crop';
+import { ProgressiveModelAssets } from '../src/lib/progressive-model-assets';
+import { loadModelImage } from '../src/lib/image-assets';
 
 test('cropped signage preserves original source coordinates on the rendered geometry', async () => {
   const originalImage = Object.getOwnPropertyDescriptor(globalThis, 'Image');
@@ -47,6 +49,27 @@ test('cropped signage preserves original source coordinates on the rendered geom
       assert.ok(Math.abs(uv.getX(i) * w + x - expected[j][0] * 3072) < 0.001);
       assert.ok(Math.abs((1 - uv.getY(i)) * h + y - expected[j][1] * 4096) < 0.001);
     }
+    const assets = new ProgressiveModelAssets(loadModelImage, work => {
+      const timer = setImmediate(work); return () => clearImmediate(timer);
+    });
+    const progressivePoster = ninanPhoto('east', 1.18, 2.04, corners, assets);
+    const progressiveBoard = createYifuSignage(new THREE.Group(), assets);
+    const progressiveFace = (progressiveBoard.children[0] as THREE.Group).children[1] as typeof progressivePoster;
+    meshes.push(progressivePoster);
+    progressiveBoard.traverse(node => { if (node instanceof THREE.Mesh) meshes.push(node); });
+    const geometry = progressiveFace.geometry, material = progressiveFace.material;
+    assert.deepEqual(progressivePoster.geometry.getAttribute('uv').array, cropped.geometry.getAttribute('uv').array);
+    assert.deepEqual(geometry.getAttribute('uv').array, uv.array);
+    await new Promise<void>(resolve => assets.start(undefined, failures => {
+      assert.equal(failures, 0); resolve();
+    }));
+    assert.equal(progressiveFace.geometry, geometry);
+    assert.equal(progressiveFace.material, material);
+    assert.equal(progressiveFace.material.map!.image, (face.material as THREE.MeshStandardMaterial).map!.image);
+    assert.equal(progressivePoster.material.map!.image, cropped.material.map!.image);
+    assert.equal(progressiveFace.material.roughness, (face.material as THREE.MeshStandardMaterial).roughness);
+    assert.equal(progressiveFace.material.metalness, (face.material as THREE.MeshStandardMaterial).metalness);
+    assets.dispose();
   } finally {
     for (const [name, descriptor] of [['Image', originalImage], ['document', originalDocument]] as const)
       if (descriptor) Object.defineProperty(globalThis, name, descriptor);

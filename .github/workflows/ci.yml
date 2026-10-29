@@ -45,7 +45,9 @@ jobs:
           API_DATABASE_PASSWORD: ci-api-only
         run: |
           docker compose up --build -d
+          docker compose exec -T web nginx -t
           docker compose --profile demo run --rm seed
           curl --fail --retry 20 --retry-connrefused --retry-delay 2 http://localhost:8080/backend/health | jq -e '.status == "ok"'
           curl --fail http://localhost:8080/backend/api/catalog | jq -e '.venues | length == 7'
+          node scripts/verify-static-http.mjs http://localhost:8080
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/backend/api/catalog)" = "405"

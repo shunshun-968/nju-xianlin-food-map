@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import { prepareImages } from '../lib/image-assets';
+import { loadModelTexture } from '../lib/model-texture-loader';
 import { twelfthTextPlane } from './twelfth-canteen-signage';
 
 const logisticsArtwork = new URL('../assets/branding/南大后勤.png', import.meta.url).href;
+export function prepareFacultySignageAssets() { return prepareImages([logisticsArtwork]); }
 const sans = '"Microsoft YaHei", "PingFang SC", sans-serif';
 const brush = '"KaiTi", "STKaiti", "SimSun", serif';
 const mainTitles = [
@@ -300,7 +303,7 @@ export function addFacultySignage(parent: THREE.Group, number: number, width: nu
     // Preserve the provided artwork and 390:180 aspect ratio. Canvas-only tests need no network image loader.
     if (typeof document.createElementNS !== 'function') return;
     if (!originalMap) {
-      originalMap = new THREE.TextureLoader().load(logisticsArtwork);
+      originalMap = loadModelTexture(logisticsArtwork);
       originalMap.colorSpace = THREE.SRGBColorSpace;
       originalMap.anisotropy = 8;
     }

@@ -20,6 +20,46 @@ const full: CampusBasemap = read('../public/osm/campus-render.json');
 const chunk = (file: string): FeatureChunk => read(`../public/osm/runtime/${file}`);
 const baseUrl = 'https://example.test/nju-xianlin-food-map/osm/runtime/';
 
+test('a first visit starts core loading from the HTML manifest without a directory request or cache', async () => {
+  const requests: string[] = [];
+  const loader = createBasemapLoader({
+    baseUrl,
+    initialManifest: manifest,
+    fetcher: async (url) => {
+      requests.push(String(url));
+      return Response.json(chunk(manifest.core.file));
+    },
+  });
+  const directory = await loader.loadManifest();
+  assert.equal(directory, manifest);
+  const core = await loader.loadChunk(directory, directory.core);
+  assert.equal(core.features.length, manifest.core.featureCount);
+  assert.deepEqual(requests, [`${baseUrl}${manifest.core.file}`]);
+});
+
+test('missing or malformed embedded manifests fall back to the validated network directory', async () => {
+  for (const initialManifest of [
+    undefined,
+    null,
+    {},
+    { ...manifest, version: 0 },
+    { ...manifest, metadata: {} },
+  ]) {
+    let requests = 0;
+    const loader = createBasemapLoader({
+      baseUrl,
+      initialManifest,
+      fetcher: async (url) => {
+        requests++;
+        assert.equal(String(url), `${baseUrl}index.json`);
+        return Response.json(manifest);
+      },
+    });
+    assert.deepEqual(await loader.loadManifest(), manifest);
+    assert.equal(requests, 1);
+  }
+});
+
 test('runtime chunks reconstruct every original feature, order, geometry and seven venues', () => {
   const chunks = [manifest.core, ...manifest.surrounding].map((c) => chunk(c.file));
   assert.equal(
@@ -214,6 +254,42 @@ test('slow cache writes do not delay decoded map data', async () => {
   } finally {
     finishWrite();
   }
+});
+
+test('a queued prefetch promoted into view keeps one request and moves ahead of older background work', async () => {
+  const starts: { url: string; priority?: string }[] = [];
+  const releases: (() => void)[] = [];
+  const loader = createBasemapLoader({
+    baseUrl,
+    fetcher: async (input, options) => {
+      starts.push({ url: String(input), priority: options?.priority });
+      await new Promise<void>((resolve) => releases.push(resolve));
+      return Response.json(chunk(manifest.core.file));
+    },
+  });
+  const assets = ['active-a', 'active-b', 'older-prefetch', 'now-visible'].map((id) => ({
+    ...manifest.core,
+    id,
+    file: `${id}.json`,
+  }));
+  const a = loader.loadChunk(manifest, assets[0]);
+  const b = loader.loadChunk(manifest, assets[1]);
+  const older = loader.loadChunk(manifest, assets[2], true);
+  const prefetched = loader.loadChunk(manifest, assets[3], true);
+  const visible = loader.loadChunk(manifest, assets[3]);
+  assert.equal(prefetched, visible);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  releases.shift()!();
+  await a;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(starts[2], { url: `${baseUrl}now-visible.json`, priority: 'high' });
+  releases.shift()!();
+  await b;
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(starts[3].url, `${baseUrl}older-prefetch.json`);
+  releases.splice(0).forEach((resolve) => resolve());
+  await Promise.all([older, visible]);
+  assert.equal(starts.length, 4);
 });
 
 test('metadata-only revisions reuse hashed geometry, but never stale unhashed files', async () => {

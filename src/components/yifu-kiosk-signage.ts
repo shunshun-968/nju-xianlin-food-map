@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { loadModelImage, yifuModelImages } from '../lib/model-image-assets';
+import { croppedPhotoPoint, yifuBoardCrop, type PhotoCrop } from '../lib/photo-crop';
 
 const fonts = '"Microsoft YaHei", "PingFang SC", sans-serif';
 let boardPhoto: THREE.Texture | undefined;
@@ -90,7 +91,7 @@ export function yifuMenuTexture() {
 }
 
 type Point = readonly [number, number];
-function photoPlane(map: THREE.Texture, width: number, height: number, corners: readonly [Point, Point, Point, Point]) {
+function photoPlane(map: THREE.Texture, width: number, height: number, corners: readonly [Point, Point, Point, Point], crop?: PhotoCrop) {
   // 使用细分 UV 保持正文直立，同时消除原拍摄中的梯形边缘。
   const geometry = new THREE.PlaneGeometry(width, height, 24, 32);
   const uv = geometry.getAttribute('uv');
@@ -105,7 +106,10 @@ function photoPlane(map: THREE.Texture, width: number, height: number, corners: 
   const y1 = b[1] - a[1] + g * b[1], y2 = d[1] - a[1] + h * d[1];
   for (let i = 0; i < uv.count; i++) {
     const x = uv.getX(i), y = 1 - uv.getY(i), denominator = g * x + h * y + 1;
-    uv.setXY(i, (x1 * x + x2 * y + a[0]) / denominator, 1 - (y1 * x + y2 * y + a[1]) / denominator);
+    const sourceX = (x1 * x + x2 * y + a[0]) / denominator;
+    const sourceY = (y1 * x + y2 * y + a[1]) / denominator;
+    const [sampleX, sampleY] = crop ? croppedPhotoPoint(sourceX, sourceY, crop) : [sourceX, sourceY];
+    uv.setXY(i, sampleX, 1 - sampleY);
   }
   return new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map, roughness: 0.71, metalness: 0.02 }));
 }
@@ -116,7 +120,7 @@ export function createYifuSignage(parent: THREE.Group) {
   const panel = new THREE.Group(); panel.position.set(0, 0.7, 0); panel.rotation.x = -0.13; root.add(panel);
   const edge = new THREE.MeshStandardMaterial({ color: '#74716b', metalness: 0.65, roughness: 0.36 });
   const backing = new THREE.Mesh(new THREE.BoxGeometry(0.91, 1.36, 0.035), edge); panel.add(backing); backing.castShadow = true;
-  const face = boardPhoto ? photoPlane(boardPhoto, 0.89, 1.335, [[0.002, 0.059], [0.998, 0.058], [0.859, 0.939], [0.133, 0.944]]) : yifuLabel('逸夫楼B102休闲食坊\n早餐 · 饮品 · 盒饭', 0.89, 1.335, '#d8a568', '#9f2927');
+  const face = boardPhoto ? photoPlane(boardPhoto, 0.89, 1.335, [[0.002, 0.059], [0.998, 0.058], [0.859, 0.939], [0.133, 0.944]], yifuBoardCrop) : yifuLabel('逸夫楼B102休闲食坊\n早餐 · 饮品 · 盒饭', 0.89, 1.335, '#d8a568', '#9f2927');
   face.position.z = 0.019; panel.add(face);
   if (brandTexture) {
     const originalBrand = new THREE.Mesh(new THREE.PlaneGeometry(0.89, 0.193), new THREE.MeshStandardMaterial({ map: brandTexture, roughness: 0.8 }));

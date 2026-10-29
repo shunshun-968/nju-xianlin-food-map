@@ -92,9 +92,9 @@
   background:
     radial-gradient(ellipse 110% 90% at 0% 0%, var(--letter-light), transparent 74%),
     linear-gradient(135deg, transparent 24%, var(--letter-shade) 100%), var(--letter-paper);
-  /* 静态蒙版只处理安全留白处的轮廓，不位移或模糊手写字。 */
-  -webkit-mask: url('../assets/about/paper-edge-mask.svg') center / 100% 100% no-repeat;
-  mask: url('../assets/about/paper-edge-mask.svg') center / 100% 100% no-repeat;
+  /* 原 SVG 随 CSS 内联，保持轮廓不变，避免打开信件时再等待独立请求。 */
+  -webkit-mask: url('../assets/about/paper-edge-mask.svg?inline') center / 100% 100% no-repeat;
+  mask: url('../assets/about/paper-edge-mask.svg?inline') center / 100% 100% no-repeat;
 }
 .about-letter-texture {
   position: absolute;
@@ -103,7 +103,7 @@
   height: 100%;
   z-index: 0;
   /* 按比例居中裁剪真实原图，保留纸纤维尺度；日夜共用同一张材质。 */
-  background: url('../assets/about/paper-fiber-original.jpg') center / cover no-repeat;
+  background: url('../assets/about/paper-fiber-runtime.jpg') center / cover no-repeat;
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -138,7 +138,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url('../assets/about/paper-wrinkles.svg') center / 100% 100% no-repeat;
+  background: url('../assets/about/paper-wrinkles.svg?inline') center / 100% 100% no-repeat;
   opacity: 0.76;
   pointer-events: none;
 }

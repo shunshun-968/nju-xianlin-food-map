@@ -2,11 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import pg from 'pg';
 import { readFile } from 'node:fs/promises';
+import { readCatalog, readHealth } from '../server/catalog.mjs';
 assert.equal(
   process.env.FOODMAP_TEST_DATABASE,
   '1',
   'Set FOODMAP_TEST_DATABASE=1 only for an isolated disposable test database.',
 );
+
+test('batched catalog reads retain the PostgreSQL row protocol and reset their local reader role', async () => {
+  const expected = JSON.parse(await readFile(new URL('../data/demo-catalog.json', import.meta.url), 'utf8'));
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
+  try {
+    const roleBefore = (await pool.query('SHOW role')).rows[0].role;
+    const result = await readCatalog(pool);
+    assert.deepEqual(result.venues.map((v) => v.id).sort(), expected.venues.map((v) => v.id).sort());
+    assert.deepEqual(result.stalls.map((s) => s.id).sort(), expected.stalls.map((s) => s.id).sort());
+    const versions = new Map(expected.floors.map((f) => [f.id, f.layoutVersion]));
+    for (const floor of result.floors) assert.equal(floor.layoutVersion, versions.get(floor.id));
+    assert.equal((await pool.query('SHOW role')).rows[0].role, roleBefore);
+    assert.equal((await readHealth(pool)).readOnly, result.readOnly);
+  } finally {
+    await pool.end();
+  }
+});
 
 test('seeded windows use their floor layout versions, including versions above one', async () => {
   const expected = JSON.parse(

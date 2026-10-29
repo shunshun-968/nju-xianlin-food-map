@@ -25,7 +25,17 @@ export function campusCorePreload() {
         const children = campusCorePreloadScript(base, manifest.core?.file);
         if (!children) return;
         await access(join(folder, manifest.core.file));
-        return [{ tag: 'script', children, injectTo: 'head-prepend' }];
+        return [
+          { tag: 'script', children, injectTo: 'head-prepend' },
+          // 与部署页面一起交付同版本目录，首开无需等待另一趟目录请求。
+          // 放在 head 末尾，确保 charset 仍在文档最前面的 1024 字节内。
+          {
+            tag: 'script',
+            attrs: { id: 'campus-basemap-manifest', type: 'application/json' },
+            children: JSON.stringify(manifest).replace(/</g, '\\u003c'),
+            injectTo: 'head',
+          },
+        ];
       } catch {
         // 开发时生成文件尚未就绪仍可正常启动，既有加载器负责展示错误与重试。
       }

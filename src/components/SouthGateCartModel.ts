@@ -1,8 +1,16 @@
 import * as THREE from 'three';
+import { prepareImages } from '../lib/image-assets';
 import { createCart, createGround } from '../models/south-gate/cart-model.js';
 import { createFoodDisplay } from '../models/south-gate/food.js';
 import type { FourthCanteenModel } from './FourthCanteenModel';
 import { southGateCartStall } from '../data/south-gate-cart';
+
+export function prepareSouthGateCartAssets() {
+  return prepareImages([
+    new URL('../assets/branding/南大后勤.png', import.meta.url).href,
+    new URL('../assets/branding/南大校徽.png', import.meta.url).href,
+  ]);
+}
 
 /** Same open cart and food geometry as the approved standalone model. */
 export function createSouthGateCartModel(): FourthCanteenModel {

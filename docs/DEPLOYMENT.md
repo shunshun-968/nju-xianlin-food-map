@@ -48,10 +48,22 @@ docker compose --profile demo run --rm seed
 
 更新时先备份，检查迁移，再运行 `docker compose up --build -d`。已有数据库的迁移任务应显式执行 `docker compose run --rm migrate`，检查成功后更新 API；不使用 `docker compose down -v`。
 
+## 自托管的服务端加载优化
+
+以下配置由 Docker/Nginx 与 Node API 执行。当前 GitHub Pages 构建使用 `VITE_DATA_SOURCE=mock`，不会运行这两个服务，因此修改这些文件不会改变现有 Pages 站点的传输线路或响应头。
+
+Docker 构建在 Vite 输出后运行 `node scripts/precompress.mjs dist`，为大于 1 KB 且确实能缩小的 HTML、JavaScript、CSS、JSON、SVG 和 WASM 生成无损 `.gz` 副本。原文件、图片与模型内容不变。Nginx 按客户端 `Accept-Encoding` 协商发送预压缩文件；没有副本时动态 gzip，响应包含 `Vary: Accept-Encoding`。此项减少首次访问的传输字节，不要求浏览器已有缓存。[Nginx 预压缩说明](https://nginx.org/en/docs/http/ngx_http_gzip_static_module.html)
+
+带哈希的 `/assets/` 和地图分块使用一年不可变缓存；HTML、地图目录及其他未版本化文件使用 `no-cache` 重验证。缺失的静态资源直接返回 404，不回退成 HTML。API 与公开媒体保留各自的缓存策略；API 连接通过上游 keepalive 复用。所有路径继续继承原有安全响应头。
+
+Node 目录 API 将原有八次数据库往返合并为一次固定的批量只读请求，仍使用 `foodmap_reader` 角色和原字段、排序、价格换算。并发目录请求共享正在进行的读取；每次新一批请求仍访问数据库，不以 TTL 缓存菜单或维护状态。响应支持 gzip/Brotli 与弱 ETag，内容未变可返回 304；只复用上一版相同内容的编码结果。目录为 `private, no-cache`，健康检查和错误仍为 `no-store`，CORS 白名单和只读方法限制不变。
+
+上线前，在实际 Docker 环境执行 `docker compose config --quiet`、构建 web/api 并检查 `docker compose exec web nginx -t`。随后对比 `curl -I -H 'Accept-Encoding: gzip' http://localhost:8080/` 与不带压缩请求的响应，核对 Content-Encoding、Vary、ETag、Cache-Control；浏览器无缓存测试还应包含校园网和手机网络。本地 Vite 预览不会模拟 Nginx 的全部行为。
+
 ## 资源预算
 
 - 本仓库轻量栈：开发/小流量起点 **1 vCPU、1 GB RAM、10 GB SSD**；正式试点建议 **2 vCPU、2 GB RAM、20 GB SSD 起**，图片和备份另计。这是工程估算，尚未做并发压测；构建建议在 CI 完成，避免小内存机器构建失败。
 - Supabase 完整自托管：官方最低 **2 CPU、4 GB RAM、40 GB SSD**，推荐 4 CPU、8 GB+、80 GB+；不能沿用轻量栈的资源估算。[官方要求](https://supabase.com/docs/guides/self-hosting/docker#system-requirements)
-- 三维渲染主要由用户设备 GPU 执行；服务器不负责实时渲染。当前 Three.js 独立 chunk 约 130 KB gzip，总脚本约 215 KB gzip，具体值以最新构建为准。真实模型需要后续性能预算和手机压测。
+- 三维渲染主要由用户设备 GPU 执行；服务器不负责实时渲染。首页、Three.js 和各食堂代码按需分包，传输体积以最新构建结果为准。服务器压缩不能替代手机上的模型构建、着色器编译与渲染测试。
 
 PostgreSQL 镜像默认 16，迁移云端 17 数据时需先将目标版本改为兼容的 17 并演练；不能把高主版本 dump 无条件导入旧主版本。

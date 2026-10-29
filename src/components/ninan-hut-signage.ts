@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { loadModelImage, ninanModelImages } from '../lib/model-image-assets';
+import { croppedPhotoPoint, ninanPostersCrop } from '../lib/photo-crop';
 
 const urls = ninanModelImages;
 type Asset = keyof typeof urls;
@@ -7,6 +8,7 @@ const images = new Map<Asset, HTMLImageElement>();
 // 同一实拍照片用于两块牌时共用像素源，让 Three 在同一渲染器中只上传一次。
 // Texture 仍由每个模型独立拥有，释放其中一块牌不会提前释放另一块牌。
 const textureSources = new WeakMap<TexImageSource, THREE.Source>();
+const brandCanvases = new WeakMap<HTMLImageElement, Map<string, HTMLCanvasElement>>();
 let preparing: Promise<void> | undefined;
 
 /** 保存解码图片，每次模型使用自己的纹理，可随场景安全释放。 */
@@ -118,23 +120,32 @@ export function ninanFacadeLetters(text: string, width: number, height: number) 
 export function ninanBrand(name: 'crest' | 'logistics', width: number, color = '#6c477e') {
   const source = images.get(name);
   if (!source) return new THREE.Group();
-  const canvas = document.createElement('canvas');
-  canvas.width = source.width;
-  canvas.height = source.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(source, 0, 0);
-  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const rgb = new THREE.Color(color);
-  for (let i = 0; i < pixels.data.length; i += 4) {
-    pixels.data[i + 3] = Math.min(
-      pixels.data[i + 3],
-      Math.max(0, Math.min(255, (pixels.data[i + 1] - 80) * 2)),
-    );
-    pixels.data[i] = Math.round(rgb.r * 255);
-    pixels.data[i + 1] = Math.round(rgb.g * 255);
-    pixels.data[i + 2] = Math.round(rgb.b * 255);
+  let variants = brandCanvases.get(source);
+  if (!variants) {
+    variants = new Map();
+    brandCanvases.set(source, variants);
   }
-  ctx.putImageData(pixels, 0, 0);
+  let canvas = variants.get(color);
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.width = source.width;
+    canvas.height = source.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(source, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const rgb = new THREE.Color(color);
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      pixels.data[i + 3] = Math.min(
+        pixels.data[i + 3],
+        Math.max(0, Math.min(255, (pixels.data[i + 1] - 80) * 2)),
+      );
+      pixels.data[i] = Math.round(rgb.r * 255);
+      pixels.data[i + 1] = Math.round(rgb.g * 255);
+      pixels.data[i + 2] = Math.round(rgb.b * 255);
+    }
+    ctx.putImageData(pixels, 0, 0);
+    variants.set(color, canvas);
+  }
   const result = new THREE.Mesh(
     new THREE.PlaneGeometry(width, (width * source.height) / source.width),
     new THREE.MeshStandardMaterial({
@@ -186,7 +197,12 @@ export function ninanPhoto(
     const x = uv.getX(i),
       y = 1 - uv.getY(i),
       den = g * x + h * y + 1;
-    uv.setXY(i, (ax * x + bx * y + a[0]) / den, 1 - (ay * x + by * y + a[1]) / den);
+    const sourceX = (ax * x + bx * y + a[0]) / den;
+    const sourceY = (ay * x + by * y + a[1]) / den;
+    const [sampleX, sampleY] = asset === 'east'
+      ? croppedPhotoPoint(sourceX, sourceY, ninanPostersCrop)
+      : [sourceX, sourceY];
+    uv.setXY(i, sampleX, 1 - sampleY);
   }
   return new THREE.Mesh(
     geometry,

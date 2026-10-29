@@ -11,7 +11,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-test('letter stays pending until all paper assets and the transparent ink image are decoded', async () => {
+test('letter waits for both raster images, while inline paper SVGs require no image requests', async () => {
   const texture = deferred<HTMLImageElement>();
   const finalInk = deferred<HTMLImageElement>();
   const inkRequested = deferred<void>();
@@ -19,7 +19,7 @@ test('letter stays pending until all paper assets and the transparent ink image 
   const requested: string[] = [];
   const loader = createAboutLetterAssetLoader(async (url) => {
     requested.push(url);
-    if (url.includes('paper-fiber-original')) return texture.promise;
+    if (url.includes('paper-fiber-runtime')) return texture.promise;
     if (url.includes('handwritten-letter-ink')) {
       inkRequested.resolve();
       return finalInk.promise;
@@ -33,7 +33,7 @@ test('letter stays pending until all paper assets and the transparent ink image 
   assert.equal(loader.peek(), undefined);
   await inkRequested.promise;
   assert.ok(
-    requested.some((url) => url.includes('paper-fiber-original')),
+    requested.some((url) => url.includes('paper-fiber-runtime')),
     'ink and paper load in parallel',
   );
   texture.resolve(image);
@@ -45,12 +45,12 @@ test('letter stays pending until all paper assets and the transparent ink image 
   assert.equal(await loader.load(), ready);
   assert.equal(
     requested.length,
-    4,
-    'only the four display assets, with no original JPEG or data URL',
+    2,
+    'only the paper photograph and transparent ink, with no separate SVG requests',
   );
   assert.ok(
     requested.every(
-      (url) => !url.includes('handwritten-letter-original') && !url.startsWith('data:'),
+      (url) => !url.includes('handwritten-letter-original') && !url.endsWith('.svg') && !url.startsWith('data:'),
     ),
   );
 });

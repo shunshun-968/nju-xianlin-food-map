@@ -6,10 +6,9 @@ import {
   geometryPath,
   layerIds,
   type LayerId,
-  type OsmCollection,
   type OsmFeature,
-  type OsmManifest,
 } from '../lib/osm-geometry';
+import { createOsmPreviewLoader, type OsmPreviewDataset } from '../lib/osm-preview-loading';
 import './osm-preview.css';
 import { VenueReviewOverlay, VenueReviewPanel, reviewLines } from './VenueReview';
 
@@ -22,13 +21,8 @@ const titles: Record<LayerId, string> = {
   pois: '设施 / 商店',
   labels: '原始名称',
 };
+const previewLoader = createOsmPreviewLoader(`${import.meta.env.BASE_URL}osm/`);
 const asset = (file: string) => `${import.meta.env.BASE_URL}osm/${file}`;
-type Dataset = {
-  manifest: OsmManifest;
-  layers: Record<LayerId, OsmCollection>;
-  venues: OsmCollection;
-  references: OsmCollection;
-};
 type Transform = { x: number; y: number; scale: number };
 
 function landColor(feature: OsmFeature) {
@@ -41,7 +35,7 @@ function landColor(feature: OsmFeature) {
 }
 
 export default function OsmPreview() {
-  const [dataset, setDataset] = useState<Dataset | null>(null);
+  const [dataset, setDataset] = useState<OsmPreviewDataset | null>(null);
   const [error, setError] = useState('');
   const [enabled, setEnabled] = useState<Record<LayerId, boolean>>({
     boundary: true,
@@ -146,30 +140,18 @@ export default function OsmPreview() {
     });
   }
   useEffect(() => {
-    const abort = new AbortController();
-    const get = async (file: string) => {
-      const response = await fetch(asset(file), { signal: abort.signal });
-      if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
-      return response.json();
-    };
-    Promise.all([
-      get('manifest.json'),
-      get('food-venues.geojson'),
-      get('venue-references.geojson'),
-      ...layerIds.map((id) => get(`${id}.geojson`)),
-    ])
-      .then(([manifest, venues, references, ...layers]) =>
-        setDataset({
-          manifest,
-          venues,
-          references,
-          layers: Object.fromEntries(layerIds.map((id, i) => [id, layers[i]])) as Dataset['layers'],
-        }),
-      )
+    let cancelled = false;
+    previewLoader.load()
+      .then((value) => {
+        if (!cancelled) setDataset(value);
+      })
       .catch((e: Error) => {
-        if (e.name !== 'AbortError') setError(e.message);
+        if (!cancelled) setError(e.message);
       });
-    return () => abort.abort();
+    // 只取消当前组件接收结果；共享请求留给重新挂载的预览页面继续使用。
+    return () => {
+      cancelled = true;
+    };
   }, []);
   useEffect(() => {
     if (!host.current) return;

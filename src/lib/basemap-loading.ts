@@ -45,27 +45,51 @@ type LoaderOptions = {
   baseUrl: string;
   fetcher?: typeof fetch;
   openCache?: (revision: string) => Promise<CacheLike | undefined>;
+  initialManifest?: unknown;
 };
 
+function isMapManifest(value: unknown): value is MapManifest {
+  if (!value || typeof value !== 'object') return false;
+  const manifest = value as MapManifest;
+  return (
+    manifest.version === 1 &&
+    typeof manifest.revision === 'string' &&
+    !!manifest.revision &&
+    typeof manifest.core?.file === 'string' &&
+    !!manifest.core.file &&
+    Array.isArray(manifest.surrounding) &&
+    manifest.metadata?.venues?.length === 7
+  );
+}
+
 /** Shared parsed values + in-flight requests. Failure is never permanently cached. */
-export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: LoaderOptions) {
+export function createBasemapLoader({
+  baseUrl,
+  fetcher = fetch,
+  openCache,
+  initialManifest,
+}: LoaderOptions) {
   const values = new Map<string, unknown>();
-  const pending = new Map<string, Promise<unknown>>();
-  const queue: { run: () => void; background: boolean }[] = [];
+  type Priority = { background: boolean };
+  const pending = new Map<string, { promise: Promise<unknown>; priority: Priority }>();
+  const queue: { run: () => void; priority: Priority }[] = [];
   let active = 0;
-  let manifestPromise: Promise<MapManifest> | undefined;
+  // 与 HTML 一同送达的当前版本目录消除首访的一次串行网络等待，不依赖已有缓存。
+  let manifestPromise: Promise<MapManifest> | undefined = isMapManifest(initialManifest)
+    ? Promise.resolve(initialManifest)
+    : undefined;
   function pump() {
     while (active < 2 && queue.length) {
-      const foreground = queue.findIndex((job) => !job.background);
+      const foreground = queue.findIndex((job) => !job.priority.background);
       const job = queue.splice(foreground < 0 ? 0 : foreground, 1)[0];
       active++;
       job.run();
     }
   }
-  function schedule<T>(operation: () => Promise<T>, background: boolean): Promise<T> {
+  function schedule<T>(operation: () => Promise<T>, priority: Priority): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       queue.push({
-        background,
+        priority,
         run: () => {
           operation()
             .then(resolve, reject)
@@ -83,15 +107,8 @@ export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: Loa
       manifestPromise = fetcher(`${baseUrl}index.json`, { cache: 'no-cache' })
         .then(async (response) => {
           if (!response.ok) throw new Error(`地图目录 HTTP ${response.status}`);
-          const value = (await response.json()) as MapManifest;
-          if (
-            value.version !== 1 ||
-            !value.revision ||
-            !value.core?.file ||
-            !Array.isArray(value.surrounding) ||
-            value.metadata?.venues?.length !== 7
-          )
-            throw new Error('地图目录不完整');
+          const value: unknown = await response.json();
+          if (!isMapManifest(value)) throw new Error('地图目录不完整');
           return value;
         })
         .catch((error) => {
@@ -109,7 +126,13 @@ export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: Loa
   ): Promise<T> {
     const key = `${manifest.revision}/${asset.file}`;
     if (values.has(key)) return Promise.resolve(values.get(key) as T);
-    if (pending.has(key)) return pending.get(key) as Promise<T>;
+    const existing = pending.get(key);
+    if (existing) {
+      // 预取中的区域进入视野时复用请求，并提升尚未开始的任务，不排在旧预取之后。
+      if (!background) existing.priority.background = false;
+      return existing.promise as Promise<T>;
+    }
+    const priority = { background };
     const url = `${baseUrl}${asset.file}`;
     const promise = schedule(async () => {
       let cache: CacheLike | undefined;
@@ -133,7 +156,7 @@ export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: Loa
       }
       const response = await fetcher(url, {
         cache: 'force-cache',
-        priority: background ? 'low' : 'high',
+        priority: priority.background ? 'low' : 'high',
       });
       if (!response.ok) throw new Error(`地图分块 HTTP ${response.status}`);
       const saved = response.clone();
@@ -147,8 +170,8 @@ export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: Loa
         /* Quota failure must not block the map. */
       }
       return value;
-    }, background);
-    pending.set(key, promise);
+    }, priority);
+    pending.set(key, { promise, priority });
     promise.then(
       () => pending.delete(key),
       () => pending.delete(key),

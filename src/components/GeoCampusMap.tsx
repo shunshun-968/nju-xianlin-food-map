@@ -48,6 +48,7 @@ type Props = {
   onExplore?: () => void;
   // The UI keeps its mobile presentation; both devices use the approved OSM data.
   legacyMobile?: boolean;
+  backgroundPaused?: boolean;
   nightMode?: boolean;
 };
 function landFill(feature: MapFeature, inside = true) {
@@ -91,6 +92,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     onExplore,
     nightMode = false,
     legacyMobile = false,
+    backgroundPaused = false,
   },
   ref,
 ) {
@@ -140,6 +142,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
     viewport: size.current,
     priorityBounds,
     isInteracting: () => pointers.current.size > 0 || settleTimer.current !== null,
+    prefetchSurroundings: !legacyMobile,
+    backgroundPaused,
   });
   const gesture = useRef({
     x: 0,

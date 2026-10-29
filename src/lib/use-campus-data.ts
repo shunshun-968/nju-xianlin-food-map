@@ -15,11 +15,15 @@ export function useCampusData({
   viewport,
   priorityBounds,
   isInteracting,
+  prefetchSurroundings = true,
+  backgroundPaused = false,
 }: {
   transform: MapTransform;
   viewport: { width: number; height: number };
   priorityBounds: Bounds | null;
   isInteracting: () => boolean;
+  prefetchSurroundings?: boolean;
+  backgroundPaused?: boolean;
 }) {
   const [manifest, setManifest] = useState<MapManifest | null>(null);
   const [baseMap, setBaseMap] = useState<CampusBasemap | null>(null);
@@ -105,7 +109,8 @@ export function useCampusData({
   }, [manifest, wantedKey, priorityKey, retry]);
 
   useEffect(() => {
-    if (!manifest || !priorityReady) return;
+    // 手机只请求当前视野所需周边；不在首屏后抢占信件与模型的带宽、解码和内存。
+    if (!manifest || !priorityReady || !prefetchSurroundings || backgroundPaused) return;
     let cancelled = false,
       cursor = 0;
     let timeout: ReturnType<typeof window.setTimeout> | undefined;
@@ -146,7 +151,7 @@ export function useCampusData({
       if (timeout !== undefined) window.clearTimeout(timeout);
       if (idle !== undefined) window.cancelIdleCallback(idle);
     };
-  }, [manifest, priorityReady]);
+  }, [manifest, priorityReady, prefetchSurroundings, backgroundPaused]);
 
   const map = useMemo(
     () =>

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { loadModelTexture } from '../../lib/model-texture-loader';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 // Dimensions are visual estimates from the supplied photographs, not survey measurements.
@@ -60,7 +61,7 @@ function rod(p, a, b, r, c) {
 const logisticsArtwork = new URL('../../assets/branding/南大后勤.png', import.meta.url).href;
 const badgeArtwork = new URL('../../assets/branding/南大校徽.png', import.meta.url).href;
 function imagePanel(p, url, x, y, z, w, h, rotation = 0) {
-  const texture = new THREE.TextureLoader().load(url);
+  const texture = loadModelTexture(url);
   texture.colorSpace = THREE.SRGBColorSpace;
   const panel = mesh(
     p,

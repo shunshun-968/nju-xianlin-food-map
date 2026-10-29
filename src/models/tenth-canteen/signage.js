@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { loadModelImage } from '../../lib/image-assets';
+import { textureFromImage } from '../../lib/model-texture-loader';
 
 const titles = {
   north: '美食广场',
@@ -13,18 +15,7 @@ const titles = {
   9: '风味排档',
 };
 const images = new Map();
-const textures = new Map();
 let assetsPromise;
-
-function loadImage(url) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Unable to load local signage image: ${url}`));
-    image.src = url;
-  });
-}
 
 export async function loadSignageAssets() {
   if (!assetsPromise) {
@@ -42,7 +33,7 @@ export async function loadSignageAssets() {
     assetsPromise = Promise.all(
       entries.map(async ([key, url]) => {
         try {
-          images.set(key, await loadImage(url));
+          images.set(key, await loadModelImage(url));
           return { key, loaded: true };
         } catch {
           return { key, loaded: false };
@@ -69,15 +60,13 @@ function canvasTexture(canvas) {
 
 function bannerTexture(photo) {
   const key = String(photo);
-  if (textures.has(key)) return textures.get(key);
   const image = images.get(key);
   if (!image) throw new Error(`Missing original signage: ${key}`);
-  const texture = new THREE.Texture(image);
+  const texture = textureFromImage(image);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
   texture.needsUpdate = true;
   texture.userData = { photo: key, originalArtwork: true, fallback: false };
-  textures.set(key, texture);
   return texture;
 }
 
@@ -186,13 +175,8 @@ export function addWindowNumber(parent, number) {
   group.add(plate);
   const original = images.get('logistics');
   if (original) {
-    let texture = textures.get('logistics-original');
-    if (!texture) {
-      texture = new THREE.Texture(original);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.needsUpdate = true;
-      textures.set('logistics-original', texture);
-    }
+    const texture = textureFromImage(original);
+    texture.colorSpace = THREE.SRGBColorSpace;
     const width = 0.27,
       height = (width * original.naturalHeight) / original.naturalWidth;
     const logo = new THREE.Mesh(

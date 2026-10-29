@@ -1,9 +1,12 @@
 import * as THREE from 'three';
+import { prepareImages } from '../lib/image-assets';
+import { loadModelTexture } from '../lib/model-texture-loader';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { twelfthTextPlane } from './twelfth-canteen-signage';
 import { eleventhCanteenFaces, eleventhDumplingKiosk } from '../data/eleventh-canteen';
 
 const logisticsArtwork = new URL('../assets/branding/南大后勤.png', import.meta.url).href;
+export function prepareEleventhFixtureAssets() { return prepareImages([logisticsArtwork]); }
 
 /** Loose equipment photographed in front of the Eleventh Canteen's continuous row.
  * Floor coordinates: +X north / screen right; +Z east / serving aisle.
@@ -205,7 +208,7 @@ export function addEleventhFixtures(parent: THREE.Group): void {
   text(freezer, '水饺超市', 0, 0.9, fd / 2 + 0.009, 1.2, 0.21, '#fff6df');
   // Texture uses the supplied original artwork and its exact 390:180 aspect ratio.
   if (typeof document !== 'undefined' && typeof document.createElementNS === 'function') {
-    const map = new THREE.TextureLoader().load(logisticsArtwork);
+    const map = loadModelTexture(logisticsArtwork);
     map.colorSpace = THREE.SRGBColorSpace;
     map.anisotropy = 8;
     const logo = mesh(

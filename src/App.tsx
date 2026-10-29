@@ -17,7 +17,7 @@ import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
 import { useCampusGreeting } from './lib/use-campus-greeting';
 import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
-import { preloadVenueModelImages } from './lib/model-image-assets';
+import { preloadSceneRoute } from './lib/scene-loading';
 import { catalogRepository } from './services/catalog';
 import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
 import { eighthDumplingKiosk } from './data/eighth-canteen';
@@ -41,10 +41,11 @@ export default function App() {
     navigate: changeView,
   } = useAppNavigation();
   const modelVenueId = view.level === 'campus' ? undefined : view.venueId;
+  const modelFloorId = view.level === 'floor' ? view.floorId : undefined;
   useEffect(() => {
-    // 与三维代码并行下载当前场所照片；共享解码结果，首开无需串行等待。
-    if (modelVenueId) void preloadVenueModelImages(modelVenueId).catch(() => {});
-  }, [modelVenueId]);
+    // 全部场所共用按需准备入口；展示层负责报错，预加载失败不产生未处理拒绝。
+    void preloadSceneRoute(view).catch(() => {});
+  }, [view.level, modelVenueId, modelFloorId]);
   const alternateCampusGreeting = useCampusGreeting(view.level);
   const [theme] = useState<MapTheme>('garden');
   const [ninanMeal, setNinanMeal] = useState<NinanMealMode>(() => defaultNinanMealMode(interfaceTheme === 'night'));
@@ -660,6 +661,7 @@ export default function App() {
                 onHighlightVenue={highlightVenue}
                 onExplore={mobile ? undefined : exploreMap}
                 legacyMobile={mobile}
+                backgroundPaused={showInfo}
               />
             ) : (
               <Suspense fallback={<div className="loading model-loading" role="status">正在展开模型…</div>}>

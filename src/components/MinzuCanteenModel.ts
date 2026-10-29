@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { prepareImages } from '../lib/image-assets';
+import { loadModelTexture } from '../lib/model-texture-loader';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { IndoorCanteenSpec } from '../data/indoor-canteens';
 import { minzuCanteenFaces, minzuSignBoards, minzuSelfSelectAreas } from '../data/minzu-canteen';
@@ -10,10 +12,14 @@ import { eighthTextPlane } from './eighth-canteen-signage';
 
 type TextureLoader = (url: string) => THREE.Texture;
 
+export function prepareMinzuCanteenAssets() {
+  return prepareImages(Object.values(MINZU_SIGN_TEXTURES));
+}
+
 /** Actual photographed sign pixels, independent of the numbered window boundaries. */
 export function createMinzuCanteenModel(
   spec: IndoorCanteenSpec,
-  loadTexture: TextureLoader = (url) => new THREE.TextureLoader().load(url),
+  loadTexture: TextureLoader = loadModelTexture,
 ): FourthCanteenModel {
   const group = new THREE.Group();
   group.name = 'minzu-canteen-outward';

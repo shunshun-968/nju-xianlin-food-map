@@ -79,7 +79,7 @@ test('fourth sign images share preload/decode work, retry failed crops and creat
     const secondTexture = createFourthSignageTexture(urls[0]);
     textures.push(firstTexture, secondTexture);
     assert.notEqual(firstTexture, secondTexture);
-    assert.notEqual(firstTexture.source, secondTexture.source);
+    assert.equal(firstTexture.source, secondTexture.source, 'Reuse GPU pixels while keeping independent texture ownership');
     for (const texture of textures) {
       assert.equal(texture.image, decoded, 'Preserve the loaded photograph without redrawing it');
       assert.equal(texture.colorSpace, THREE.SRGBColorSpace);

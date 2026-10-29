@@ -1,10 +1,13 @@
 import * as THREE from 'three';
+import { prepareImages } from '../lib/image-assets';
+import { loadModelTexture } from '../lib/model-texture-loader';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { createKingCrab } from './ninth-canteen-king-crab';
 
 // The owner explicitly supplied this crab-themed artwork for the freezer.
 // Preserve its original pixels/aspect; it is separate from the official university crest.
 const crabArtwork = new URL('../assets/ninth-canteen/king-crab-emblem.png', import.meta.url).href;
+export function prepareNinthFreezerAssets() { return prepareImages([crabArtwork]); }
 
 /** Photo 10 refrigerated cabinet + owner's requested historical king-crab display.
  * Local +Z faces the aisle. Both units share one row INSIDE the same storefront.
@@ -280,7 +283,7 @@ export function addNinthSeafoodFreezers(parent: THREE.Group, width: number, stal
   // The source is square: the decal stays square on both visible outer faces.
   const artworkMaterial = new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
   if (typeof document.createElementNS === 'function') {
-    const texture = new THREE.TextureLoader().load(crabArtwork);
+    const texture = loadModelTexture(crabArtwork);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 8;
     artworkMaterial.map = texture;

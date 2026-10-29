@@ -38,6 +38,7 @@ import './exterior-entrance-markers.css';
 import { ModelCompass } from './ModelCompass';
 import { getModelNorth } from '../data/model-orientation';
 import { modelCompassPose, compassLetterPosition } from '../lib/model-compass';
+import { prepareSceneModel } from '../lib/scene-loading';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -701,25 +702,9 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         let model = e.models.get(id);
         const cached = !!model;
         if (!model) {
-          // 每个场所只加载自己的建模代码与贴图，避免小售卖点等待全部食堂。
-          let createModel: () => FourthCanteenModel;
-          if (spec) {
-            const { createCanteenModel } = await import('./FourthCanteenModel');
-            if (spec.style === 'tenth') await (await import('./TenthCanteenModel')).prepareTenthCanteenModel();
-            if (spec.style === 'fourth') await (await import('../lib/fourth-signage-textures')).prepareFourthSignageAssets();
-            createModel = () => createCanteenModel(spec);
-          } else if (view.venueId === 'v-yifu') {
-            const module = await import('./YifuKioskModel');
-            await module.prepareYifuKioskAssets();
-            createModel = module.createYifuKioskModel;
-          } else if (view.venueId === 'v-hut') {
-            const module = await import('./NinanHutModel');
-            await module.prepareNinanHutAssets();
-            createModel = module.createNinanHutModel;
-          } else {
-            createModel = (await import('./SouthGateCartModel')).createSouthGateCartModel;
-          }
+          const createModel = await prepareSceneModel(view);
           if (cancelled) return;
+          if (!createModel) throw new Error('未找到场所模型');
           model = createModel();
           if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
@@ -1021,7 +1006,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     else e.fourth.setInterfaceTheme(night);
     if (['v-south', 'v-yifu', 'v-hut'].includes(e.indoorSpec?.id ?? '')) e.renderer.toneMappingExposure = night ? 1.05 : 1.1;
     e.renderer.shadowMap.needsUpdate = true;
-  }, [interfaceTheme, view]);
+  }, [interfaceTheme, view.level, view.venueId, floorId]);
   useEffect(() => {
     const e = engine.current;
     if (e?.fourth && e.indoorSpec?.id === 'v-hut') {
@@ -1041,7 +1026,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         );
       }
     });
-  }, [selectedStall, data, view, theme]);
+  }, [selectedStall, data, view.level, view.venueId, floorId, theme]);
   return (
     <div className={`scene${isFourthFloor || isCart ? ' fourth-canteen-scene' : ''}`} ref={host} data-loading={loadingModel || undefined}>
       <ModelCompass ref={compass} knownNorth={!!north} hidden={error || loadingModel} />

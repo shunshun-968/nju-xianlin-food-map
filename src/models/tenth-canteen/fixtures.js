@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { loadModelTexture } from '../../lib/model-texture-loader';
 
 /** Freestanding details observed in reference photos 1–3 and 8–9.
  * Coordinates follow the standalone model: -X is north, +Z is the dining aisle.
@@ -105,7 +106,7 @@ export function addFixtures(parent) {
     );
     panel.scale.set(height * 3.4, height, 1);
     panel.castShadow = false;
-    new THREE.TextureLoader().load(
+    const brandMap = loadModelTexture(
       new URL('../../assets/branding/南大后勤.png', import.meta.url).href,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -114,6 +115,9 @@ export function addFixtures(parent) {
         panel.scale.x = (height * texture.image.width) / texture.image.height;
       },
     );
+    // 立即交给模型持有，关闭场景时可释放尚在下载的纹理。
+    panel.material.map = brandMap;
+    brandMap.colorSpace = THREE.SRGBColorSpace;
     return panel;
   }
 

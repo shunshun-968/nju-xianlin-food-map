@@ -226,12 +226,25 @@
     font-size: 10.5px;
   }
   .app.fourth-model-active .map-area .yifu-view-controls {
-    width: 140px;
-    top: calc(var(--model-overlay-top, 16px) + 46px);
+    width: 122px;
+    top: var(--model-overlay-top, 16px);
   }
   .app.floating-shell.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs {
-    max-width: var(--model-overlay-width);
-    width: var(--model-overlay-width);
+    max-width: max(0px, calc(var(--model-overlay-width) - 130px));
+    width: max(0px, calc(var(--model-overlay-width) - 130px));
+    overflow: hidden;
+  }
+  .app.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs > button:first-child {
+    font-size: 0;
+    flex: 0 0 20px;
+    justify-content: center;
+  }
+  .app.fourth-model-active .map-area:has(.yifu-view-controls) .breadcrumbs > button:last-child {
+    min-width: 0;
+    flex: 1;
+    white-space: normal;
+    line-height: 1.3;
+    font-size: 10px;
   }
 }
 

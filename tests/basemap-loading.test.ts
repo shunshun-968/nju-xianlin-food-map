@@ -12,6 +12,7 @@ import {
   type FeatureChunk,
 } from '../src/lib/basemap-loading';
 import type { CampusBasemap } from '../src/lib/campus-basemap';
+import { openBasemapStorage } from '../src/lib/basemap-storage';
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const manifest: MapManifest = read('../public/osm/runtime/index.json');
@@ -21,7 +22,10 @@ const baseUrl = 'https://example.test/nju-xianlin-food-map/osm/runtime/';
 
 test('runtime chunks reconstruct every original feature, order, geometry and seven venues', () => {
   const chunks = [manifest.core, ...manifest.surrounding].map((c) => chunk(c.file));
-  assert.equal(chunks.reduce((total, c) => total + c.features.length, 0), full.features.length);
+  assert.equal(
+    chunks.reduce((total, c) => total + c.features.length, 0),
+    full.features.length,
+  );
   const merged = mergeMapFeatures(chunks);
   assert.equal(merged.length, full.features.length);
   merged.forEach(({ renderOrder, ...feature }, index) => {
@@ -182,4 +186,63 @@ test('queued visible chunks take precedence over background prefetch with bounde
   assert.ok(starts[3].endsWith('background.json'));
   releases.splice(0).forEach((release) => release());
   await Promise.all([c, d]);
+});
+
+test('slow cache writes do not delay decoded map data', async () => {
+  let finishWrite: () => void = () => {};
+  const writing = new Promise<void>((resolve) => {
+    finishWrite = resolve;
+  });
+  const loader = createBasemapLoader({
+    baseUrl,
+    openCache: async () => ({
+      match: async () => undefined,
+      put: () => writing,
+      delete: async () => false,
+    }),
+    fetcher: async () => Response.json(chunk(manifest.core.file)),
+  });
+  try {
+    const loaded = await Promise.race([
+      loader.loadChunk(manifest, manifest.core),
+      new Promise<never>((_, reject) => {
+        const timeout = setTimeout(() => reject(new Error('map waited for disk cache')), 1000);
+        timeout.unref();
+      }),
+    ]);
+    assert.equal(loaded.features.length, manifest.core.featureCount);
+  } finally {
+    finishWrite();
+  }
+});
+
+test('metadata-only revisions reuse hashed geometry, but never stale unhashed files', async () => {
+  const stores = new Map<string, Map<string, Response>>();
+  const previous = new Map<string, Response>([
+    [`${baseUrl}${manifest.core.file}`, Response.json(chunk(manifest.core.file))],
+    [`${baseUrl}index.json`, Response.json({ revision: 'old' })],
+  ]);
+  stores.set('unrelated-app', new Map());
+  stores.set('nju-basemap-v1-previous', previous);
+  const storage = {
+    keys: async () => [...stores.keys()],
+    delete: async (name: string) => stores.delete(name),
+    open: async (name: string) => {
+      if (!stores.has(name)) stores.set(name, new Map());
+      const entries = stores.get(name)!;
+      return {
+        match: async (key: RequestInfo | URL) => entries.get(String(key))?.clone(),
+        put: async (key: RequestInfo | URL, value: Response) => {
+          entries.set(String(key), value.clone());
+        },
+        delete: async (key: RequestInfo | URL) => entries.delete(String(key)),
+      };
+    },
+  } as unknown as CacheStorage;
+  const cache = await openBasemapStorage(storage, 'next');
+  const saved = await cache.match(`${baseUrl}${manifest.core.file}`);
+  assert.equal((await saved?.json()).features.length, manifest.core.featureCount);
+  assert.equal(await cache.match(`${baseUrl}index.json`), undefined);
+  assert.ok(stores.get('nju-basemap-v1-next')?.has(`${baseUrl}${manifest.core.file}`));
+  assert.ok(stores.has('unrelated-app'));
 });

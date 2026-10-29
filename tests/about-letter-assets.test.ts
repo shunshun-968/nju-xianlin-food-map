@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createAboutLetterAssetLoader, extractLetterInk } from '../src/lib/about-letter-assets';
+import { createAboutLetterAssetLoader } from '../src/lib/about-letter-assets';
+import { extractLetterInk } from '../scripts/assets/letter-ink';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -16,58 +17,54 @@ test('letter stays pending until all paper assets and the transparent ink image 
   const inkRequested = deferred<void>();
   const image = {} as HTMLImageElement;
   const requested: string[] = [];
-  let prepared = 0;
-  const loader = createAboutLetterAssetLoader(
-    async (url) => {
-      requested.push(url);
-      if (url.includes('paper-fiber-original')) return texture.promise;
-      if (url === 'data:prepared-ink') {
-        inkRequested.resolve();
-        return finalInk.promise;
-      }
-      return image;
-    },
-    async () => {
-      prepared++;
-      return 'data:prepared-ink';
-    },
-  );
+  const loader = createAboutLetterAssetLoader(async (url) => {
+    requested.push(url);
+    if (url.includes('paper-fiber-original')) return texture.promise;
+    if (url.includes('handwritten-letter-ink')) {
+      inkRequested.resolve();
+      return finalInk.promise;
+    }
+    return image;
+  });
 
   const first = loader.load();
   assert.equal(first, loader.load(), 'Strict Mode and repeated opens share the same task');
   await Promise.resolve();
-  assert.equal(prepared, 0);
   assert.equal(loader.peek(), undefined);
-  texture.resolve(image);
   await inkRequested.promise;
+  assert.ok(
+    requested.some((url) => url.includes('paper-fiber-original')),
+    'ink and paper load in parallel',
+  );
+  texture.resolve(image);
+  await Promise.resolve();
   assert.equal(loader.peek(), undefined, 'prepared pixels alone must not expose the paper');
   finalInk.resolve(image);
   const ready = await first;
   assert.equal(loader.peek(), ready);
   assert.equal(await loader.load(), ready);
-  assert.equal(requested.length, 5, 'four original assets and one prepared ink image');
-  assert.equal(prepared, 1);
+  assert.equal(
+    requested.length,
+    4,
+    'only the four display assets, with no original JPEG or data URL',
+  );
+  assert.ok(
+    requested.every(
+      (url) => !url.includes('handwritten-letter-original') && !url.startsWith('data:'),
+    ),
+  );
 });
 
 test('failed asset preparation can retry without caching a broken letter', async () => {
   const image = {} as HTMLImageElement;
   let failures = 1;
-  let prepared = 0;
-  const loader = createAboutLetterAssetLoader(
-    async (url) => {
-      if (url.includes('handwritten-letter-original') && failures-- > 0) throw Error('offline');
-      return image;
-    },
-    async () => {
-      prepared++;
-      return 'data:ink';
-    },
-  );
+  const loader = createAboutLetterAssetLoader(async (url) => {
+    if (url.includes('handwritten-letter-ink') && failures-- > 0) throw Error('offline');
+    return image;
+  });
   await assert.rejects(loader.load(), /offline/);
   assert.equal(loader.peek(), undefined);
-  assert.equal(prepared, 0);
-  assert.equal((await loader.load()).inkUrl, 'data:ink');
-  assert.equal(prepared, 1);
+  assert.match((await loader.load()).inkUrl, /handwritten-letter-ink\.webp/);
 });
 
 test('ink extraction clears the paper, keeps solid strokes and preserves soft edge alpha', () => {

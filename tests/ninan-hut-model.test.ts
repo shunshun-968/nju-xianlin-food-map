@@ -139,6 +139,37 @@ test('Ninan exterior keeps spatial identity and changes only the selected meal e
       assert.equal(root.userData.mealMode, 'dinner');
     });
 
+    await t.test('all meals and themes keep one light topology without lighting inactive equipment', () => {
+      const visibleLights = () => {
+        const lights: THREE.Light[] = [];
+        // 与 Three 编译着色器时收集灯光的方式一致。
+        root.traverseVisible((object) => {
+          if (object instanceof THREE.Light) lights.push(object);
+        });
+        return lights;
+      };
+      const baseline = visibleLights();
+      const cabinetLight = required('ninan-ingredient-cabinet-light') as THREE.PointLight;
+      const workLights = [1, 2].map(
+        (index) => required(`ninan-night-work-light-${index}`) as THREE.PointLight,
+      );
+      root.updateMatrixWorld(true);
+      const expectedCabinetPosition = new THREE.Vector3(0, 1.25, 0.51)
+        .applyMatrix4(required('ninan-ingredient-cabinet').matrixWorld);
+      assert.ok(cabinetLight.getWorldPosition(new THREE.Vector3()).distanceTo(expectedCabinetPosition) < 1e-9);
+      for (const night of [false, true, false]) {
+        for (const meal of ['breakfast', 'lunch', 'dinner'] as const) {
+          model.setInterfaceTheme(night);
+          model.setMealMode(meal);
+          assert.deepEqual(visibleLights(), baseline, `${meal}/${night}: no new shader light variant`);
+          assert.equal(cabinetLight.intensity, meal === 'dinner' ? (night ? 3.2 : 1.4) : 0);
+          for (const light of workLights) assert.equal(light.intensity, night ? 9 : 0);
+          assert.ok(cabinetLight.getWorldPosition(new THREE.Vector3()).distanceTo(expectedCabinetPosition) < 1e-9);
+        }
+      }
+      model.setMealMode('breakfast');
+    });
+
     await t.test(
       'breakfast board stands southeast of the separate tent and drink menu belongs below coffee',
       () => {

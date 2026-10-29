@@ -238,11 +238,13 @@ export function createNinanIngredientCabinet() {
     }
   });
   const light = new THREE.PointLight('#ffdda0', 1.4, 2.5, 2);
+  light.name = 'ninan-ingredient-cabinet-light';
   light.position.set(0, 1.25, 0.51);
   lamps.add(light);
   for (const section of [shell, shelves, food, glazing, lamps]) batch(section);
   return {
     group: cabinet,
+    light,
     setNight(night: boolean) {
       strip.emissiveIntensity = night ? 1.7 : 1;
       warmLining.emissiveIntensity = night ? 0.34 : 0.14;

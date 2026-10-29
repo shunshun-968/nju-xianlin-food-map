@@ -857,7 +857,7 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
                           {!isModeledCampusVenue(venue.id) && (
                             <title>
                               {venue.name}
-                              {venue.indoor ? ' · 室内' : ''} · 点击进入
+                              {venue.indoor && venue.id !== 'v-yifu' ? ' · 室内' : ''} · 点击进入
                             </title>
                           )}
                           {getCampusModelPlacement(venue, transform.scale) ? (

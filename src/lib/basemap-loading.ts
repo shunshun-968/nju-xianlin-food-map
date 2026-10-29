@@ -141,7 +141,8 @@ export function createBasemapLoader({ baseUrl, fetcher = fetch, openCache }: Loa
       if (!validate(value)) throw new Error('地图分块不完整');
       values.set(key, value);
       try {
-        await cache?.put(url, saved);
+        // 数据已可绘制；手机缓存写盘较慢时，不应继续挡住首屏和后续请求。
+        void cache?.put(url, saved).catch(() => undefined);
       } catch {
         /* Quota failure must not block the map. */
       }

@@ -105,7 +105,7 @@ export const textWidth = (text: string, fontSize: number) =>
 export function venueLines(venue: MapVenue) {
   if (venue.id === 'v-891') return ['民族食堂', '第八、九食堂'];
   if (venue.id === 'v-hut') return ['呢喃小屋'];
-  return venue.indoor ? [venue.name, '室内'] : [venue.name];
+  return venue.indoor && venue.id !== 'v-yifu' ? [venue.name, '室内'] : [venue.name];
 }
 
 export function mapLabels(

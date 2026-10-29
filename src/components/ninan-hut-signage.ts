@@ -1,14 +1,12 @@
 import * as THREE from 'three';
+import { loadModelImage, ninanModelImages } from '../lib/model-image-assets';
 
-const urls = {
-  breakfast: new URL('../assets/ninan-hut/breakfast-board.webp', import.meta.url).href,
-  drinks: new URL('../assets/ninan-hut/drinks-board.webp', import.meta.url).href,
-  east: new URL('../assets/ninan-hut/east-reference.webp', import.meta.url).href,
-  crest: new URL('../assets/branding/南大校徽.png', import.meta.url).href,
-  logistics: new URL('../assets/branding/南大后勤.png', import.meta.url).href,
-};
+const urls = ninanModelImages;
 type Asset = keyof typeof urls;
 const images = new Map<Asset, HTMLImageElement>();
+// 同一实拍照片用于两块牌时共用像素源，让 Three 在同一渲染器中只上传一次。
+// Texture 仍由每个模型独立拥有，释放其中一块牌不会提前释放另一块牌。
+const textureSources = new WeakMap<TexImageSource, THREE.Source>();
 let preparing: Promise<void> | undefined;
 
 /** 保存解码图片，每次模型使用自己的纹理，可随场景安全释放。 */
@@ -16,7 +14,7 @@ export function prepareNinanHutAssets() {
   if (!preparing)
     preparing = Promise.all(
       Object.entries(urls).map(async ([name, url]) => {
-        const image = await new THREE.ImageLoader().loadAsync(url);
+        const image = await loadModelImage(url);
         images.set(name as Asset, image);
       }),
     )
@@ -30,6 +28,12 @@ export function prepareNinanHutAssets() {
 
 function texture(image: TexImageSource) {
   const map = new THREE.Texture(image);
+  let source = textureSources.get(image);
+  if (!source) {
+    source = map.source;
+    textureSources.set(image, source);
+  }
+  map.source = source;
   map.colorSpace = THREE.SRGBColorSpace;
   map.anisotropy = 8;
   map.needsUpdate = true;

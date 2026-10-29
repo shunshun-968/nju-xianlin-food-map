@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { MapScene, type SceneHandle } from './components/MapScene';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import type { SceneHandle } from './components/MapScene';
+// 导航样式也作用于校园页，保持首屏样式不随三维代码的懒加载改变。
+import './components/fourth-canteen.css';
 import { CampusMap } from './components/CampusMap';
 import { UiIcon } from './components/UiIcon';
 import { CompassRose } from './components/CompassRose';
@@ -15,12 +17,16 @@ import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
 import { useCampusGreeting } from './lib/use-campus-greeting';
 import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
+import { preloadVenueModelImages } from './lib/model-image-assets';
 import { catalogRepository } from './services/catalog';
 import { getIndoorCanteen, getIndoorWindow } from './data/indoor-canteens';
 import { eighthDumplingKiosk } from './data/eighth-canteen';
 import { tenthDumplingKiosk } from './data/tenth-canteen';
 import { eleventhDumplingKiosk } from './data/eleventh-canteen';
 import type { Catalog, MapTheme, View } from './domain';
+
+// 校园地图是二维页面；进入建筑时才下载 Three.js 和三维场景。
+const MapScene = lazy(() => import('./components/MapScene').then((module) => ({ default: module.MapScene })));
 
 export default function App() {
   const [interfaceTheme, setInterfaceTheme] = useInterfaceTheme();
@@ -34,13 +40,29 @@ export default function App() {
     setShowInfo,
     navigate: changeView,
   } = useAppNavigation();
+  const modelVenueId = view.level === 'campus' ? undefined : view.venueId;
+  useEffect(() => {
+    // 与三维代码并行下载当前场所照片；共享解码结果，首开无需串行等待。
+    if (modelVenueId) void preloadVenueModelImages(modelVenueId).catch(() => {});
+  }, [modelVenueId]);
   const alternateCampusGreeting = useCampusGreeting(view.level);
   const [theme] = useState<MapTheme>('garden');
   const [ninanMeal, setNinanMeal] = useState<NinanMealMode>(() => defaultNinanMealMode(interfaceTheme === 'night'));
   const visitingNinan = view.level !== 'campus' && view.venueId === 'v-hut';
+  const requestedNinanMeal = useRef<NinanMealMode | null>(null);
   useEffect(() => {
-    if (visitingNinan) setNinanMeal(defaultNinanMealMode(interfaceTheme === 'night'));
+    if (visitingNinan) {
+      setNinanMeal(requestedNinanMeal.current ?? defaultNinanMealMode(interfaceTheme === 'night'));
+    }
+    requestedNinanMeal.current = null;
   }, [visitingNinan, interfaceTheme]);
+  const changeNinanMeal = (meal: NinanMealMode) => {
+    const nextTheme = meal === 'dinner' ? 'night' : 'day';
+    // 餐段与全站昼夜同步；保留用户主动选择的午餐，避免主题变化将其重置为早餐。
+    requestedNinanMeal.current = nextTheme !== interfaceTheme ? meal : null;
+    setNinanMeal(meal);
+    setInterfaceTheme(nextTheme);
+  };
   const [query, setQuery] = useState(''),
     [filter, setFilter] = useState('all');
   const [showMapLabels, setShowMapLabels] = useState(true);
@@ -640,18 +662,21 @@ export default function App() {
                 legacyMobile={mobile}
               />
             ) : (
+              <Suspense fallback={<div className="loading model-loading" role="status">正在展开模型…</div>}>
               <MapScene
                 ref={scene}
                 data={data}
                 view={view}
                 theme={theme}
                 interfaceTheme={interfaceTheme}
+                paused={showInfo}
                 ninanMeal={ninanMeal}
-                onNinanMealChange={setNinanMeal}
+                onNinanMealChange={changeNinanMeal}
                 selectedStall={stallId}
                 onExplore={mobile ? undefined : exploreMap}
                 onPick={pick}
               />
+              </Suspense>
             )
           ) : (
             <div className="loading" role="status">
@@ -741,7 +766,7 @@ export default function App() {
                 </button>
               </div>
               <h2>{hasOfferings ? stall.name : stallFace?.name || stall.name}</h2>
-              {isNinanHut && <NinanHutDetails meal={ninanMeal} onMealChange={setNinanMeal} />}
+              {isNinanHut && <NinanHutDetails meal={ninanMeal} onMealChange={changeNinanMeal} />}
               {isSouthCart && (
                 <>
                   <p className="detail-location">南大门西侧 · 餐车售餐点</p>

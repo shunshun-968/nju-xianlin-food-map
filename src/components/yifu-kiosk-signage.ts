@@ -1,9 +1,6 @@
 import * as THREE from 'three';
+import { loadModelImage, yifuModelImages } from '../lib/model-image-assets';
 
-const boardUrl = new URL('../assets/yifu-kiosk/b102-board.jpg', import.meta.url).href;
-const wallUrl = new URL('../assets/yifu-kiosk/west-wall-art.webp', import.meta.url).href;
-const logisticsUrl = new URL('../assets/branding/南大后勤.png', import.meta.url).href;
-const crestUrl = new URL('../assets/branding/南大校徽.png', import.meta.url).href;
 const fonts = '"Microsoft YaHei", "PingFang SC", sans-serif';
 let boardPhoto: THREE.Texture | undefined;
 let wallPhoto: THREE.Texture | undefined;
@@ -13,14 +10,16 @@ let preparing: Promise<void> | undefined;
 /** 原照片只作为模型表面素材；四角 UV 校正拍摄透视，不重写现场招牌。 */
 export function prepareYifuKioskAssets(): Promise<void> {
   if (preparing) return preparing;
-  const loader = new THREE.TextureLoader();
   preparing = Promise.all([
-    loader.loadAsync(boardUrl), loader.loadAsync(wallUrl),
-    loader.loadAsync(logisticsUrl), loader.loadAsync(crestUrl),
-  ]).then(([board, wall, logistics, crest]) => {
+    loadModelImage(yifuModelImages.board), loadModelImage(yifuModelImages.wall),
+    loadModelImage(yifuModelImages.logistics), loadModelImage(yifuModelImages.crest),
+  ]).then(([boardImage, wallImage, logistics, crest]) => {
+    const board = new THREE.Texture(boardImage);
+    const wall = new THREE.Texture(wallImage);
     for (const texture of [board, wall]) {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 8;
+      texture.needsUpdate = true;
     }
     boardPhoto = board;
     wallPhoto = wall;
@@ -49,10 +48,9 @@ export function prepareYifuKioskAssets(): Promise<void> {
       c.putImageData(pixels, 0, 0);
       ctx.drawImage(artwork, x, y, w, w * artwork.height / artwork.width);
     };
-    drawWhiteArtwork(crest.image, 22, 40, 87);
-    drawWhiteArtwork(logistics.image, 125, 56, 240);
+    drawWhiteArtwork(crest, 22, 40, 87);
+    drawWhiteArtwork(logistics, 125, 56, 240);
     brandTexture = canvasTexture(canvas);
-    logistics.dispose(); crest.dispose();
   }).catch((error) => { preparing = undefined; throw error; });
   return preparing;
 }

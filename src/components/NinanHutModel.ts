@@ -612,12 +612,16 @@ export function createNinanHutModel(): NinanHutModel {
   const grillPose = ninanDinnerLayout.grill;
   grill.position.set(grillPose.x, grillPose.y, grillPose.z);
   dinner.add(cabinet.group, grill);
+  // 灯光常驻可见层级，开关只改变强度。否则切到晚餐会改变 Three 的灯光数量，
+  // 使整座小屋的材质在用户点击时重新编译。attach 保留柜灯原来的世界位置。
+  group.attach(cabinet.light);
 
   // 夜拍12/13中可见的檐下与平台灯带，以及白棚内两盏工作灯。
   const nightAccents = part(group, 'ninan-night-accent-lights');
   nightAccents.visible = false;
   const led = new THREE.MeshBasicMaterial({ color: '#ffdc8a', toneMapped: false });
   const workLight = new THREE.MeshBasicMaterial({ color: '#e6f6ff', toneMapped: false });
+  const nightWorkLights: THREE.PointLight[] = [];
   box(nightAccents, 2.59, 2.62, 1.92, 0.025, 0.035, 5.6, led);
   box(nightAccents, 2.18, 2.78, -2.88, 0.025, 0.035, 3.7, led);
   box(nightAccents, 6.76, 0.24, -0.5, 0.035, 0.035, 10, led);
@@ -625,9 +629,11 @@ export function createNinanHutModel(): NinanHutModel {
   box(nightAccents, 4.95, 0.24, -5.51, 3.6, 0.035, 0.035, led);
   for (const x of [3.25, 5.55]) {
     mesh(nightAccents, new THREE.SphereGeometry(0.08, 12, 8), workLight, x, 2.72, 6.15);
-    const light = new THREE.PointLight('#e7f4ff', 9, 4, 2);
+    const light = new THREE.PointLight('#e7f4ff', 0, 4, 2);
+    light.name = `ninan-night-work-light-${nightWorkLights.length + 1}`;
     light.position.set(x, 2.6, 6.15);
-    nightAccents.add(light);
+    nightWorkLights.push(light);
+    group.add(light);
   }
 
   const fixtures = part(structure, 'ninan-exterior-light-fixtures');
@@ -693,12 +699,18 @@ export function createNinanHutModel(): NinanHutModel {
   tentCounter.add(display);
   tent.add(tentCounter);
   let meal: NinanMealMode = 'breakfast';
+  let nightMode = false;
+  function updateCabinetLighting() {
+    cabinet.setNight(nightMode);
+    if (meal !== 'dinner') cabinet.light.intensity = 0;
+  }
   function setMealMode(mode: NinanMealMode) {
     meal = mode;
     breakfast.visible = mode === 'breakfast';
     lunch.visible = mode === 'lunch' || mode === 'dinner';
     dinner.visible = mode === 'dinner';
     group.userData.mealMode = mode;
+    updateCabinetLighting();
   }
   setMealMode(meal);
   return {
@@ -707,8 +719,10 @@ export function createNinanHutModel(): NinanHutModel {
     setMode() {},
     setMealMode,
     setInterfaceTheme(night) {
-      cabinet.setNight(night);
+      nightMode = night;
+      updateCabinetLighting();
       nightAccents.visible = night;
+      for (const light of nightWorkLights) light.intensity = night ? 9 : 0;
       hemi.color.set(night ? '#aab8dd' : '#fff7df');
       hemi.groundColor.set(night ? '#414854' : '#b7b8a2');
       hemi.intensity = night ? 1.1 : 2.3;

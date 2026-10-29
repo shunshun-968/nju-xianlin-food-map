@@ -138,7 +138,8 @@ test('the render snapshot uses the three approved coordinates without drift and 
       assert.equal(venue.indoor, feature.properties.indoor);
     }
   }
-  assert.ok(venueLines(map.venues.find((v) => v.id === 'v-yifu')!).includes('室内'));
+  const yifu = map.venues.find((v) => v.id === 'v-yifu')!;
+  assert.deepEqual(venueLines(yifu), [yifu.name]);
 });
 
 test('the initial view is one wheel level larger and all building labels appear two levels later', () => {

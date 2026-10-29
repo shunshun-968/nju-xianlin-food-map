@@ -1,6 +1,4 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { prepareTenthCanteenModel } from './TenthCanteenModel';
-import { prepareFourthSignageAssets } from '../lib/fourth-signage-textures';
 import { tenthDumplingKiosk } from '../data/tenth-canteen';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -11,19 +9,13 @@ import {
   fourthCanteenSpec,
   type IndoorCanteenSpec,
 } from '../data/indoor-canteens';
-import {
-  createCanteenModel,
-  type FourthCanteenModel,
-  type FourthViewMode,
-} from './FourthCanteenModel';
+import type { FourthCanteenModel, FourthViewMode } from './FourthCanteenModel';
 import type { InterfaceTheme } from '../lib/use-interface-theme';
 import './fourth-canteen.css';
-import { createSouthGateCartModel } from './SouthGateCartModel';
-import { createNinanHutModel, prepareNinanHutAssets, type NinanHutModel } from './NinanHutModel';
+import type { NinanHutModel } from './NinanHutModel';
 import { NinanMealTabs } from './NinanHutDetails';
 import { ninanHutStall, type NinanMealMode } from '../data/ninan-hut';
 import './ninan-hut-marker.css';
-import { createYifuKioskModel, prepareYifuKioskAssets } from './YifuKioskModel';
 import { batchModel } from '../lib/model-batches';
 import { attachModelMouseControls } from '../lib/model-mouse-controls';
 import { createStallPickTargets } from '../lib/stall-picking';
@@ -58,6 +50,7 @@ type Props = {
   interfaceTheme?: InterfaceTheme;
   ninanMeal?: NinanMealMode;
   onNinanMealChange?: (meal: NinanMealMode) => void;
+  paused?: boolean;
 };
 type Engine = {
   scene: THREE.Scene;
@@ -316,13 +309,15 @@ function dispose(group: THREE.Group) {
 }
 
 export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
-  { data, view, theme, onPick, onExplore, selectedStall, interfaceTheme = 'day', ninanMeal = 'breakfast', onNinanMealChange },
+  { data, view, theme, onPick, onExplore, selectedStall, interfaceTheme = 'day', ninanMeal = 'breakfast', onNinanMealChange, paused = false },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null),
     engine = useRef<Engine | null>(null),
     callback = useRef(onPick);
   const explore = useRef(onExplore);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   const compass = useRef<HTMLDivElement>(null);
   const ninanMealRef = useRef(ninanMeal);
   ninanMealRef.current = ninanMeal;
@@ -561,7 +556,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
     renderer.setAnimationLoop((time) => {
       const delta = previousFrame ? Math.min((time - previousFrame) / 1000, 0.08) : 0;
       previousFrame = time;
-      if (document.hidden || e.preparing) return;
+      // 信件遮罩打开时保留最后一帧，避免后台三维动画持续占用手机 GPU。
+      if (document.hidden || e.preparing || pausedRef.current) return;
       if (e.animating) {
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         camera.position.lerp(e.goal, reduce ? 1 : 0.085);
@@ -705,12 +701,26 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         let model = e.models.get(id);
         const cached = !!model;
         if (!model) {
-          if (spec?.style === 'tenth') await prepareTenthCanteenModel();
-          if (spec?.style === 'fourth') await prepareFourthSignageAssets();
-          if (view.venueId === 'v-yifu') await prepareYifuKioskAssets();
-          if (view.venueId === 'v-hut') await prepareNinanHutAssets();
+          // 每个场所只加载自己的建模代码与贴图，避免小售卖点等待全部食堂。
+          let createModel: () => FourthCanteenModel;
+          if (spec) {
+            const { createCanteenModel } = await import('./FourthCanteenModel');
+            if (spec.style === 'tenth') await (await import('./TenthCanteenModel')).prepareTenthCanteenModel();
+            if (spec.style === 'fourth') await (await import('../lib/fourth-signage-textures')).prepareFourthSignageAssets();
+            createModel = () => createCanteenModel(spec);
+          } else if (view.venueId === 'v-yifu') {
+            const module = await import('./YifuKioskModel');
+            await module.prepareYifuKioskAssets();
+            createModel = module.createYifuKioskModel;
+          } else if (view.venueId === 'v-hut') {
+            const module = await import('./NinanHutModel');
+            await module.prepareNinanHutAssets();
+            createModel = module.createNinanHutModel;
+          } else {
+            createModel = (await import('./SouthGateCartModel')).createSouthGateCartModel;
+          }
           if (cancelled) return;
-          model = spec ? createCanteenModel(spec) : view.venueId === 'v-hut' ? createNinanHutModel() : view.venueId === 'v-yifu' ? createYifuKioskModel() : createSouthGateCartModel();
+          model = createModel();
           if (spec && spec.style !== 'tenth') batchModel(model.group);
           e.models.set(id, model);
         }

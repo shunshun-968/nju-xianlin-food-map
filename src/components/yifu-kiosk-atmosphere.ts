@@ -155,7 +155,7 @@ export function createYifuAtmosphere(parent: THREE.Group) {
   plant(-2.6, 1.25, -2.1, 1.12, 0);
   plant(-2.58, 1.25, -1.65, 1.32, 1);
   plant(-2.58, 1.25, -1.2, 0.78, 2);
-  plant(-2.3, 2.25, 2.55, 0.95, 2, true);
+  plant(-0.64, 2.25, 2.55, 0.95, 2, true);
 
   // 北面绿托盘架上那盘香蕉与黄瓜，保留随手摆放而不完全对称的陈列。
   const fruit = new THREE.Group();

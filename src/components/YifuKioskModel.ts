@@ -218,19 +218,72 @@ export function createYifuKioskModel(): FourthCanteenModel {
   const floor = plane(room, 0, 0.007, 0, 5.8, 6.8, floorMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.name = 'pale-staggered-wood-grain-floor';
-  // 单面内墙让外围机位自然剖开近侧墙；没有南侧墙、门、门框或门槛。
+  // 图6及补充近照：冰柜背墙向室内凸出，红冰柜北侧折回售餐区西墙。
+  // 转角深度按照片估算；三维和俯视共用同一轮廓。
+  // 墙段沿冰柜排列方向略收窄；凸出墙面与柜台台面前沿共面。
+  const counterX = -1.72;
+  const counterFrontX = counterX + 0.96 / 2;
+  const westStep = { depth: counterFrontX + 2.9, z: 1.12, x: counterFrontX };
+  const fridgeX = westStep.x + 0.48;
+  const southWallLength = 3.4 - westStep.z;
+  const northWallLength = westStep.z + 3.4;
+  // 单面内墙让外围机位自然剖开近侧墙，南侧仍敞开。
   const wallMaterial = mat('#ebeae2', 0.96);
   const walls = new THREE.Group();
   walls.name = 'yifu-three-dimensional-cutaway-walls';
   walls.userData.planHide = true;
   room.add(walls);
-  plane(walls, -2.9, 1.68, 0, 6.8, 3.36, wallMaterial, Math.PI / 2).name = 'west-interior-wall';
+  plane(
+    walls,
+    -2.9,
+    1.68,
+    (-3.4 + westStep.z) / 2,
+    northWallLength,
+    3.36,
+    wallMaterial,
+    Math.PI / 2,
+  ).name = 'west-interior-wall';
+  plane(
+    walls,
+    westStep.x,
+    1.68,
+    (3.4 + westStep.z) / 2,
+    southWallLength,
+    3.36,
+    wallMaterial,
+    Math.PI / 2,
+  ).name = 'west-fridge-backing-wall';
+  plane(
+    walls,
+    -2.9 + westStep.depth / 2,
+    1.68,
+    westStep.z,
+    westStep.depth,
+    3.36,
+    wallMaterial,
+    Math.PI,
+  ).name = 'west-right-angle-return';
   plane(walls, 2.9, 1.68, 0, 6.8, 3.36, wallMaterial, -Math.PI / 2).name = 'east-interior-wall';
   plane(walls, 0, 1.68, -3.4, 5.8, 3.36, wallMaterial).name = 'north-interior-wall';
-  for (const x of [-2.91, 2.91]) {
-    box(room, x, 0.06, 0, 0.08, 0.12, 6.8, mat('#8a8980', 0.68));
-    box(overhead, x, 3.35, 0, 0.15, 0.07, 6.8, ivory);
+  for (const [x, z, length] of [
+    [-2.91, (-3.4 + westStep.z) / 2, northWallLength],
+    [westStep.x - 0.01, (3.4 + westStep.z) / 2, southWallLength],
+    [2.91, 0, 6.8],
+  ]) {
+    box(room, x, 0.06, z, 0.08, 0.12, length, mat('#8a8980', 0.68));
+    box(overhead, x, 3.35, z, 0.15, 0.07, length, ivory);
   }
+  box(
+    room,
+    -2.9 + westStep.depth / 2,
+    0.06,
+    westStep.z,
+    westStep.depth,
+    0.12,
+    0.08,
+    mat('#8a8980', 0.68),
+  );
+  box(overhead, -2.9 + westStep.depth / 2, 3.35, westStep.z, westStep.depth, 0.07, 0.15, ivory);
   box(room, 0, 0.06, -3.38, 5.8, 0.12, 0.08, mat('#8a8980', 0.68));
   box(overhead, 0, 3.35, -3.4, 5.95, 0.07, 0.15, ivory);
   // 北窗的深色横档透过浅灰白织物可见。
@@ -283,7 +336,7 @@ export function createYifuKioskModel(): FourthCanteenModel {
   box(furniture, -2.65, 1.255, -1.8, 0.47, 0.035, 1.73, mat('#30352f', 0.5), 0.012);
   const counter = new THREE.Group();
   counter.name = 'stainless-hot-food-counter';
-  counter.position.set(-1.72, 0, -0.85);
+  counter.position.set(counterX, 0, -0.85);
   counter.rotation.y = Math.PI / 2;
   furniture.add(counter);
   box(counter, 0, 0.53, 0, 2.8, 0.77, 0.89, steel, 0.022);
@@ -491,9 +544,10 @@ export function createYifuKioskModel(): FourthCanteenModel {
       for (const pz of [-0.25, 0.25]) cylinder(f, px, 0.025, pz, 0.03, 0.05, rubber);
     return f;
   }
-  fridge(-2.42, 2.55, 1.39, 2.24, false, true);
-  fridge(-2.42, 1.39, 0.77, 2.08, true);
-  fridge(-1.71, 0.93, 0.53, 0.86, true);
+  fridge(fridgeX, 2.55, 1.39, 2.24, false, true);
+  fridge(fridgeX, 1.39, 0.77, 2.08, true);
+  // 小冰柜位于柜台前方，三台使用同一中心 X 与门面深度，正面平齐。
+  fridge(fridgeX, 0.68, 0.53, 0.86, true);
   // 展示架真实为银色角钢+鲜绿塑料托盘，底层垂挂粉纸饭种牌。
   const rack = new THREE.Group();
   furniture.add(rack);
@@ -700,7 +754,27 @@ export function createYifuKioskModel(): FourthCanteenModel {
   planEnclosure.visible = false;
   group.add(planEnclosure);
   const planWall = mat('#d5d4c9', 0.92);
-  box(planEnclosure, -2.99, 1.68, 0, 0.18, 3.36, 6.98, planWall).name = 'yifu-plan-west-wall';
+  box(
+    planEnclosure,
+    -2.99,
+    1.68,
+    (-3.49 + westStep.z) / 2,
+    0.18,
+    3.36,
+    northWallLength + 0.09,
+    planWall,
+  ).name = 'yifu-plan-west-wall';
+  // 实体填充冰柜后方墙垛，俯视不把墙内区域误画成可通行地面。
+  box(
+    planEnclosure,
+    (-3.08 + westStep.x) / 2,
+    1.68,
+    (3.49 + westStep.z) / 2,
+    westStep.depth + 0.18,
+    3.36,
+    southWallLength + 0.09,
+    planWall,
+  ).name = 'yifu-plan-west-fridge-wall-step';
   box(planEnclosure, 2.99, 1.68, 0, 0.18, 3.36, 6.98, planWall).name = 'yifu-plan-east-wall';
   box(planEnclosure, 0, 1.68, -3.49, 5.8, 3.36, 0.18, planWall).name = 'yifu-plan-north-wall';
   box(planEnclosure, -1.025, 1.68, 3.49, 3.75, 3.36, 0.18, planWall).name =

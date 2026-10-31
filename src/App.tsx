@@ -17,6 +17,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { useInterfaceTheme } from './lib/use-interface-theme';
 import { useAppNavigation } from './lib/use-app-navigation';
 import { useCampusGreeting } from './lib/use-campus-greeting';
+import { useRevealActiveItem } from './lib/use-reveal-active-item';
 import { useModelOverlayLayout } from './lib/use-model-overlay-layout';
 import { preloadSceneRoute } from './lib/scene-loading';
 import { catalogRepository } from './services/catalog';
@@ -93,6 +94,7 @@ export default function App() {
     return () => media.removeEventListener('change', changed);
   }, []);
   const [highlightedVenueId, setHighlightedVenueId] = useState<string | null>(null);
+  const activeListRef = useRevealActiveItem(view.level === 'campus' ? highlightedVenueId : stallId);
   const highlightVenue = useCallback((id: string | null) => {
     const focused = document.activeElement?.closest('[data-place-id], [data-venue]');
     setHighlightedVenueId(
@@ -458,12 +460,13 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <div className="venue-list">
+                <div className="venue-list" ref={activeListRef}>
                   {visible?.map((v) => (
                     <button
                       className={`venue-card ${highlightedVenueId === v.id ? 'is-highlighted' : ''}`}
                       key={v.id}
                       data-place-id={v.id}
+                      data-list-item-id={v.id}
                       onPointerEnter={(e) => {
                         if (e.pointerType === 'mouse') highlightVenue(v.id);
                       }}
@@ -578,7 +581,7 @@ export default function App() {
                               : `${floor?.name} · 示例布局`}
                       </span>
                     </div>
-                    <div className="venue-list">
+                    <div className="venue-list" ref={activeListRef}>
                       {view.level === 'building'
                         ? data?.floors
                             .filter((f) => f.venueId === venue?.id)
@@ -605,6 +608,7 @@ export default function App() {
                             .map((s, i) => (
                               <button
                                 key={s.id}
+                                data-list-item-id={s.id}
                                 className={`stall-card ${stallId === s.id ? 'selected' : ''}`}
                                 onClick={() => setStallId(s.id)}
                               >

@@ -334,7 +334,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   const [error, setError] = useState(false);
   const [loadingModel, setLoadingModel] = useState(true);
   const [modelProgress, setModelProgress] = useState(0.12);
-  const [fourthView, setFourthView] = useState<FourthViewMode>('plan');
+  const [fourthView, setFourthView] = useState<FourthViewMode>('3d');
   const [rotationMode, setRotationMode] = useState(false);
   const floorId = view.level === 'floor' ? view.floorId : undefined;
   const modeledCanteen = getIndoorCanteen(floorId);
@@ -366,7 +366,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         e.mouse.reset();
         e.controls.autoRotate = false;
         if (e.fourth) {
-          frameFourth(e, e.fourthMode || 'plan');
+          frameFourth(e, e.fourthMode || '3d');
           return;
         }
         e.camera.zoom = 1;
@@ -833,8 +833,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           (model as NinanHutModel).setMealMode(ninanMealRef.current);
           e.renderer.domElement.dataset.mealMode = ninanMealRef.current;
         }
-        setFourthView(spec ? 'plan' : '3d');
-        frameFourth(e, spec ? 'plan' : '3d');
+        setFourthView('3d');
+        frameFourth(e, '3d');
         if (!spec) {
           // B102 uses the room environment for the stainless steel counter and glass.
           if (view.venueId === 'v-south') scene.environment = null;

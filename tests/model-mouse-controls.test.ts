@@ -21,10 +21,13 @@ function harness(t: TestContext) {
   const controls = new OrbitControls(camera);
   controls.maxPolarAngle = Math.PI / 2.05;
   let interactions = 0;
+  const angles: number[] = [];
   const mouse = attachModelMouseControls(
     canvas as unknown as HTMLCanvasElement,
     controls,
     () => interactions++,
+    undefined,
+    (radians) => angles.push(radians),
   );
   t.after(() => {
     mouse.dispose();
@@ -63,6 +66,7 @@ function harness(t: TestContext) {
     win,
     doc,
     interactions: () => interactions,
+    angles,
   };
 }
 
@@ -151,4 +155,72 @@ test('UI boundary, Escape, blur, reset and disposal prevent stuck orbit and stal
   h.mouse.dispose();
   h.right();
   assert.equal(h.mouse.isActive(), false);
+});
+
+test('orbit progress reports actual direction changes and accumulates reverse travel positively', (t) => {
+  const h = harness(t);
+  h.fire('pointermove', { clientX: 330 });
+  h.fire('wheel');
+  assert.deepEqual(h.angles, []);
+  h.right();
+  assert.deepEqual(h.angles, [], 'entering rotation alone is not rotation');
+  const before = h.camera.position.clone().sub(h.controls.target).normalize();
+  h.fire('pointermove', { clientX: 345 });
+  const after = h.camera.position.clone().sub(h.controls.target).normalize();
+  assert.equal(h.angles.length, 1);
+  assert.ok(Math.abs(h.angles[0] - before.angleTo(after)) < 1e-10);
+  h.fire('pointermove', { clientX: 300 });
+  assert.equal(h.angles.length, 2);
+  assert.ok(h.angles.every((angle) => angle > 0));
+  assert.ok(Math.abs(h.angles[0] - h.angles[1]) < 1e-10);
+  assert.ok(h.angles.reduce((sum, angle) => sum + angle, 0) > Math.PI / 4);
+  assert.ok(
+    h.camera.position.clone().normalize().distanceTo(before) < 1e-10,
+    'net orientation can return to the start while total travel exceeds 45 degrees',
+  );
+});
+
+test('camera limits, non-orbit motion, and re-entry do not create spurious progress', (t) => {
+  const h = harness(t);
+  h.controls.minPolarAngle = 0.4;
+  h.right();
+  h.fire('pointermove', { clientY: -1000 });
+  assert.equal(h.angles.length, 1);
+  h.fire('pointermove', { clientY: -1100 });
+  assert.equal(h.angles.length, 1, 'pushing further into the polar limit adds nothing');
+  const theta = h.controls.getAzimuthalAngle();
+  h.controls.minAzimuthAngle = theta;
+  h.controls.maxAzimuthAngle = theta;
+  h.fire('pointermove', { clientX: 600, clientY: -1100 });
+  assert.equal(h.angles.length, 1, 'azimuth constraints also suppress false progress');
+  h.controls.minAzimuthAngle = -Infinity;
+  h.controls.maxAzimuthAngle = Infinity;
+  h.fire('pointerleave');
+  h.fire('pointermove', { clientX: 900, clientY: 300 });
+  assert.equal(h.angles.length, 1, 're-entering sets a new cursor origin');
+  h.fire('pointermove', { clientX: 910, clientY: 300 });
+  assert.equal(h.angles.length, 2);
+  h.fire('pointerdown', { button: 0, buttons: 1 });
+  h.fire('pointermove', { buttons: 1, clientX: 950 });
+  h.fire('wheel');
+  assert.equal(h.angles.length, 2, 'pan and zoom add no orbit travel');
+  h.fire('pointerup');
+  h.fire('pointermove', { clientX: 960 });
+  assert.equal(h.angles.length, 2, 'first hover after dragging also rebases');
+  h.controls.autoRotate = true;
+  h.controls.update();
+  assert.equal(h.angles.length, 2, 'render-loop updates do not report input progress');
+  h.fire('pointermove', { clientX: 960 });
+  assert.equal(h.angles.length, 2, 'an input update cannot include an auto-rotation step');
+  assert.equal(h.controls.autoRotate, true, 'measurement retains the existing auto-rotate setting');
+});
+
+test('crossing the azimuth wrap reports a short actual arc instead of a full revolution', (t) => {
+  const h = harness(t);
+  h.camera.position.set(0.1, 6, -10);
+  h.controls.update();
+  h.right();
+  h.fire('pointermove', { clientX: 290 });
+  assert.equal(h.angles.length, 1);
+  assert.ok(h.angles[0] > 0 && h.angles[0] < 0.2);
 });

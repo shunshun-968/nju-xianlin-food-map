@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { tenthDumplingKiosk } from '../data/tenth-canteen';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -42,6 +42,9 @@ import { prepareSceneModel } from '../lib/scene-loading';
 import { modelAssets } from '../lib/progressive-model-assets';
 import { modelPhase } from '../lib/scene-performance';
 import { LoadingProgress } from './LoadingProgress';
+import { ModelInteractionGuide } from './ModelInteractionGuide';
+import type { GuideRect } from '../lib/model-guide-layout';
+import { createModelGuideArrow } from '../lib/model-guide-arrow';
 
 export type SceneHandle = { zoom: (factor: number) => void; reset: () => void; rotate: () => void };
 type Props = {
@@ -90,6 +93,7 @@ type Engine = {
   models: Map<string, FourthCanteenModel>;
   preparing?: boolean;
   firstModelFrame?: (renderStarted: number) => void;
+  guideArrow?: ReturnType<typeof createModelGuideArrow>;
 };
 
 function lightExterior(e: Engine, night: boolean) {
@@ -348,6 +352,52 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
   selectedStallRef.current = selectedStall;
   interfaceThemeRef.current = interfaceTheme;
   callback.current = onPick;
+  const showGuideArrow = useCallback((visible: boolean) => {
+    const e = engine.current;
+    if (!e) return;
+    e.guideArrow?.dispose();
+    e.guideArrow = undefined;
+    if (visible) {
+      e.guideArrow = createModelGuideArrow(e.content, floorId ? `floor:${floorId}` : `building:${view.venueId}`, interfaceThemeRef.current === 'night');
+      e.scene.add(e.guideArrow.group);
+    }
+    host.current?.closest('.map-area')?.dispatchEvent(new Event('foodmap:model-layout'));
+  }, [floorId, view.venueId]);
+  const getGuideOccupiedRects = useCallback((): GuideRect[] => {
+    const e = engine.current;
+    if (!e) return [];
+    const rect = e.renderer.domElement.getBoundingClientRect();
+    const camera = e.camera.clone();
+    if (e.animating) {
+      camera.position.copy(e.goal);
+      camera.lookAt(e.focus);
+    }
+    camera.updateMatrixWorld();
+    e.content.updateWorldMatrix(true, true);
+    const occupied: GuideRect[] = [];
+    const point = new THREE.Vector3();
+    const recordMesh = (node: THREE.Object3D) => {
+      if (!(node instanceof THREE.Mesh)) return;
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      if (materials.every(material => !material.visible || (material.transparent && material.opacity === 0))) return;
+      if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+      const box = node.geometry.boundingBox;
+      if (!box || box.isEmpty()) return;
+      const screen = { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity };
+      for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+        point.set(x, y, z).applyMatrix4(node.matrixWorld).project(camera);
+        const px = rect.left + (point.x + 1) * rect.width / 2;
+        const py = rect.top + (1 - point.y) * rect.height / 2;
+        screen.left = Math.min(screen.left, px); screen.right = Math.max(screen.right, px);
+        screen.top = Math.min(screen.top, py); screen.bottom = Math.max(screen.bottom, py);
+      }
+      if (Object.values(screen).every(Number.isFinite)) occupied.push(screen);
+    };
+    e.content.traverseVisible(recordMesh);
+    e.guideArrow?.group.updateWorldMatrix(true, true);
+    e.guideArrow?.group.traverseVisible(recordMesh);
+    return occupied;
+  }, []);
   useImperativeHandle(ref, () => ({
     zoom(factor) {
       explore.current?.();
@@ -436,7 +486,10 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       if (engine.current) engine.current.animating = false;
       controls.autoRotate = false;
     };
-    const mouse = attachModelMouseControls(renderer.domElement, controls, interact, setRotationMode);
+    const mouse = attachModelMouseControls(renderer.domElement, controls, interact, setRotationMode, radians => {
+      if (engine.current?.guideArrow)
+        element.dispatchEvent(new CustomEvent('foodmap:model-orbit', { detail: radians }));
+    });
     const content = new THREE.Group();
     scene.add(content);
     const ambientLight = new THREE.HemisphereLight('#ffffff', '#9da495', 1.5);
@@ -597,6 +650,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
         updateProjection(e);
       }
       if (!reducedMotion.matches) e.fourth?.tick(time / 1000);
+      e.guideArrow?.tick(reducedMotion.matches ? 0 : time / 1000);
       e.stallSelection?.tick(delta, reducedMotion.matches);
       const renderStarted = e.firstModelFrame ? performance.now() : 0;
       renderer.render(scene, camera);
@@ -645,6 +699,7 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
       dispose(content);
       for (const model of e.models.values()) dispose(model.group);
       e.models.clear();
+      e.guideArrow?.dispose();
       renderer.dispose();
       e.indoorEnvironment?.dispose();
       element.removeChild(renderer.domElement);
@@ -1169,10 +1224,8 @@ export const MapScene = forwardRef<SceneHandle, Props>(function MapScene(
           </div>
         </>
       )}
-      {!error && !loadingModel && (!(isFourthFloor || isYifuKiosk) || fourthView === '3d') && (
-        <div className="interaction-hint" role="status" aria-live="polite">
-          {rotationMode ? '旋转中·左键临时平移·右键/Esc退出' : '单击右键进入旋转模式'}
-        </div>
+      {!error && !loadingModel && !paused && !selectedStall && (!(isFourthFloor || isYifuKiosk) || fourthView === '3d') && (
+        <ModelInteractionGuide key={`${view.level}:${floorId ?? view.venueId}`} host={host} rotationMode={rotationMode} night={interfaceTheme === 'night'} getOccupiedRects={getGuideOccupiedRects} onMouseIntroChange={showGuideArrow} allowIntro={view.level === 'building'} />
       )}
       {error && (
         <div className="scene-error">

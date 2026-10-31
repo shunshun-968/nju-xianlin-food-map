@@ -113,7 +113,8 @@ const GeoCampusMapView = forwardRef<SceneHandle, Props>(function GeoCampusMap(
   const [focusedModelId, setFocusedModelId] = useState<string | null>(null);
   const [touchPreviewId, setTouchPreviewId] = useState<string | null>(null);
   const touchPreview = useRef<string | null>(null);
-  const revealedVenueId = touchPreviewId ?? hoveredModelId ?? focusedModelId;
+  // Sidebar hover/focus shares the same name badge as hovering the map building.
+  const revealedVenueId = touchPreviewId ?? hoveredModelId ?? focusedModelId ?? (!legacyMobile ? highlightedVenueId : null);
   const touchNameHint = touchPreviewId !== null;
   function previewTouch(id: string | null) {
     touchPreview.current = id;

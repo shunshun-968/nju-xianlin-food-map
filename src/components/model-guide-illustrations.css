@@ -1,0 +1,265 @@
+/* The illustrations animate only CSS transforms/opacity; they allocate no WebGL context. */
+.mi-guide-mouse-lesson {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 112px;
+  margin: 0 auto 8px;
+}
+.mi-guide-mouse {
+  width: 110px;
+  height: 112px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--guide-ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mi-guide-mouse-body {
+  animation: mi-guide-mouse-move 5.6s ease-in-out infinite;
+}
+.mi-guide-right-button {
+  fill: var(--guide-ink);
+  stroke: none;
+  animation: mi-guide-press 5.6s ease-in-out infinite;
+}
+.mi-guide-wheel {
+  fill: var(--guide-soft);
+}
+.mi-guide-click {
+  stroke: var(--guide-line);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mi-guide-click 5.6s ease-out infinite;
+}
+.mi-guide-mouse-travel {
+  stroke: var(--guide-line);
+  stroke-width: 1;
+}
+.mi-guide-touch-lesson {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: min(300px, 100%);
+  margin: 0 auto 12px;
+}
+.mi-guide-touch-example {
+  text-align: center;
+}
+.mi-guide-touch-animation {
+  position: relative;
+  height: 112px;
+  perspective: 360px;
+}
+.mi-guide-touch-label {
+  color: var(--guide-ink);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.mi-guide-cube-stage {
+  position: absolute;
+  left: calc(50% - 24px);
+  top: 28px;
+  width: 48px;
+  height: 48px;
+  transform-style: preserve-3d;
+}
+.mi-guide-cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(-24deg) rotateY(-30deg);
+  animation: mi-guide-cube-turn 5.6s ease-in-out infinite;
+}
+.mi-guide-cube-face {
+  position: absolute;
+  inset: 0;
+  border: 1.3px solid var(--guide-ink);
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  background: var(--guide-soft);
+}
+.mi-guide-cube-face.is-front {
+  transform: translateZ(24px);
+  background: color-mix(in srgb, var(--guide-soft) 93%, var(--guide-ink));
+}
+.mi-guide-cube-face.is-right {
+  transform: rotateY(90deg) translateZ(24px);
+  background: color-mix(in srgb, var(--guide-soft) 74%, var(--guide-ink));
+}
+.mi-guide-cube-face.is-back {
+  transform: rotateY(180deg) translateZ(24px);
+  background: color-mix(in srgb, var(--guide-soft) 86%, var(--guide-ink));
+}
+.mi-guide-cube-face.is-left {
+  transform: rotateY(-90deg) translateZ(24px);
+  background: color-mix(in srgb, var(--guide-soft) 65%, var(--guide-ink));
+}
+.mi-guide-cube-face.is-top {
+  transform: rotateX(90deg) translateZ(24px);
+}
+.mi-guide-cube-face.is-bottom {
+  transform: rotateX(-90deg) translateZ(24px);
+}
+.mi-guide-cube-face.is-front::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid var(--guide-line);
+}
+.mi-guide-cube-stage.is-zoom {
+  animation: mi-guide-zoom 5.6s ease-in-out infinite;
+}
+.mi-guide-cube-stage.is-zoom .mi-guide-cube {
+  animation: none;
+}
+.mi-guide-fingers {
+  position: absolute;
+  display: flex;
+  gap: 14px;
+  left: calc(50% - 35px);
+  top: 74px;
+}
+.mi-guide-finger {
+  display: block;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1px solid var(--guide-line);
+  background: color-mix(in srgb, var(--guide-soft) 70%, transparent);
+}
+.mi-guide-finger::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--guide-ink);
+}
+.mi-guide-fingers.is-drag {
+  animation: mi-guide-drag 5.6s ease-in-out infinite;
+}
+.mi-guide-fingers.is-pinch > :first-child {
+  animation: mi-guide-pinch-left 5.6s ease-in-out infinite;
+}
+.mi-guide-fingers.is-pinch > :last-child {
+  animation: mi-guide-pinch-right 5.6s ease-in-out infinite;
+}
+@keyframes mi-guide-press {
+  0%,
+  9%,
+  28%,
+  100% {
+    opacity: 0.06;
+  }
+  15%,
+  21% {
+    opacity: 0.62;
+  }
+}
+@keyframes mi-guide-click {
+  0%,
+  12%,
+  35%,
+  100% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  18% {
+    opacity: 0.65;
+  }
+  32% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@keyframes mi-guide-mouse-move {
+  0%,
+  28%,
+  100% {
+    transform: translateX(0);
+  }
+  49% {
+    transform: translateX(-8px);
+  }
+  72% {
+    transform: translateX(8px);
+  }
+}
+@keyframes mi-guide-cube-turn {
+  0%,
+  18%,
+  88%,
+  100% {
+    transform: rotateX(-24deg) rotateY(-30deg);
+  }
+  48%,
+  58% {
+    transform: rotateX(-24deg) rotateY(-155deg);
+  }
+}
+@keyframes mi-guide-drag {
+  0%,
+  18%,
+  88%,
+  100% {
+    transform: translateX(-14px);
+  }
+  48%,
+  58% {
+    transform: translateX(14px);
+  }
+}
+@keyframes mi-guide-zoom {
+  0%,
+  18%,
+  88%,
+  100% {
+    transform: scale(0.78);
+  }
+  48%,
+  58% {
+    transform: scale(1.14);
+  }
+}
+@keyframes mi-guide-pinch-left {
+  0%,
+  18%,
+  88%,
+  100% {
+    transform: translateX(7px);
+  }
+  48%,
+  58% {
+    transform: translateX(-12px);
+  }
+}
+@keyframes mi-guide-pinch-right {
+  0%,
+  18%,
+  88%,
+  100% {
+    transform: translateX(-7px);
+  }
+  48%,
+  58% {
+    transform: translateX(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mi-guide-mouse-lesson *,
+  .mi-guide-touch-lesson * {
+    animation: none !important;
+  }
+  .mi-guide-click {
+    display: none;
+  }
+  .mi-guide-right-button {
+    opacity: 0.3;
+  }
+}

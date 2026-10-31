@@ -10,11 +10,14 @@ export function attachModelMouseControls(
   controls: OrbitControls,
   onInteract: () => void,
   onRotationModeChange?: (active: boolean) => void,
+  onOrbit?: (radians: number) => void,
 ) {
   let active = false;
   let previous: [number, number] | null = null;
   let rightDown: [number, number] | null = null;
   const offset = new Vector3();
+  const beforeOrbit = new Vector3();
+  const afterOrbit = new Vector3();
   const spherical = new Spherical();
   const reset = () => {
     active = false;
@@ -59,6 +62,7 @@ export function attachModelMouseControls(
     if (previous) {
       const scale = (2 * Math.PI * controls.rotateSpeed) / Math.max(canvas.clientHeight, 1);
       offset.copy(controls.object.position).sub(controls.target);
+      beforeOrbit.copy(offset).normalize();
       spherical.setFromVector3(offset);
       spherical.theta = MathUtils.clamp(
         spherical.theta - (next[0] - previous[0]) * scale,
@@ -72,7 +76,20 @@ export function attachModelMouseControls(
       );
       spherical.makeSafe();
       controls.object.position.copy(controls.target).add(offset.setFromSpherical(spherical));
+      // Only the user's bounded rotation counts. Auto-rotation belongs to the
+      // render loop and must not add an extra step during this input update.
+      const autoRotate = controls.autoRotate;
+      controls.autoRotate = false;
       controls.update();
+      controls.autoRotate = autoRotate;
+      if (onOrbit) {
+        afterOrbit.copy(controls.object.position).sub(controls.target).normalize();
+        if (beforeOrbit.lengthSq() && afterOrbit.lengthSq()) {
+          const radians = beforeOrbit.angleTo(afterOrbit);
+          // Ignore floating-point noise when the cursor pushes against a limit.
+          if (radians > 1e-7) onOrbit(radians);
+        }
+      }
       onInteract();
     }
     previous = next;
